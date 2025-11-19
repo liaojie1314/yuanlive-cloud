@@ -3,5 +3,17 @@
   <component name="Encoding" defaultCharsetForPropertiesFiles="UTF-8">
     <file url="file://$PROJECT_DIR$/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/yuanlive-common/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/yuanlive-common/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/yuanlive-gateway/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/yuanlive-gateway/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/yuanlive-server-client/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/yuanlive-server-client/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/yuanlive-server-client/yuanlive-user-client/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/yuanlive-server-client/yuanlive-user-client/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/yuanlive-server/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/yuanlive-server/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/yuanlive-server/yuanlive-user-service/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/yuanlive-server/yuanlive-user-service/src/main/resources" charset="UTF-8" />
   </component>
 </project>

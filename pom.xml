@@ -6,12 +6,78 @@
 
     <groupId>blog.yuanyuan</groupId>
     <artifactId>yuanlive-cloud</artifactId>
-    <version>1.0.0</version>
+    <version>${revision}</version>
+    <packaging>pom</packaging>
+    <modules>
+        <module>yuanlive-common</module>
+        <module>yuanlive-server</module>
+        <module>yuanlive-server-client</module>
+        <module>yuanlive-gateway</module>
+    </modules>
 
     <properties>
+        <revision>1.0.0</revision>
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <spring-boot.version>3.5.7</spring-boot.version>
+        <spring-cloud.version>2025.0.0</spring-cloud.version>
+        <spring-cloud-alibaba.version>2025.0.0.0</spring-cloud-alibaba.version>
+        <spring-ai.version>1.0.3</spring-ai.version>
+        <spring-ai-alibaba.version>1.0.0.4</spring-ai-alibaba.version>
+        <mybatis-plus.version>3.5.14</mybatis-plus.version>
+        <knife4j-gateway.version>4.5.0</knife4j-gateway.version>
     </properties>
 
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-dependencies</artifactId>
+                <version>${spring-boot.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework.cloud</groupId>
+                <artifactId>spring-cloud-dependencies</artifactId>
+                <version>${spring-cloud.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>com.alibaba.cloud</groupId>
+                <artifactId>spring-cloud-alibaba-dependencies</artifactId>
+                <version>${spring-cloud-alibaba.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <repositories>
+        <repository>
+            <id>aliyunmaven</id>
+            <name>aliyun</name>
+            <url>https://maven.aliyun.com/repository/public</url>
+        </repository>
+        <repository>
+            <id>central2</id>
+            <name>central2</name>
+            <url>https://repo1.maven.org/maven2/</url>
+        </repository>
+    </repositories>
+
+    <pluginRepositories>
+        <pluginRepository>
+            <id>aliyunmaven</id>
+            <name>aliyun</name>
+            <url>https://maven.aliyun.com/repository/public</url>
+        </pluginRepository>
+        <pluginRepository>
+            <id>central2</id>
+            <name>central2</name>
+            <url>https://repo1.maven.org/maven2/</url>
+        </pluginRepository>
+    </pluginRepositories>
 </project>
