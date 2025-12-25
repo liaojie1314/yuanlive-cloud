@@ -13,6 +13,9 @@
     <packaging>pom</packaging>
     <modules>
         <module>yuanlive-user-service</module>
+        <module>yuanlive-live-service</module>
+        <module>yuanlive-wallet-service</module>
+        <module>yuanlive-auth-service</module>
     </modules>
 
     <properties>
@@ -20,5 +23,20 @@
         <maven.compiler.target>17</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.github.xiaoymin</groupId>
+            <artifactId>knife4j-openapi3-jakarta-spring-boot-starter</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.alibaba.cloud</groupId>
+            <artifactId>spring-cloud-starter-alibaba-nacos-discovery</artifactId>
+        </dependency>
+    </dependencies>
 
 </project>
