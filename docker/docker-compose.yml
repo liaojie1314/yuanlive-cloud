@@ -75,7 +75,7 @@ services:
     restart: unless-stopped
   # 分布式事务
   seata:
-    image: apache/seata-server:2.5.0
+    image: apache/seata-server:2.3.0
     container_name: yuanlive-seata
     ports:
       - "8091:8091"
@@ -83,19 +83,19 @@ services:
     environment:
       - SEATA_IP=seata
       - SEATA_PORT=8091
-      - SEATA_STORE_MODE=db
-      - SEATA_STORE_DB_DATASOURCE=druid
-      - SEATA_STORE_DB_DB_TYPE=mysql
-      - SEATA_STORE_DB_DRIVER_CLASS_NAME=com.mysql.cj.jdbc.Driver
-      - SEATA_STORE_DB_URL=jdbc:mysql://mysql:3306/seata?useUnicode=true&characterEncoding=utf-8&useSSL=false&allowPublicKeyRetrieval=true
-      - SEATA_STORE_DB_USER=root
-      - SEATA_STORE_DB_PASSWORD=yuanlive
 
       - SEATA_REGISTRY_TYPE=nacos
       - SEATA_REGISTRY_NACOS_SERVER_ADDR=nacos:8848
       - SEATA_REGISTRY_NACOS_GROUP=SEATA_GROUP
       - SEATA_REGISTRY_NACOS_USERNAME=nacos
       - SEATA_REGISTRY_NACOS_PASSWORD=nacos
+
+      - SEATA_CONFIG_TYPE=nacos
+      - SEATA_CONFIG_NACOS_SERVER_ADDR=nacos:8848
+      - SEATA_CONFIG_NACOS_GROUP=SEATA_GROUP
+      - SEATA_CONFIG_NACOS_USERNAME=nacos
+      - SEATA_CONFIG_NACOS_PASSWORD=nacos
+      - SEATA_CONFIG_NACOS_DATA_ID=seata-server.properties
     volumes:
       - ./seata/lib/mysql-connector-j-8.2.0.jar:/seata-server/libs/mysql-connector-j-8.2.0.jar
     depends_on:
@@ -108,6 +108,22 @@ services:
     extra_hosts:
       - "host.docker.internal:host-gateway"
     restart: unless-stopped
+#  # seata发现
+#  seata-naming-server:
+#    image: apache/seata-naming-server:2.5.0
+#    container_name: yuanlive-seata-naming-server
+#    hostname: seata-naming-server
+#    ports:
+#      - "8081:8081"
+#      - "10055:10055"  # JMX port (optional)
+#    environment:
+#      - SERVER_PORT=8081
+#      - SEATA_SECURITY_SECRETKEY=TXlDdXN0b21TZWNyZXRLZXlGb3JTZWF0YUpXVDIwMjQ=
+#      - SEATA_SECURITY_TOKEN_VALIDITY=1800000
+#    volumes:
+#      - ./logs:/logs/seata
+#    networks:
+#      - live-net
   # redis
   redis:
     image: redis:8.4.0
