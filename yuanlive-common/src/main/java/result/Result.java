@@ -2,8 +2,10 @@ package result;
 
 import lombok.Data;
 
+import java.io.Serializable;
+
 @Data
-public class Result<T> {
+public class Result<T> implements Serializable {
     // 默认接口版本号
     private static final String DEFAULT_VERSION = "1.0";
 
@@ -12,11 +14,21 @@ public class Result<T> {
     private String msg;
     // 接口版本
     private String version;
-
     private Result(Integer code, String msg, T data) {
+        this(code, msg, data, DEFAULT_VERSION);
+    }
+
+    private Result(Integer code, String msg, T data, String version) {
         this.code = code;
         this.msg = msg;
         this.data = data;
+        this.version = version;
+    }
+    /**
+     * 操作成功
+     */
+    public static <T> Result<T> success() {
+        return new Result<>(ResultCode.SUCCESS.getCode(), ResultCode.SUCCESS.getMsg(), null);
     }
     /**
      * 操作成功
@@ -54,11 +66,13 @@ public class Result<T> {
      * 操作失败
      * 使用枚举
      * @param resultCode
-     * @return
      * @param <T>
      */
     public static <T> Result<T> failed(ResultCode resultCode) {
         return new Result<>(resultCode.getCode(), resultCode.getMsg(), null);
+    }
+    public static <T> Result<T> failed(ResultCode resultCode, String msg) {
+        return new Result<>(resultCode.getCode(), msg, null);
     }
 
 

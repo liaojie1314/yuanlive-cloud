@@ -11,6 +11,7 @@ public enum ResultCode {
     UNAUTHORIZED(401, "未登录"),
     TOKEN_EXPIRED(406, "Token已过期"),
     FORBIDDEN(403, "用户无权限访问"),
+    VALIDATE_FAILED(404, "参数验证失败"),
     FAILED(500, "操作失败");
 
 
