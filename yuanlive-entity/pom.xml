@@ -5,11 +5,15 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>blog.yuanyuan</groupId>
-        <artifactId>yuanlive-server</artifactId>
+        <artifactId>yuanlive-cloud</artifactId>
         <version>${revision}</version>
     </parent>
+    <modules>
+        <module>user-entity</module>
+    </modules>
+    <packaging>pom</packaging>
 
-    <artifactId>yuanlive-user-service</artifactId>
+    <artifactId>yuanlive-entity</artifactId>
 
     <properties>
         <maven.compiler.source>17</maven.compiler.source>
@@ -19,21 +23,13 @@
 
     <dependencies>
         <dependency>
-            <groupId>blog.yuanyuan</groupId>
-            <artifactId>user-entity</artifactId>
-            <version>${revision}</version>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
         </dependency>
         <dependency>
-            <groupId>cn.dev33</groupId>
-            <artifactId>sa-token-spring-boot3-starter</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>cn.dev33</groupId>
-            <artifactId>sa-token-redis-template</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-pool2</artifactId>
+            <groupId>com.github.xiaoymin</groupId>
+            <artifactId>knife4j-openapi3-jakarta-spring-boot-starter</artifactId>
         </dependency>
     </dependencies>
+
 </project>

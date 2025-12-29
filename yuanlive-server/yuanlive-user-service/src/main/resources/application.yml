@@ -6,3 +6,46 @@ spring:
   cloud:
     nacos:
       server-addr: 127.0.0.1:8848
+      config:
+        namespace: public
+
+  config:
+    import:
+      - nacos:sa-token.yaml?group=SA_TOKEN_GROUP&refresh-enabled=true
+      - nacos:redis.yaml?group=REDIS_GROUP&refresh-enabled=true
+  datasource:
+    url: jdbc:mysql://localhost:3307/yuanlive_user?useSSL=false&serverTimezone=Asia/Shanghai&useUnicode=true&characterEncoding=utf-8
+    username: root
+    password: yuanlive
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+mybatis-plus:
+  mapper-locations: classpath*:mapper/*.xml
+  type-aliases-package: blog.yuanyuan.yuanlive.entity.user.entity
+
+redis-key:
+  register:
+    prefix: "yuanlive:user:register:"
+    ttl: 60
+    timeunit: SECONDS
+  refresh-token:
+    prefix: "yuanlive:user:refreshtoken:"
+    ttl: 7
+    timeunit: DAYS
+
+cosid:
+  namespace: yuanlive
+  machine:
+    enabled: true
+    distributor:
+      type: redis
+  snowflake:
+    enabled: true
+  segment:
+    enabled: true
+    distributor:
+      type: redis
+    provider:
+      user_id:
+        offset: 100000
+        step: 1000
