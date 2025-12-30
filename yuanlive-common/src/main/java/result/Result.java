@@ -12,29 +12,31 @@ public class Result<T> implements Serializable {
     private T data;
     private Integer code;
     private String msg;
+    private boolean success;
     // 接口版本
     private String version;
-    private Result(Integer code, String msg, T data) {
-        this(code, msg, data, DEFAULT_VERSION);
+    private Result(Integer code, String msg, T data, boolean success) {
+        this(code, msg, data, DEFAULT_VERSION, success);
     }
 
-    private Result(Integer code, String msg, T data, String version) {
+    private Result(Integer code, String msg, T data, String version, boolean success) {
         this.code = code;
         this.msg = msg;
         this.data = data;
         this.version = version;
+        this.success = success;
     }
     /**
      * 操作成功
      */
     public static <T> Result<T> success() {
-        return new Result<>(ResultCode.SUCCESS.getCode(), ResultCode.SUCCESS.getMsg(), null);
+        return new Result<>(ResultCode.SUCCESS.getCode(), ResultCode.SUCCESS.getMsg(), null, true);
     }
     /**
      * 操作成功
      */
     public static <T> Result<T> success(T data) {
-        return new Result<>(ResultCode.SUCCESS.getCode(), ResultCode.SUCCESS.getMsg(), data);
+        return new Result<>(ResultCode.SUCCESS.getCode(), ResultCode.SUCCESS.getMsg(), data, true);
     }
 
     /**
@@ -42,14 +44,14 @@ public class Result<T> implements Serializable {
      * 自定义消息
      */
     public static <T> Result<T> success(T data, String msg) {
-        return new Result<>(ResultCode.SUCCESS.getCode(), msg, data);
+        return new Result<>(ResultCode.SUCCESS.getCode(), msg, data, true);
     }
 
     /**
      * 操作失败
      */
     public static <T> Result<T> failed() {
-        return new Result<>(ResultCode.FAILED.getCode(), ResultCode.FAILED.getMsg(), null);
+        return new Result<>(ResultCode.FAILED.getCode(), ResultCode.FAILED.getMsg(), null, false);
     }
 
     /**
@@ -60,7 +62,7 @@ public class Result<T> implements Serializable {
      * @param <T>
      */
     public static <T> Result<T> failed(String msg) {
-        return new Result<>(ResultCode.FAILED.getCode(), msg, null);
+        return new Result<>(ResultCode.FAILED.getCode(), msg, null, false);
     }
     /**
      * 操作失败
@@ -69,10 +71,10 @@ public class Result<T> implements Serializable {
      * @param <T>
      */
     public static <T> Result<T> failed(ResultCode resultCode) {
-        return new Result<>(resultCode.getCode(), resultCode.getMsg(), null);
+        return new Result<>(resultCode.getCode(), resultCode.getMsg(), null, false);
     }
     public static <T> Result<T> failed(ResultCode resultCode, String msg) {
-        return new Result<>(resultCode.getCode(), msg, null);
+        return new Result<>(resultCode.getCode(), msg, null, false);
     }
 
 

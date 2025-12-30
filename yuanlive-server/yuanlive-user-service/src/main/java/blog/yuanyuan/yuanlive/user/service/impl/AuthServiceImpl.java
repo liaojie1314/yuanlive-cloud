@@ -3,18 +3,25 @@ package blog.yuanyuan.yuanlive.user.service.impl;
 import blog.yuanyuan.yuanlive.entity.user.entity.SysUser;
 import blog.yuanyuan.yuanlive.user.domain.dto.LoginDTO;
 import blog.yuanyuan.yuanlive.user.domain.dto.RegisterDTO;
+import blog.yuanyuan.yuanlive.user.domain.enums.QrCodeStatus;
 import blog.yuanyuan.yuanlive.user.domain.vo.LoginVO;
+import blog.yuanyuan.yuanlive.user.domain.vo.QrCodeCheckVO;
+import blog.yuanyuan.yuanlive.user.domain.vo.QrCodeVO;
 import blog.yuanyuan.yuanlive.user.domain.vo.RefreshVO;
+import blog.yuanyuan.yuanlive.user.properties.QrCodeProperties;
 import blog.yuanyuan.yuanlive.user.properties.RefreshTokenProperties;
 import blog.yuanyuan.yuanlive.user.properties.RegisterProperties;
 import blog.yuanyuan.yuanlive.user.service.AuthService;
 import blog.yuanyuan.yuanlive.user.service.SysUserService;
 import cn.dev33.satoken.session.SaSession;
 import cn.dev33.satoken.stp.StpUtil;
+import cn.dev33.satoken.stp.parameter.SaLoginParameter;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.lang.Validator;
 import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.StrUtil;
+import cn.hutool.json.JSONObject;
+import cn.hutool.json.JSONUtil;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import me.ahoo.cosid.provider.IdGeneratorProvider;
@@ -22,7 +29,10 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import result.Result;
+import result.ResultCode;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
@@ -34,6 +44,8 @@ public class AuthServiceImpl implements AuthService {
     @Resource
     private RefreshTokenProperties refreshTokenProperties;
     @Resource
+    private QrCodeProperties qrCodeProperties;
+    @Resource
     private StringRedisTemplate stringRedisTemplate;
     @Resource
     private SysUserService sysUserService;
@@ -44,6 +56,8 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public String getCode(String email) {
+        // TODO 使用邮箱发送验证码
+        // TODO 加入operationType: "REGISTER" | "FORGET_PASSWORD"
         String key = registerProperties.getPrefix() + email;
         String code = generateVerificationCode();
         if (Boolean.TRUE.equals(stringRedisTemplate.opsForValue()
@@ -120,6 +134,113 @@ public class AuthServiceImpl implements AuthService {
         // 5. 返回新的 Access Token
         // Refresh Token 可以保持不变传回去，也可以生成新的（通常保持不变即可）
         return new RefreshVO(newTokenInfo, refreshToken);
+    }
+
+    @Override
+    public QrCodeVO initQrCode() {
+        String uuid = IdUtil.simpleUUID();
+        String key = qrCodeProperties.getPrefix() + uuid;
+        stringRedisTemplate.opsForValue()
+                .set(key, String.valueOf(QrCodeStatus.WAITING.getStatus()), qrCodeProperties.getTtl(), TimeUnit.valueOf(qrCodeProperties.getTimeunit()));
+        return new QrCodeVO(uuid, "yuanlive://auth/login?uuid=" + uuid);
+    }
+
+    @Override
+    public QrCodeCheckVO checkQrCodeStatus(String uuid) {
+        String key = qrCodeProperties.getPrefix() + uuid;
+        String value = stringRedisTemplate.opsForValue().get(key);
+        if (value == null) {
+            throw new RuntimeException("二维码已过期");
+        }
+        // 如果 Value 是 JSON 格式（说明已确认，里面有 Token），则解析它
+        if (JSONUtil.isTypeJSON(value)) {
+            JSONObject json = JSONUtil.parseObj(value);
+            stringRedisTemplate.delete(key);
+            return QrCodeCheckVO.builder()
+                    .status(json.getInt("status"))
+                    .accessToken(json.getStr("accessToken"))
+                    .refreshToken(json.getStr("refreshToken"))
+                    .uid(json.getStr("uid"))
+                    .build();
+        } else {
+            // 还没成功，直接返回状态码 (0 或 1)
+            return QrCodeCheckVO.builder()
+                    .status(Integer.parseInt(value))
+                    .build();
+        }
+    }
+
+    @Override
+    public Result scanQrCode(String uuid) {
+        if (!StpUtil.getLoginDeviceType().equals("mobile")) {
+            return Result.failed("只有app端才可扫码");
+        }
+        String key = qrCodeProperties.getPrefix() + uuid;
+        String value = stringRedisTemplate.opsForValue().get(key);
+        // 1. 基础校验：二维码不存在或已过期
+        if (value == null) {
+            return Result.failed(ResultCode.QRCODE_EXPIRE);
+        }
+        // 2. 解析当前状态
+        int status;
+        try {
+            // 如果存的是 JSON (已确认状态)，说明肯定已经结束流程了
+            if (JSONUtil.isTypeJSON(value)) {
+                JSONObject json = JSONUtil.parseObj(value);
+                status = json.getInt("status");
+            } else {
+                status = Integer.parseInt(value);
+            }
+        } catch (Exception e) {
+            return Result.failed("二维码状态异常");
+        }
+        switch (status) {
+            case 2:
+                return Result.failed("该二维码已完成登录，请勿重复扫码");
+            case 1:
+                // 如果已经是“已扫码”状态，提示用户去之前的页面确认，或者是被别人扫了
+                return Result.failed("二维码已被扫描，请在手机上确认登录");
+            case 0:
+                // 正常流程，继续往下走
+                break;
+            default:
+                return Result.failed("无效的二维码状态");
+        }
+        // 4. 更新状态为 1 (SCANNED)
+        stringRedisTemplate.opsForValue().set(key, String.valueOf(QrCodeStatus.SCANNED.getStatus()));
+        return Result.success("扫码成功");
+    }
+
+    @Override
+    public Result<String> confirmLogin(String uuid) {
+        if (!StpUtil.getLoginDeviceType().equals("mobile")) {
+            return Result.failed("只有app端才可扫码");
+        }
+        String key = qrCodeProperties.getPrefix() + uuid;
+        if (!stringRedisTemplate.hasKey(key)) {
+            return Result.failed("二维码已失效");
+        }
+        // 1. 获取当前操作的手机用户 ID
+        long userId = StpUtil.getLoginIdAsLong();
+        // 清除web端旧 Refresh Token
+        clearOldRefreshToken(userId, "web");
+        // 2. 关键：为 web 端生成一个独立的 Token
+        String pcToken = StpUtil.createLoginSession(userId, SaLoginParameter.create().setDeviceType("web"));
+        // 3. 构造要存入 Redis 的数据 (状态 + Token)
+        String refreshToken = IdUtil.simpleUUID();
+        String refreshKey = refreshTokenProperties.getPrefix() + refreshToken;
+        stringRedisTemplate.opsForValue()
+                .set(refreshKey, userId + ":" + "web", refreshTokenProperties.getTtl(), TimeUnit.valueOf(refreshTokenProperties.getTimeunit()));
+        StpUtil.getTokenSessionByToken(pcToken).set("REFRESH_TOKEN", refreshToken);
+        Map<String, Object> data = new HashMap<>();
+        data.put("status", QrCodeStatus.CONFIRMED.getStatus());
+        data.put("accessToken", pcToken);
+        data.put("refreshToken", refreshToken);
+        data.put("uid", userId);
+        // 4. 写入 Redis，web 端轮询时就能拿到了
+        stringRedisTemplate.opsForValue()
+                .set(key, JSONUtil.toJsonStr(data), qrCodeProperties.getTtl(), TimeUnit.valueOf(qrCodeProperties.getTimeunit()));
+        return Result.success("确认登录成功");
     }
 
     /**
