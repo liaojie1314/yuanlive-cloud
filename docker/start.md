@@ -38,18 +38,18 @@
 
     ```yaml
     spring:
-    data:
-    redis:
-    host: localhost
-    port: 6378
-    timeout: 10s
-    database: 0
-    lettuce:
-    pool:
-    max-active: 200
-    max-wait: -1ms
-    max-idle: 10
-    min-idle: 0
+      data:
+        redis:
+          host: localhost
+          port: 6378
+          timeout: 10s
+          database: 0
+          lettuce:
+            pool:
+              max-active: 200
+              max-wait: -1ms
+              max-idle: 10
+              min-idle: 0
     ```
 
 ## 3. sa-token 配置
@@ -63,11 +63,11 @@
 
     ```yaml
     sa-token:
-    token-name: Authorization
-    timeout: 7200
-    is-concurrent: false
-    is-share: false
-    token-style: simple-uuid
-    active-timeout: -1
-    is-log: true
+      token-name: Token
+      timeout: 7200
+      is-concurrent: false
+      is-share: false
+      token-style: simple-uuid
+      active-timeout: -1
+      is-log: true
     ```

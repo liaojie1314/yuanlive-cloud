@@ -4,8 +4,10 @@ import blog.yuanyuan.yuanlive.user.domain.dto.LoginDTO;
 import blog.yuanyuan.yuanlive.user.domain.dto.RefreshDTO;
 import blog.yuanyuan.yuanlive.user.domain.dto.RegisterDTO;
 import blog.yuanyuan.yuanlive.user.domain.vo.LoginVO;
+import blog.yuanyuan.yuanlive.user.domain.vo.RefreshVO;
 import blog.yuanyuan.yuanlive.user.properties.RegisterProperties;
 import blog.yuanyuan.yuanlive.user.service.AuthService;
+import cn.dev33.satoken.annotation.SaCheckRole;
 import jakarta.annotation.Resource;
 import jakarta.validation.constraints.Email;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,10 +20,6 @@ import result.Result;
 @RequestMapping("/auth")
 @Validated
 public class AuthController {
-    @Resource
-    private StringRedisTemplate stringRedisTemplate;
-    @Resource
-    private RegisterProperties registerProperties;
     @Resource
     private AuthService authService;
 
@@ -49,12 +47,14 @@ public class AuthController {
     }
 
     @PostMapping("/refreshToken")
-    public Result<LoginVO> refreshToken(@RequestBody RefreshDTO refreshDTO) {
+    public Result<RefreshVO> refreshToken(@RequestBody RefreshDTO refreshDTO) {
         return Result.success(authService.refreshToken(refreshDTO.getRefreshToken()));
     }
 
-    @GetMapping("test")
+    @GetMapping("/test")
+//    @SaCheckRole("test")
     public Result<String> test() {
         return Result.success("测试成功");
     }
+
 }
