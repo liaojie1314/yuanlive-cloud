@@ -15,7 +15,6 @@
         <module>yuanlive-user-service</module>
         <module>yuanlive-live-service</module>
         <module>yuanlive-wallet-service</module>
-        <module>yuanlive-auth-service</module>
     </modules>
 
     <properties>

@@ -4,6 +4,7 @@ import blog.yuanyuan.yuanlive.entity.user.entity.SysUser;
 import blog.yuanyuan.yuanlive.user.domain.dto.LoginDTO;
 import blog.yuanyuan.yuanlive.user.domain.dto.RegisterDTO;
 import blog.yuanyuan.yuanlive.user.domain.vo.LoginVO;
+import blog.yuanyuan.yuanlive.user.domain.vo.RefreshVO;
 import blog.yuanyuan.yuanlive.user.properties.RefreshTokenProperties;
 import blog.yuanyuan.yuanlive.user.properties.RegisterProperties;
 import blog.yuanyuan.yuanlive.user.service.AuthService;
@@ -85,17 +86,18 @@ public class AuthServiceImpl implements AuthService {
         }
         clearOldRefreshToken(user.getUid(), loginDTO.getDevice());
         StpUtil.login(user.getUid(), loginDTO.getDevice());
+        StpUtil.getSession().set("role", user.getRole().name());
         String accessToken = StpUtil.getTokenInfo().getTokenValue();
         String refreshToken = IdUtil.simpleUUID();
         String key = refreshTokenProperties.getPrefix() + refreshToken;
         stringRedisTemplate.opsForValue()
                 .set(key, user.getUid() + ":" + loginDTO.getDevice(), refreshTokenProperties.getTtl(), TimeUnit.valueOf(refreshTokenProperties.getTimeunit()));
         StpUtil.getTokenSession().set("REFRESH_TOKEN", refreshToken);
-        return new LoginVO(accessToken, refreshToken);
+        return new LoginVO(accessToken, refreshToken, user.getRole().getCode());
     }
 
     @Override
-    public LoginVO refreshToken(String refreshToken) {
+    public RefreshVO refreshToken(String refreshToken) {
         String redisKey = refreshTokenProperties.getPrefix() + refreshToken;
         String value = stringRedisTemplate.opsForValue().get(redisKey);
 
@@ -117,7 +119,7 @@ public class AuthServiceImpl implements AuthService {
 
         // 5. 返回新的 Access Token
         // Refresh Token 可以保持不变传回去，也可以生成新的（通常保持不变即可）
-        return new LoginVO(newTokenInfo, refreshToken);
+        return new RefreshVO(newTokenInfo, refreshToken);
     }
 
     /**

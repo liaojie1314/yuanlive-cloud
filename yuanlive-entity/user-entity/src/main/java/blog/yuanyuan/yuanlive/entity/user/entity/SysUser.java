@@ -19,6 +19,8 @@ public class SysUser {
     private String phone;
     @Schema(description="邮箱")
     private String email;
+    @Schema(description="用户类型")
+    private UserRoleEnum role;
     @Schema(description="状态:1-正常,0-停用")
     private Integer status;
     @Schema(description="逻辑删除标志:0-存在,1-删除")

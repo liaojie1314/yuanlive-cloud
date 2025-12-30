@@ -4,9 +4,11 @@ package blog.yuanyuan.yuanlive.user;
 import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.annotation.ComponentScan;
 
 @SpringBootApplication
 @MapperScan("blog.yuanyuan.yuanlive.user.mapper")
+@ComponentScan("blog.yuanyuan.yuanlive")
 public class UserApplication {
 
     public static void main(String[] args) {

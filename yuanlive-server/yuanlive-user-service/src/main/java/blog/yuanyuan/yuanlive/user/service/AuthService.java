@@ -3,6 +3,7 @@ package blog.yuanyuan.yuanlive.user.service;
 import blog.yuanyuan.yuanlive.user.domain.dto.LoginDTO;
 import blog.yuanyuan.yuanlive.user.domain.dto.RegisterDTO;
 import blog.yuanyuan.yuanlive.user.domain.vo.LoginVO;
+import blog.yuanyuan.yuanlive.user.domain.vo.RefreshVO;
 import jakarta.validation.constraints.Email;
 
 public interface AuthService {
@@ -12,5 +13,5 @@ public interface AuthService {
 
     LoginVO login(LoginDTO loginDTO);
 
-    LoginVO refreshToken(String refreshToken);
+    RefreshVO refreshToken(String refreshToken);
 }
