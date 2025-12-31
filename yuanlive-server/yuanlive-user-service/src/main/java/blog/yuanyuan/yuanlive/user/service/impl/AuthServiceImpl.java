@@ -2,6 +2,7 @@ package blog.yuanyuan.yuanlive.user.service.impl;
 
 import blog.yuanyuan.yuanlive.entity.user.entity.SysUser;
 import blog.yuanyuan.yuanlive.user.domain.dto.CodeDTO;
+import blog.yuanyuan.yuanlive.user.domain.dto.ForgetPassDTO;
 import blog.yuanyuan.yuanlive.user.domain.dto.LoginDTO;
 import blog.yuanyuan.yuanlive.user.domain.dto.RegisterDTO;
 import blog.yuanyuan.yuanlive.user.domain.enums.QrCodeStatus;
@@ -9,6 +10,7 @@ import blog.yuanyuan.yuanlive.user.domain.vo.LoginVO;
 import blog.yuanyuan.yuanlive.user.domain.vo.QrCodeCheckVO;
 import blog.yuanyuan.yuanlive.user.domain.vo.QrCodeVO;
 import blog.yuanyuan.yuanlive.user.domain.vo.RefreshVO;
+import blog.yuanyuan.yuanlive.user.properties.ForgetProperties;
 import blog.yuanyuan.yuanlive.user.properties.QrCodeProperties;
 import blog.yuanyuan.yuanlive.user.properties.RefreshTokenProperties;
 import blog.yuanyuan.yuanlive.user.properties.RegisterProperties;
@@ -34,6 +36,7 @@ import result.ResultCode;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
@@ -44,6 +47,8 @@ public class AuthServiceImpl implements AuthService {
     private RegisterProperties registerProperties;
     @Resource
     private RefreshTokenProperties refreshTokenProperties;
+    @Resource
+    private ForgetProperties forgetProperties;
     @Resource
     private QrCodeProperties qrCodeProperties;
     @Resource
@@ -59,10 +64,24 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public void getCode(CodeDTO codeDTO) {
-        String key = registerProperties.getPrefix() + codeDTO.getEmail();
+        String key;
+        Long ttl;
+        String timeunit;
+        if (codeDTO.getOperationType().equals("REGISTER")) {
+            key = registerProperties.getPrefix() + codeDTO.getEmail();
+            ttl = registerProperties.getTtl();
+            timeunit = registerProperties.getTimeunit();
+        } else {
+            if (!sysUserService.lambdaQuery().eq(SysUser::getEmail, codeDTO.getEmail()).exists()) {
+                throw new RuntimeException("该邮箱不存在");
+            }
+            key = forgetProperties.getPrefix() + codeDTO.getEmail();
+            ttl = forgetProperties.getTtl();
+            timeunit = forgetProperties.getTimeunit();
+        }
         String code = generateVerificationCode();
         if (Boolean.TRUE.equals(stringRedisTemplate.opsForValue()
-                .setIfAbsent(key, code, registerProperties.getTtl(), TimeUnit.valueOf(registerProperties.getTimeunit())))) {
+                .setIfAbsent(key, code, ttl, TimeUnit.valueOf(timeunit)))) {
             String type = codeDTO.getOperationType().equals("REGISTER") ? "注册" : "找回密码";
             mailService.sendMail(codeDTO.getEmail(), code, type);
             return;
@@ -247,6 +266,42 @@ public class AuthServiceImpl implements AuthService {
         stringRedisTemplate.opsForValue()
                 .set(key, JSONUtil.toJsonStr(data), qrCodeProperties.getTtl(), TimeUnit.valueOf(qrCodeProperties.getTimeunit()));
         return Result.success("确认登录成功");
+    }
+
+    @Override
+    public Result logout() {
+        // 清除refreshToken
+        String refreshToken = StpUtil.getTokenSession().getString("REFRESH_TOKEN");
+        if (refreshToken != null) {
+            String rtKey = refreshTokenProperties.getPrefix() + refreshToken;
+            stringRedisTemplate.delete(rtKey);
+        }
+        StpUtil.logout();
+        return Result.success("注销成功");
+    }
+
+    @Override
+    public Result<String> forgetPassword(ForgetPassDTO forgetPassDTO) {
+        if (!forgetPassDTO.getPassword().equals(forgetPassDTO.getConfirmPassword())) {
+            return Result.failed("密码不一致");
+        }
+        String key = forgetProperties.getPrefix() + forgetPassDTO.getEmail();
+        if (!stringRedisTemplate.hasKey(key)) {
+            return Result.failed("验证码已过期");
+        }
+        if (!Objects.equals(stringRedisTemplate.opsForValue().get(key), forgetPassDTO.getCode())) {
+            return Result.failed("验证码错误");
+        }
+        boolean updated = sysUserService.lambdaUpdate()
+                .eq(SysUser::getEmail, forgetPassDTO.getEmail())
+                .set(SysUser::getPassword, passwordEncoder.encode(forgetPassDTO.getPassword()))
+                .update();
+        if (updated) {
+            stringRedisTemplate.delete(key);
+            return Result.success("修改成功");
+        } else {
+            return Result.failed("不存在该账号");
+        }
     }
 
     /**

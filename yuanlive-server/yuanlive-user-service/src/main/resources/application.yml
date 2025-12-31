@@ -47,6 +47,10 @@ redis-key:
     prefix: "yuanlive:user:register:"
     ttl: 180
     timeunit: SECONDS
+  forget:
+    prefix: "yuanlive:user:forget:"
+    ttl: 180
+    timeunit: SECONDS
   refresh-token:
     prefix: "yuanlive:user:refreshtoken:"
     ttl: 7

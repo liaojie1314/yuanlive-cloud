@@ -1,6 +1,7 @@
 package blog.yuanyuan.yuanlive.user.service;
 
 import blog.yuanyuan.yuanlive.user.domain.dto.CodeDTO;
+import blog.yuanyuan.yuanlive.user.domain.dto.ForgetPassDTO;
 import blog.yuanyuan.yuanlive.user.domain.dto.LoginDTO;
 import blog.yuanyuan.yuanlive.user.domain.dto.RegisterDTO;
 import blog.yuanyuan.yuanlive.user.domain.vo.LoginVO;
@@ -28,4 +29,8 @@ public interface AuthService {
     Result scanQrCode(String uuid);
 
     Result<String> confirmLogin(String uuid);
+
+    Result logout();
+
+    Result<String> forgetPassword(ForgetPassDTO forgetPassDTO);
 }
