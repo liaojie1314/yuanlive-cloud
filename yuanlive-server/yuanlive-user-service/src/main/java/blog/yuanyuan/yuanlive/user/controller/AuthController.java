@@ -1,9 +1,6 @@
 package blog.yuanyuan.yuanlive.user.controller;
 
-import blog.yuanyuan.yuanlive.user.domain.dto.CodeDTO;
-import blog.yuanyuan.yuanlive.user.domain.dto.LoginDTO;
-import blog.yuanyuan.yuanlive.user.domain.dto.RefreshDTO;
-import blog.yuanyuan.yuanlive.user.domain.dto.RegisterDTO;
+import blog.yuanyuan.yuanlive.user.domain.dto.*;
 import blog.yuanyuan.yuanlive.user.domain.vo.LoginVO;
 import blog.yuanyuan.yuanlive.user.domain.vo.QrCodeCheckVO;
 import blog.yuanyuan.yuanlive.user.domain.vo.QrCodeVO;
@@ -44,6 +41,18 @@ public class AuthController {
     @Operation(summary = "账号名密码登录")
     public Result<LoginVO> login(@RequestBody @Validated LoginDTO loginDTO) {
         return Result.success(authService.login(loginDTO));
+    }
+
+    @PostMapping("/forgetPassword")
+    @Operation(summary = "忘记密码")
+    public Result<String> forgetPassword(@RequestBody @Validated ForgetPassDTO forgetPassDTO) {
+        return authService.forgetPassword(forgetPassDTO);
+    }
+
+    @PostMapping("/logout")
+    @Operation(summary = "登出")
+    public Result logout() {
+        return authService.logout();
     }
 
     @PostMapping("/refreshToken")

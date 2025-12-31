@@ -30,6 +30,7 @@ public class SaTokenConfig {
             "/user/auth/refreshToken",
             "/user/auth/qrcode/init",
             "/user/auth/qrcode/check",
+            "/user/auth/forgetPassword"
     };
 
     // 注册 Sa-Token全局过滤器

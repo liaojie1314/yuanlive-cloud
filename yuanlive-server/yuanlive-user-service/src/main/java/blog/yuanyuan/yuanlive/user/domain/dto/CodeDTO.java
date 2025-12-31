@@ -15,6 +15,6 @@ public class CodeDTO {
     @Email(message = "邮箱格式错误")
     private String email;
     @Schema(description = "操作类型")
-    @Pattern(regexp = "^(REGISTER|FORGET_PASSWORD)$", message = "操作类型错误")
+    @Pattern(regexp = "^(REGISTER|FORGET)$", message = "操作类型错误, 只能为REGISTER或FORGET")
     private String operationType;
 }
