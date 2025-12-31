@@ -71,3 +71,9 @@
       active-timeout: -1
       is-log: true
     ```
+## 4. SMTP 配置
+  - 选择任意邮箱 126、163、QQ等
+  - 打开`POP3/SMTP`, 获取授权码
+  - 修改 `yuanlive-user-service`中`yaml`文件中的 `spring.mail.host`配置为对应邮箱设置
+  - 添加 `YUANLIVE_MAIL_USER`环境变量, 值为邮箱账号
+  - 添加 `YUANLIVE_MAIL_PASSWORD`环境变量, 值为授权码

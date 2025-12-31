@@ -1,5 +1,6 @@
 package blog.yuanyuan.yuanlive.user.controller;
 
+import blog.yuanyuan.yuanlive.user.domain.dto.CodeDTO;
 import blog.yuanyuan.yuanlive.user.domain.dto.LoginDTO;
 import blog.yuanyuan.yuanlive.user.domain.dto.RefreshDTO;
 import blog.yuanyuan.yuanlive.user.domain.dto.RegisterDTO;
@@ -17,7 +18,6 @@ import result.Result;
 
 @RestController
 @RequestMapping("/auth")
-@Validated
 public class AuthController {
     @Resource
     private AuthService authService;
@@ -25,12 +25,9 @@ public class AuthController {
 
     @PostMapping("/getCode")
     @Operation(summary = "获取验证码")
-    public Result<String> getCode(@RequestParam("email") @Email(message = "格式错误") String email) {
-        String code = authService.getCode(email);
-        if (!code.isEmpty()) {
-            return Result.success(code);
-        }
-        return Result.failed("请稍后重试");
+    public Result<String> getCode(@RequestBody @Validated CodeDTO codeDTO) {
+        authService.getCode(codeDTO);
+        return Result.success(null, "验证码已发送");
     }
 
     @PostMapping("/register")

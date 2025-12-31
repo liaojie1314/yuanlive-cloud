@@ -1,6 +1,7 @@
 package blog.yuanyuan.yuanlive.user.service.impl;
 
 import blog.yuanyuan.yuanlive.entity.user.entity.SysUser;
+import blog.yuanyuan.yuanlive.user.domain.dto.CodeDTO;
 import blog.yuanyuan.yuanlive.user.domain.dto.LoginDTO;
 import blog.yuanyuan.yuanlive.user.domain.dto.RegisterDTO;
 import blog.yuanyuan.yuanlive.user.domain.enums.QrCodeStatus;
@@ -50,25 +51,30 @@ public class AuthServiceImpl implements AuthService {
     @Resource
     private SysUserService sysUserService;
     @Resource
+    private MailService mailService;
+    @Resource
     private PasswordEncoder passwordEncoder;
     @Resource
     private IdGeneratorProvider idGeneratorProvider;
 
     @Override
-    public String getCode(String email) {
-        // TODO 使用邮箱发送验证码
-        // TODO 加入operationType: "REGISTER" | "FORGET_PASSWORD"
-        String key = registerProperties.getPrefix() + email;
+    public void getCode(CodeDTO codeDTO) {
+        String key = registerProperties.getPrefix() + codeDTO.getEmail();
         String code = generateVerificationCode();
         if (Boolean.TRUE.equals(stringRedisTemplate.opsForValue()
                 .setIfAbsent(key, code, registerProperties.getTtl(), TimeUnit.valueOf(registerProperties.getTimeunit())))) {
-            return code;
+            String type = codeDTO.getOperationType().equals("REGISTER") ? "注册" : "找回密码";
+            mailService.sendMail(codeDTO.getEmail(), code, type);
+            return;
         }
-        return "";
+        throw new RuntimeException("验证码已发送，请稍后重试");
     }
 
     @Override
     public boolean register(RegisterDTO registerDTO) {
+        if (!registerDTO.getPassword().equals(registerDTO.getConfirmPassword())) {
+            throw new RuntimeException("密码不一致");
+        }
         String email = registerDTO.getEmail();
         String code = stringRedisTemplate.opsForValue().get(registerProperties.getPrefix() + email);
         if (!registerDTO.getCode().equals(code)) {

@@ -19,4 +19,7 @@ public class RegisterDTO {
     @Schema(description = "密码")
     @NotBlank(message = "密码不能为空")
     private String password;
+    @Schema(description = "确认密码")
+    @NotBlank(message = "确认密码不能为空")
+    private String confirmPassword;
 }
