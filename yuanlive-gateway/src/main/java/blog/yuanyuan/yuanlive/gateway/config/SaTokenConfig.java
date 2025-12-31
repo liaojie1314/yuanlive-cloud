@@ -3,12 +3,11 @@ package blog.yuanyuan.yuanlive.gateway.config;
 import cn.dev33.satoken.reactor.filter.SaReactorFilter;
 import cn.dev33.satoken.router.SaRouter;
 import cn.dev33.satoken.stp.StpUtil;
-import cn.dev33.satoken.util.SaResult;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import result.Result;
+import blog.yuanyuan.yuanlive.common.result.Result;
 
 @Configuration
 public class SaTokenConfig {

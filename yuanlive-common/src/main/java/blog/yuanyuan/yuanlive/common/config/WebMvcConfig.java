@@ -1,6 +1,6 @@
-package blog.yuanyuan.yuanlive.security;
+package blog.yuanyuan.yuanlive.common.config;
 
-import cn.dev33.satoken.interceptor.SaInterceptor;
+import blog.yuanyuan.yuanlive.common.interceptor.TraceIdInterceptor;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
@@ -8,10 +8,11 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @Configuration
 @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
-public class SaTokenConfig implements WebMvcConfigurer {
+public class WebMvcConfig implements WebMvcConfigurer {
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
-        // 注册 Sa-Token 拦截器，打开注解式鉴权功能
-        registry.addInterceptor(new SaInterceptor()).addPathPatterns("/**");
+        // 注册 TraceId 拦截器
+        registry.addInterceptor(new TraceIdInterceptor())
+                .addPathPatterns("/**"); // 拦截所有请求
     }
 }

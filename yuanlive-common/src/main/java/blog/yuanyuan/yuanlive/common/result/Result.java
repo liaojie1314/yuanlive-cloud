@@ -1,4 +1,4 @@
-package result;
+package blog.yuanyuan.yuanlive.common.result;
 
 import lombok.Data;
 

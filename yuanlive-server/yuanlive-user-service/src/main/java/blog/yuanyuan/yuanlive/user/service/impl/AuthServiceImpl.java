@@ -31,8 +31,8 @@ import me.ahoo.cosid.provider.IdGeneratorProvider;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import result.Result;
-import result.ResultCode;
+import blog.yuanyuan.yuanlive.common.result.Result;
+import blog.yuanyuan.yuanlive.common.result.ResultCode;
 
 import java.util.HashMap;
 import java.util.Map;

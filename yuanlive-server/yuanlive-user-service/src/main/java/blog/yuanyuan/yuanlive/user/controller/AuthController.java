@@ -6,13 +6,11 @@ import blog.yuanyuan.yuanlive.user.domain.vo.QrCodeCheckVO;
 import blog.yuanyuan.yuanlive.user.domain.vo.QrCodeVO;
 import blog.yuanyuan.yuanlive.user.domain.vo.RefreshVO;
 import blog.yuanyuan.yuanlive.user.service.AuthService;
-import cn.dev33.satoken.annotation.SaCheckRole;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.annotation.Resource;
-import jakarta.validation.constraints.Email;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import result.Result;
+import blog.yuanyuan.yuanlive.common.result.Result;
 
 @RestController
 @RequestMapping("/auth")

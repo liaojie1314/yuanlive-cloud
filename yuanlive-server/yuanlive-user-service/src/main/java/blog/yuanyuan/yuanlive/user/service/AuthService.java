@@ -8,10 +8,7 @@ import blog.yuanyuan.yuanlive.user.domain.vo.LoginVO;
 import blog.yuanyuan.yuanlive.user.domain.vo.QrCodeCheckVO;
 import blog.yuanyuan.yuanlive.user.domain.vo.QrCodeVO;
 import blog.yuanyuan.yuanlive.user.domain.vo.RefreshVO;
-import jakarta.validation.constraints.Email;
-import result.Result;
-
-import java.util.Map;
+import blog.yuanyuan.yuanlive.common.result.Result;
 
 public interface AuthService {
     void getCode(CodeDTO codeDTO);
