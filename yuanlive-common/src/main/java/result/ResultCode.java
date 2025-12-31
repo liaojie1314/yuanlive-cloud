@@ -12,6 +12,7 @@ public enum ResultCode {
     TOKEN_EXPIRED(406, "Token已过期"),
     FORBIDDEN(403, "用户无权限访问"),
     VALIDATE_FAILED(404, "参数验证失败"),
+    QRCODE_EXPIRE(400, "二维码已过期"),
     FAILED(500, "操作失败");
 
 

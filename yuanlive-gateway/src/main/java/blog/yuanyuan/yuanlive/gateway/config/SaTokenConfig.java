@@ -27,7 +27,9 @@ public class SaTokenConfig {
             "/user/auth/login",
             "/user/auth/register",
             "/user/auth/getCode",
-            "/user/auth/refreshToken"
+            "/user/auth/refreshToken",
+            "/user/auth/qrcode/init",
+            "/user/auth/qrcode/check",
     };
 
     // 注册 Sa-Token全局过滤器
@@ -41,7 +43,7 @@ public class SaTokenConfig {
                 // 鉴权方法：每次访问进入
                 .setAuth(obj -> {
                     // 登录校验 -- 拦截所有路由，并排除/user/doLogin 用于开放登录
-                    SaRouter.match("/**", "/user/auth/login", r -> StpUtil.checkLogin());
+                    SaRouter.match("/**",  r -> StpUtil.checkLogin());
                 })
                 // 异常处理方法：每次setAuth函数出现异常时进入
                 .setError(e -> {

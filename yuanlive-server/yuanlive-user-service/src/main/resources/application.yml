@@ -32,6 +32,11 @@ redis-key:
     prefix: "yuanlive:user:refreshtoken:"
     ttl: 7
     timeunit: DAYS
+  qr-code:
+    prefix: "yuanlive:user:qrcode:"
+    ttl: 120
+    timeunit: SECONDS
+
 
 cosid:
   namespace: yuanlive
