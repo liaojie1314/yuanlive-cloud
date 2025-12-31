@@ -1,5 +1,6 @@
 package blog.yuanyuan.yuanlive.user.service;
 
+import blog.yuanyuan.yuanlive.user.domain.dto.CodeDTO;
 import blog.yuanyuan.yuanlive.user.domain.dto.LoginDTO;
 import blog.yuanyuan.yuanlive.user.domain.dto.RegisterDTO;
 import blog.yuanyuan.yuanlive.user.domain.vo.LoginVO;
@@ -12,7 +13,7 @@ import result.Result;
 import java.util.Map;
 
 public interface AuthService {
-    String getCode(@Email(message = "格式错误") String email);
+    void getCode(CodeDTO codeDTO);
 
     boolean register(RegisterDTO registerDTO);
 

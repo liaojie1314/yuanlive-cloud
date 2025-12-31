@@ -3,8 +3,10 @@ package blog.yuanyuan.yuanlive.user.handler;
 import io.swagger.v3.oas.annotations.Hidden;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
+import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -33,15 +35,11 @@ public class GlobalExceptionHandler {
     }
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public Result<String> handleException(MethodArgumentNotValidException e) {
-        BindingResult bindingResult = e.getBindingResult();
-        String message = null;
-        if (bindingResult.hasErrors()) {
-            List<FieldError> fieldErrors = bindingResult.getFieldErrors();
-            for (FieldError fieldError : fieldErrors) {
-                message += fieldError.getField() + fieldError.getDefaultMessage() + '\n';
-            }
-            message = message.substring(0, message.length() - 1);
-        }
+        String message = e.getBindingResult().getAllErrors().stream()
+                // 2. 提取错误信息 (只取 message，不取 field，这样更干净)
+                .map(ObjectError::getDefaultMessage)
+                // 3. 用分号或换行符连接
+                .collect(Collectors.joining("\n"));
         return Result.failed(ResultCode.VALIDATE_FAILED, message);
     }
 
