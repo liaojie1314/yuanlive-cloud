@@ -1,15 +1,19 @@
 package blog.yuanyuan.yuanlive.gateway.config;
 
+import blog.yuanyuan.yuanlive.common.result.ResultCode;
+import cn.dev33.satoken.exception.NotLoginException;
 import cn.dev33.satoken.reactor.filter.SaReactorFilter;
 import cn.dev33.satoken.router.SaRouter;
 import cn.dev33.satoken.stp.StpUtil;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import blog.yuanyuan.yuanlive.common.result.Result;
 
 @Configuration
+@Slf4j
 public class SaTokenConfig {
     private static final String[] WHITE_LIST = {
             // 1. 图标与静态资源
@@ -48,6 +52,11 @@ public class SaTokenConfig {
                 // 异常处理方法：每次setAuth函数出现异常时进入
                 .setError(e -> {
                     Result<Object> result = Result.failed(e.getMessage());
+                    NotLoginException exception = (NotLoginException) e;
+                    if (exception.getType().equals(NotLoginException.INVALID_TOKEN)) {
+                        result.setCode(ResultCode.TOKEN_EXPIRED.getCode());
+                        result.setMsg(ResultCode.TOKEN_EXPIRED.getMsg());
+                    }
                     try {
                         return new ObjectMapper().writeValueAsString(result);
                     } catch (JsonProcessingException ex) {

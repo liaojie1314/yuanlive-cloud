@@ -22,6 +22,12 @@
             <groupId>blog.yuanyuan</groupId>
             <artifactId>yuanlive-common</artifactId>
             <version>${revision}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.springframework</groupId>
+                    <artifactId>spring-webmvc</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>com.github.xiaoymin</groupId>
