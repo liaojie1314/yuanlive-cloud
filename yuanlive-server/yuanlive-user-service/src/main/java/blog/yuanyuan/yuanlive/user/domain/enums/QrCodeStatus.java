@@ -16,4 +16,13 @@ public enum QrCodeStatus {
     private final int status;
     private final String desc;
 
+    public static QrCodeStatus getByStatus(int status) {
+        for (QrCodeStatus value : values()) {
+            if (value.status == status) {
+                return value;
+            }
+        }
+        throw new IllegalArgumentException("Invalid status: " + status);
+    }
+
 }

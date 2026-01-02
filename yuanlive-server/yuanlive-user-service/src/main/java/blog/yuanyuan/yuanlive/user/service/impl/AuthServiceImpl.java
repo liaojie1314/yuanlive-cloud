@@ -132,7 +132,7 @@ public class AuthServiceImpl implements AuthService {
         stringRedisTemplate.opsForValue()
                 .set(key, user.getUid() + ":" + loginDTO.getDevice(), refreshTokenProperties.getTtl(), TimeUnit.valueOf(refreshTokenProperties.getTimeunit()));
         StpUtil.getTokenSession().set("REFRESH_TOKEN", refreshToken);
-        return new LoginVO(accessToken, refreshToken, user.getRole().getCode());
+        return new LoginVO(accessToken, refreshToken, user.getRole().getCode(), user.getUid());
     }
 
     @Override
@@ -182,7 +182,7 @@ public class AuthServiceImpl implements AuthService {
             JSONObject json = JSONUtil.parseObj(value);
             stringRedisTemplate.delete(key);
             return QrCodeCheckVO.builder()
-                    .status(json.getInt("status"))
+                    .status(QrCodeStatus.getByStatus(json.getInt("status")).name())
                     .accessToken(json.getStr("accessToken"))
                     .refreshToken(json.getStr("refreshToken"))
                     .uid(json.getStr("uid"))
@@ -190,7 +190,7 @@ public class AuthServiceImpl implements AuthService {
         } else {
             // 还没成功，直接返回状态码 (0 或 1)
             return QrCodeCheckVO.builder()
-                    .status(Integer.parseInt(value))
+                    .status(QrCodeStatus.getByStatus(Integer.parseInt(value)).name())
                     .build();
         }
     }
@@ -282,6 +282,9 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public Result<String> forgetPassword(ForgetPassDTO forgetPassDTO) {
+        SysUser user = sysUserService.lambdaQuery()
+                .eq(SysUser::getEmail, forgetPassDTO.getEmail())
+                .one();
         if (!forgetPassDTO.getPassword().equals(forgetPassDTO.getConfirmPassword())) {
             return Result.failed("密码不一致");
         }
@@ -298,6 +301,11 @@ public class AuthServiceImpl implements AuthService {
                 .update();
         if (updated) {
             stringRedisTemplate.delete(key);
+            // 清除所有端旧 Refresh Token
+            clearOldRefreshToken(user.getUid(), "web");
+            clearOldRefreshToken(user.getUid(), "mobile");
+            clearOldRefreshToken(user.getUid(), "desktop");
+            StpUtil.logout(user.getUid());
             return Result.success("修改成功");
         } else {
             return Result.failed("不存在该账号");

@@ -13,4 +13,6 @@ public class LoginVO {
     private String refreshToken;
     @Schema(description = "用户角色:0->普通用户, 1->主播, 2->管理员")
     private Integer role;
+    @Schema(description = "用户id")
+    private Long uid;
 }

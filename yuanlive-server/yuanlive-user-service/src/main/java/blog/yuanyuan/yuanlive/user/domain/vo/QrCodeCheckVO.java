@@ -13,8 +13,8 @@ public class QrCodeCheckVO {
     @Schema(description = "用户ID，仅在已确认状态下返回")
     private String uid;
 
-    @Schema(description = "状态码：0-等待扫码，1-已扫码，2-已确认，3-已取消，4-已过期")
-    private int status;
+    @Schema(description = "状态码：WAITING-等待扫码，SCANNED-已扫码，CONFIRMED-已确认，CANCELED-已取消，TIMEOUT-已过期")
+    private String status;
 
     @Schema(description = "登录令牌，仅在已确认状态下返回")
     private String accessToken;
