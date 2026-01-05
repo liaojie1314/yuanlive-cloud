@@ -20,5 +20,7 @@ public class QrCodeCheckVO {
     private String accessToken;
     @Schema(description = "刷新令牌，仅在已确认状态下返回")
     private String refreshToken;
+    @Schema(description = "accessToken过期时间戳")
+    private Long expire;
 
 }

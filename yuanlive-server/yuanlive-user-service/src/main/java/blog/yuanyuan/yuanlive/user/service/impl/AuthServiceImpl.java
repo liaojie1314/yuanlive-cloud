@@ -1,5 +1,6 @@
 package blog.yuanyuan.yuanlive.user.service.impl;
 
+import blog.yuanyuan.yuanlive.common.exception.ApiException;
 import blog.yuanyuan.yuanlive.entity.user.entity.SysUser;
 import blog.yuanyuan.yuanlive.user.domain.dto.CodeDTO;
 import blog.yuanyuan.yuanlive.user.domain.dto.ForgetPassDTO;
@@ -123,16 +124,26 @@ public class AuthServiceImpl implements AuthService {
         if (user == null || !passwordEncoder.matches(loginDTO.getPassword(), user.getPassword())) {
             throw new RuntimeException("账号或密码错误");
         }
+        if (isRepeatLogin(user.getUid(), loginDTO.getDevice(), loginDTO.getDeviceID())) {
+            // 如果重复登陆
+            String accessToken = StpUtil.getTokenValueByLoginId(user.getUid(), loginDTO.getDevice());
+            String refreshToken = StpUtil.getTokenSessionByToken(accessToken).getString("REFRESH_TOKEN");
+            log.info("用户{}在设备{}重复登录", user.getUid(), loginDTO.getDevice());
+            Long expireTimeStamp = getExpireTimeStamp(StpUtil.getTokenTimeout(accessToken));
+            return new LoginVO(accessToken, refreshToken, user.getRole().getCode(), user.getUid().toString(), expireTimeStamp);
+        }
         clearOldRefreshToken(user.getUid(), loginDTO.getDevice());
         StpUtil.login(user.getUid(), loginDTO.getDevice());
         StpUtil.getSession().set("role", user.getRole().name());
+        StpUtil.getTokenSession().set("deviceID", loginDTO.getDeviceID());
         String accessToken = StpUtil.getTokenInfo().getTokenValue();
         String refreshToken = IdUtil.simpleUUID();
         String key = refreshTokenProperties.getPrefix() + refreshToken;
         stringRedisTemplate.opsForValue()
                 .set(key, user.getUid() + ":" + loginDTO.getDevice(), refreshTokenProperties.getTtl(), TimeUnit.valueOf(refreshTokenProperties.getTimeunit()));
         StpUtil.getTokenSession().set("REFRESH_TOKEN", refreshToken);
-        return new LoginVO(accessToken, refreshToken, user.getRole().getCode(), user.getUid());
+        Long expireTimeStamp = getExpireTimeStamp(StpUtil.getTokenTimeout());
+        return new LoginVO(accessToken, refreshToken, user.getRole().getCode(), user.getUid().toString(), expireTimeStamp);
     }
 
     @Override
@@ -152,13 +163,14 @@ public class AuthServiceImpl implements AuthService {
         // 注意：这里必须使用相同的 device，否则会把其他设备的登录挤掉（或者产生错误的设备会话）
         StpUtil.login(userId, device);
         String newTokenInfo = StpUtil.getTokenInfo().getTokenValue();
+        Long expireTimeStamp = getExpireTimeStamp(StpUtil.getTokenTimeout());
 
         // 4. 刷新 Refresh Token 的有效期 (续命)
         stringRedisTemplate.expire(redisKey, refreshTokenProperties.getTtl(), TimeUnit.valueOf(refreshTokenProperties.getTimeunit()));
 
         // 5. 返回新的 Access Token
         // Refresh Token 可以保持不变传回去，也可以生成新的（通常保持不变即可）
-        return new RefreshVO(newTokenInfo, refreshToken);
+        return new RefreshVO(newTokenInfo, refreshToken, expireTimeStamp);
     }
 
     @Override
@@ -175,17 +187,19 @@ public class AuthServiceImpl implements AuthService {
         String key = qrCodeProperties.getPrefix() + uuid;
         String value = stringRedisTemplate.opsForValue().get(key);
         if (value == null) {
-            throw new RuntimeException("二维码已过期");
+            throw new ApiException(ResultCode.QRCODE_EXPIRE);
         }
         // 如果 Value 是 JSON 格式（说明已确认，里面有 Token），则解析它
         if (JSONUtil.isTypeJSON(value)) {
             JSONObject json = JSONUtil.parseObj(value);
             stringRedisTemplate.delete(key);
+            Long expireTimeStamp = getExpireTimeStamp(StpUtil.getTokenTimeout(json.getStr("accessToken")));
             return QrCodeCheckVO.builder()
                     .status(QrCodeStatus.getByStatus(json.getInt("status")).name())
                     .accessToken(json.getStr("accessToken"))
                     .refreshToken(json.getStr("refreshToken"))
                     .uid(json.getStr("uid"))
+                    .expire(expireTimeStamp)
                     .build();
         } else {
             // 还没成功，直接返回状态码 (0 或 1)
@@ -204,7 +218,7 @@ public class AuthServiceImpl implements AuthService {
         String value = stringRedisTemplate.opsForValue().get(key);
         // 1. 基础校验：二维码不存在或已过期
         if (value == null) {
-            return Result.failed(ResultCode.QRCODE_EXPIRE);
+            throw new ApiException(ResultCode.QRCODE_EXPIRE);
         }
         // 2. 解析当前状态
         int status;
@@ -243,7 +257,7 @@ public class AuthServiceImpl implements AuthService {
         }
         String key = qrCodeProperties.getPrefix() + uuid;
         if (!stringRedisTemplate.hasKey(key)) {
-            return Result.failed("二维码已失效");
+            throw new ApiException(ResultCode.QRCODE_EXPIRE);
         }
         // 1. 获取当前操作的手机用户 ID
         long userId = StpUtil.getLoginIdAsLong();
@@ -334,5 +348,29 @@ public class AuthServiceImpl implements AuthService {
                 }
             }
         }
+    }
+
+    private boolean isRepeatLogin(Long uid, String device, String deviceID) {
+        String token = StpUtil.getTokenValueByLoginId(uid, device);
+        if (token == null) {
+            return false;
+        }
+        SaSession tokenSession = StpUtil.getTokenSessionByToken(token);
+        if (tokenSession == null) {
+            return false;
+        }
+        return tokenSession.getString("deviceID").equals(deviceID);
+    }
+
+    private Long getExpireTimeStamp(long timeout) {
+        Long expireTime;
+        if (timeout == -1) {
+            expireTime = -1L;
+        } else if (timeout == -2) {
+            throw new RuntimeException("Token生成异常或已过期");
+        } else {
+            expireTime = System.currentTimeMillis() + timeout * 1000;
+        }
+        return expireTime;
     }
 }

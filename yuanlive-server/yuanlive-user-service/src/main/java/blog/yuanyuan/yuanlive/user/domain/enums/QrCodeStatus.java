@@ -10,7 +10,7 @@ public enum QrCodeStatus {
     WAITING(0, "等待扫码"),
     SCANNED(1, "已扫码"),
     CONFIRMED(2, "已确认"),
-    CANCELED(3, "已取消"),
+//    CANCELED(3, "已取消"),
     TIMEOUT(4, "已过期");
 
     private final int status;

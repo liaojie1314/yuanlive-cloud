@@ -1,5 +1,6 @@
 package blog.yuanyuan.yuanlive.common.handler;
 
+import blog.yuanyuan.yuanlive.common.exception.ApiException;
 import cn.hutool.json.JSONUtil;
 import io.swagger.v3.oas.annotations.Hidden;
 import jakarta.validation.ConstraintViolation;
@@ -44,6 +45,13 @@ public class GlobalExceptionHandler {
                 // 3. 用分号或换行符连接
                 .collect(Collectors.joining("\n"));
         Result<String> result = Result.failed(ResultCode.VALIDATE_FAILED, message);
+        log.warn("Response     : {}", JSONUtil.toJsonStr(result));
+        return result;
+    }
+
+    @ExceptionHandler(ApiException.class)
+    public Result<String> handleException(ApiException e) {
+        Result<String> result = Result.failed(e.getResultCode());
         log.warn("Response     : {}", JSONUtil.toJsonStr(result));
         return result;
     }

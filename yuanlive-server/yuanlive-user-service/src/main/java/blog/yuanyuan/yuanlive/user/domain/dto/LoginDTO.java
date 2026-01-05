@@ -19,4 +19,7 @@ public class LoginDTO {
     @Schema(description = "设备类型：mobile, desktop, web")
     @Pattern(regexp = "^(mobile|desktop|web)$", message = "设备类型只能为：mobile, desktop, web")
     private String device;
+    @Schema(description = "设备ID")
+    @NotBlank(message = "设备ID不能为空")
+    private String deviceID;
 }
