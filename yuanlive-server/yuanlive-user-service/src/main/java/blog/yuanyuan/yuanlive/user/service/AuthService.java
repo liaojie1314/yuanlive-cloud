@@ -19,7 +19,7 @@ public interface AuthService {
 
     RefreshVO refreshToken(String refreshToken);
 
-    QrCodeVO initQrCode();
+    QrCodeVO initQrCode(String deviceID);
 
     QrCodeCheckVO checkQrCodeStatus(String uuid);
 

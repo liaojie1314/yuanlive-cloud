@@ -59,6 +59,10 @@ redis-key:
     prefix: "yuanlive:user:qrcode:"
     ttl: 120
     timeunit: SECONDS
+  user2refresh-token:
+    prefix: "yuanlive:user:user2refresh-token:"
+    ttl: ${redis-key.refresh-token.ttl}
+    timeunit: ${redis-key.refresh-token.timeunit}
 
 
 cosid:

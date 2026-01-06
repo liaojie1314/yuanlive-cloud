@@ -61,8 +61,8 @@ public class AuthController {
 
     @GetMapping("/qrcode/init")
     @Operation(summary = "获取二维码")
-    public Result<QrCodeVO> initQrCode() {
-        return Result.success(authService.initQrCode());
+    public Result<QrCodeVO> initQrCode(@RequestParam("deviceID") String deviceID) {
+        return Result.success(authService.initQrCode(deviceID));
     }
 
     @GetMapping("/qrcode/check")

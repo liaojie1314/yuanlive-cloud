@@ -11,10 +11,7 @@ import blog.yuanyuan.yuanlive.user.domain.vo.LoginVO;
 import blog.yuanyuan.yuanlive.user.domain.vo.QrCodeCheckVO;
 import blog.yuanyuan.yuanlive.user.domain.vo.QrCodeVO;
 import blog.yuanyuan.yuanlive.user.domain.vo.RefreshVO;
-import blog.yuanyuan.yuanlive.user.properties.ForgetProperties;
-import blog.yuanyuan.yuanlive.user.properties.QrCodeProperties;
-import blog.yuanyuan.yuanlive.user.properties.RefreshTokenProperties;
-import blog.yuanyuan.yuanlive.user.properties.RegisterProperties;
+import blog.yuanyuan.yuanlive.user.properties.*;
 import blog.yuanyuan.yuanlive.user.service.AuthService;
 import blog.yuanyuan.yuanlive.user.service.SysUserService;
 import cn.dev33.satoken.session.SaSession;
@@ -52,6 +49,8 @@ public class AuthServiceImpl implements AuthService {
     private ForgetProperties forgetProperties;
     @Resource
     private QrCodeProperties qrCodeProperties;
+    @Resource
+    private User2RefreshTokenProperties user2RefreshTokenProperties;
     @Resource
     private StringRedisTemplate stringRedisTemplate;
     @Resource
@@ -127,7 +126,8 @@ public class AuthServiceImpl implements AuthService {
         if (isRepeatLogin(user.getUid(), loginDTO.getDevice(), loginDTO.getDeviceID())) {
             // 如果重复登陆
             String accessToken = StpUtil.getTokenValueByLoginId(user.getUid(), loginDTO.getDevice());
-            String refreshToken = StpUtil.getTokenSessionByToken(accessToken).getString("REFRESH_TOKEN");
+            String refreshToken = stringRedisTemplate.opsForValue()
+                    .get(user2RefreshTokenProperties.getPrefix() + user.getUid() + ":" + loginDTO.getDevice());
             log.info("用户{}在设备{}重复登录", user.getUid(), loginDTO.getDevice());
             Long expireTimeStamp = getExpireTimeStamp(StpUtil.getTokenTimeout(accessToken));
             return new LoginVO(accessToken, refreshToken, user.getRole().getCode(), user.getUid().toString(), expireTimeStamp);
@@ -141,7 +141,11 @@ public class AuthServiceImpl implements AuthService {
         String key = refreshTokenProperties.getPrefix() + refreshToken;
         stringRedisTemplate.opsForValue()
                 .set(key, user.getUid() + ":" + loginDTO.getDevice(), refreshTokenProperties.getTtl(), TimeUnit.valueOf(refreshTokenProperties.getTimeunit()));
-        StpUtil.getTokenSession().set("REFRESH_TOKEN", refreshToken);
+//        StpUtil.getTokenSession().set("REFRESH_TOKEN", refreshToken);
+        // 保存用户登录设备与refreshToken的映射关系
+        String mappingKey = user2RefreshTokenProperties.getPrefix() + user.getUid() + ":" + loginDTO.getDevice();
+        stringRedisTemplate.opsForValue()
+                .set(mappingKey, refreshToken, user2RefreshTokenProperties.getTtl(), TimeUnit.valueOf(user2RefreshTokenProperties.getTimeunit()));
         Long expireTimeStamp = getExpireTimeStamp(StpUtil.getTokenTimeout());
         return new LoginVO(accessToken, refreshToken, user.getRole().getCode(), user.getUid().toString(), expireTimeStamp);
     }
@@ -174,11 +178,11 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public QrCodeVO initQrCode() {
+    public QrCodeVO initQrCode(String deviceID) {
         String uuid = IdUtil.simpleUUID();
         String key = qrCodeProperties.getPrefix() + uuid;
         stringRedisTemplate.opsForValue()
-                .set(key, String.valueOf(QrCodeStatus.WAITING.getStatus()), qrCodeProperties.getTtl(), TimeUnit.valueOf(qrCodeProperties.getTimeunit()));
+                .set(key, QrCodeStatus.WAITING.getStatus() + ":" + deviceID, qrCodeProperties.getTtl(), TimeUnit.valueOf(qrCodeProperties.getTimeunit()));
         return new QrCodeVO(uuid, "yuanlive://auth/login?uuid=" + uuid);
     }
 
@@ -199,12 +203,11 @@ public class AuthServiceImpl implements AuthService {
                     .accessToken(json.getStr("accessToken"))
                     .refreshToken(json.getStr("refreshToken"))
                     .uid(json.getStr("uid"))
-                    .expire(expireTimeStamp)
-                    .build();
+                    .expire(expireTimeStamp)                    .build();
         } else {
             // 还没成功，直接返回状态码 (0 或 1)
             return QrCodeCheckVO.builder()
-                    .status(QrCodeStatus.getByStatus(Integer.parseInt(value)).name())
+                    .status(QrCodeStatus.getByStatus(Integer.parseInt(value.split(":")[0])).name())
                     .build();
         }
     }
@@ -228,7 +231,7 @@ public class AuthServiceImpl implements AuthService {
                 JSONObject json = JSONUtil.parseObj(value);
                 status = json.getInt("status");
             } else {
-                status = Integer.parseInt(value);
+                status = Integer.parseInt(value.split(":")[0]);
             }
         } catch (Exception e) {
             return Result.failed("二维码状态异常");
@@ -246,7 +249,7 @@ public class AuthServiceImpl implements AuthService {
                 return Result.failed("无效的二维码状态");
         }
         // 4. 更新状态为 1 (SCANNED)
-        stringRedisTemplate.opsForValue().set(key, String.valueOf(QrCodeStatus.SCANNED.getStatus()));
+        stringRedisTemplate.opsForValue().set(key, QrCodeStatus.SCANNED.getStatus() + ":" + value.split(":")[1]);
         return Result.success("扫码成功");
     }
 
@@ -259,18 +262,29 @@ public class AuthServiceImpl implements AuthService {
         if (!stringRedisTemplate.hasKey(key)) {
             throw new ApiException(ResultCode.QRCODE_EXPIRE);
         }
+        // 不能重复确认
+        if (JSONUtil.isTypeJSON(stringRedisTemplate.opsForValue().get(key))) {
+            return Result.failed("二维码已确认");
+        }
         // 1. 获取当前操作的手机用户 ID
         long userId = StpUtil.getLoginIdAsLong();
-        // 清除web端旧 Refresh Token
-        clearOldRefreshToken(userId, "web");
-        // 2. 关键：为 web 端生成一个独立的 Token
-        String pcToken = StpUtil.createLoginSession(userId, SaLoginParameter.create().setDeviceType("web"));
+        // 清除desktop端旧 Refresh Token
+        clearOldRefreshToken(userId, "desktop");
+        String str = stringRedisTemplate.opsForValue().get(key);
+        String deviceID = str.split(":")[1];
+        // 2. 关键：为 desktop 端生成一个独立的 Token
+        String pcToken = StpUtil.createLoginSession(userId, SaLoginParameter.create().setDeviceType("desktop"));
         // 3. 构造要存入 Redis 的数据 (状态 + Token)
         String refreshToken = IdUtil.simpleUUID();
         String refreshKey = refreshTokenProperties.getPrefix() + refreshToken;
         stringRedisTemplate.opsForValue()
-                .set(refreshKey, userId + ":" + "web", refreshTokenProperties.getTtl(), TimeUnit.valueOf(refreshTokenProperties.getTimeunit()));
-        StpUtil.getTokenSessionByToken(pcToken).set("REFRESH_TOKEN", refreshToken);
+                .set(refreshKey, userId + ":" + "desktop", refreshTokenProperties.getTtl(), TimeUnit.valueOf(refreshTokenProperties.getTimeunit()));
+//        StpUtil.getTokenSessionByToken(pcToken).set("REFRESH_TOKEN", refreshToken);
+        // 保存用户登录设备与refreshToken的映射关系
+        String mappingKey = user2RefreshTokenProperties.getPrefix() + userId + ":" + "desktop";
+        stringRedisTemplate.opsForValue()
+                .set(mappingKey, refreshToken, user2RefreshTokenProperties.getTtl(), TimeUnit.valueOf(user2RefreshTokenProperties.getTimeunit()));
+        StpUtil.getTokenSessionByToken(pcToken).set("deviceID", deviceID);
         Map<String, Object> data = new HashMap<>();
         data.put("status", QrCodeStatus.CONFIRMED.getStatus());
         data.put("accessToken", pcToken);
@@ -336,17 +350,14 @@ public class AuthServiceImpl implements AuthService {
     }
 
     private void clearOldRefreshToken(Long uid, String device) {
-        String oldAccessToken = StpUtil.getTokenValueByLoginId(uid, device);
-        if (oldAccessToken != null) {
-            SaSession oldSession = StpUtil.getTokenSessionByToken(oldAccessToken);
-
-            if (oldSession != null) {
-                String oldRefreshToken = oldSession.getString("REFRESH_TOKEN");
-                if (oldRefreshToken != null) {
-                    String rtKey = refreshTokenProperties.getPrefix() + oldRefreshToken;
-                    stringRedisTemplate.delete(rtKey);
-                }
+        String mappingKey = user2RefreshTokenProperties.getPrefix() + uid + ":" + device;
+        if (stringRedisTemplate.hasKey(mappingKey)) {
+            String refreshToken = stringRedisTemplate.opsForValue().get(mappingKey);
+            if (refreshToken != null) {
+                String refreshKey = refreshTokenProperties.getPrefix() + refreshToken;
+                stringRedisTemplate.delete(refreshKey);
             }
+            stringRedisTemplate.delete(mappingKey);
         }
     }
 
