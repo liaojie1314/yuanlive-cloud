@@ -63,7 +63,8 @@
 
     ```yaml
     sa-token:
-      token-name: Token
+      token-name: token
+      token-prefix: Bearer
       timeout: 7200
       is-concurrent: false
       is-share: false

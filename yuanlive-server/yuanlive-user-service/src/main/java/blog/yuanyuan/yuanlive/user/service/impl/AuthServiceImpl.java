@@ -380,7 +380,7 @@ public class AuthServiceImpl implements AuthService {
         } else if (timeout == -2) {
             throw new RuntimeException("Token生成异常或已过期");
         } else {
-            expireTime = System.currentTimeMillis() + timeout * 1000;
+            expireTime = (System.currentTimeMillis() + timeout * 1000) / 1000;
         }
         return expireTime;
     }
