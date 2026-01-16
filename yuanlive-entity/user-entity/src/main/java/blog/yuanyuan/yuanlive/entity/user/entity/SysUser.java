@@ -2,12 +2,15 @@ package blog.yuanyuan.yuanlive.entity.user.entity;
 
 
 import java.util.Date;
+
+import com.baomidou.mybatisplus.annotation.TableId;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 @Data
 public class SysUser {
     @Schema(description="用户ID")
+    @TableId
     private Long uid;
     @Schema(description="用户名")
     private String username;

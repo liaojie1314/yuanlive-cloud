@@ -2,12 +2,15 @@ package blog.yuanyuan.yuanlive.entity.user.entity;
 
 
 import java.util.Date;
+
+import com.baomidou.mybatisplus.annotation.TableId;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 @Data
 public class SysRole {
     @Schema(description="")
+    @TableId
     private Long roleId;
     @Schema(description="角色名称(汉字)")
     private String roleName;

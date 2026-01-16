@@ -2,19 +2,22 @@ package blog.yuanyuan.yuanlive.entity.user.entity;
 
 
 import java.util.Date;
+
+import com.baomidou.mybatisplus.annotation.TableId;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 @Data
 public class SysMenu {
     @Schema(description="")
+    @TableId
     private Long menuId;
     @Schema(description="菜单/权限名称")
-    private String menuName;
+    private String name;
     @Schema(description="父菜单ID")
     private Long parentId;
     @Schema(description="显示顺序")
-    private Integer orderNum;
+    private Integer sort;
     @Schema(description="路由地址")
     private String path;
     @Schema(description="前端组件路径")
@@ -29,4 +32,8 @@ public class SysMenu {
     private Date createTime;
     @Schema(description="")
     private Date updateTime;
+    @Schema(description="菜单名称/标题")
+    private String title;
+    @Schema(description="是否显示启用(0 -> 隐藏，1 -> 显示)")
+    private Integer isVisible;
 }

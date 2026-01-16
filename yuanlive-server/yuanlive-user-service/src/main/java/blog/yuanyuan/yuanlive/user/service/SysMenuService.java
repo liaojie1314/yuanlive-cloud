@@ -3,6 +3,11 @@ package blog.yuanyuan.yuanlive.user.service;
 import blog.yuanyuan.yuanlive.entity.user.entity.SysMenu;
 import com.baomidou.mybatisplus.extension.service.IService;
 
+import blog.yuanyuan.yuanlive.user.domain.dto.MenuDTO;
+import blog.yuanyuan.yuanlive.user.domain.vo.MenuVO;
+
+import java.util.List;
+
 /**
 * @author frodepu
 * @description 针对表【sys_menu(菜单权限表)】的数据库操作Service
@@ -10,5 +15,11 @@ import com.baomidou.mybatisplus.extension.service.IService;
 */
 public interface SysMenuService extends IService<SysMenu> {
 
-    boolean addMenu(SysMenu menu);
+    List<MenuVO> treeList();
+
+    boolean addMenu(MenuDTO menuDTO);
+
+    boolean updateMenu(MenuDTO menuDTO);
+
+    boolean removeMenuById(Long menuId);
 }

@@ -1,7 +1,9 @@
 package blog.yuanyuan.yuanlive.gateway.config;
 
 import blog.yuanyuan.yuanlive.common.result.ResultCode;
+import blog.yuanyuan.yuanlive.entity.user.entity.UserRoleEnum;
 import cn.dev33.satoken.exception.NotLoginException;
+import cn.dev33.satoken.exception.NotRoleException;
 import cn.dev33.satoken.reactor.filter.SaReactorFilter;
 import cn.dev33.satoken.router.SaRouter;
 import cn.dev33.satoken.stp.StpUtil;
@@ -48,14 +50,20 @@ public class SaTokenConfig {
                 .setAuth(obj -> {
                     // 登录校验 -- 拦截所有路由，并排除/user/doLogin 用于开放登录
                     SaRouter.match("/**",  r -> StpUtil.checkLogin());
+                    SaRouter.match("/user/menu/**", r -> StpUtil.checkRole(UserRoleEnum.ADMIN.name()));
                 })
                 // 异常处理方法：每次setAuth函数出现异常时进入
                 .setError(e -> {
                     Result<Object> result = Result.failed(e.getMessage());
-                    NotLoginException exception = (NotLoginException) e;
-                    if (exception.getType().equals(NotLoginException.INVALID_TOKEN)) {
-                        result.setCode(ResultCode.TOKEN_EXPIRED.getCode());
-                        result.setMsg(ResultCode.TOKEN_EXPIRED.getMsg());
+                    if (e instanceof NotLoginException exception) {
+                        if (exception.getType().equals(NotLoginException.INVALID_TOKEN)) {
+                            result.setCode(ResultCode.TOKEN_EXPIRED.getCode());
+                            result.setMsg(ResultCode.TOKEN_EXPIRED.getMsg());
+                        }
+                    }
+                    if (e instanceof NotRoleException) {
+                        result.setCode(ResultCode.FORBIDDEN.getCode());
+                        result.setMsg(ResultCode.FORBIDDEN.getMsg());
                     }
                     try {
                         return new ObjectMapper().writeValueAsString(result);
