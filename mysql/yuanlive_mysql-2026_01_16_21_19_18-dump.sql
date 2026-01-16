@@ -24,9 +24,9 @@ DROP TABLE IF EXISTS `sys_menu`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `sys_menu` (
   `menu_id` bigint NOT NULL AUTO_INCREMENT,
-  `menu_name` varchar(50) NOT NULL COMMENT '菜单/权限名称',
+  `name` varchar(50) NOT NULL COMMENT '菜单/权限名称',
   `parent_id` bigint DEFAULT '0' COMMENT '父菜单ID',
-  `order_num` int DEFAULT '0' COMMENT '显示顺序',
+  `sort` int DEFAULT '0' COMMENT '显示顺序',
   `path` varchar(200) DEFAULT '' COMMENT '路由地址',
   `component` varchar(255) DEFAULT NULL COMMENT '前端组件路径',
   `menu_type` char(1) DEFAULT '' COMMENT '类型:M-目录,C-菜单,F-按钮',
@@ -34,8 +34,10 @@ CREATE TABLE `sys_menu` (
   `icon` varchar(100) DEFAULT '#' COMMENT '图标',
   `create_time` datetime DEFAULT CURRENT_TIMESTAMP,
   `update_time` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `title` varchar(50) DEFAULT NULL COMMENT '菜单名称/标题',
+  `is_visible` tinyint(1) DEFAULT '1' COMMENT '是否显示启用(0 -> 隐藏，1 -> 显示)',
   PRIMARY KEY (`menu_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='菜单权限表';
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='菜单权限表';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -138,4 +140,4 @@ CREATE TABLE `undo_log` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-01-02 17:06:30
+-- Dump completed on 2026-01-16 21:19:19

@@ -12,6 +12,20 @@ spring:
     gateway:
       server:
         webflux:
+          globalcors:
+            add-to-simple-url-handler-mapping: true
+            cors-configurations:
+              '[/**]': # 拦截所有请求
+                allowedOriginPatterns: "*"  # 允许所有来源 (支持带 Cookie)
+                allowedMethods: # 允许的 HTTP 方法
+                  - GET
+                  - POST
+                  - PUT
+                  - DELETE
+                  - OPTIONS
+                allowedHeaders: "*"         # 允许所有请求头 (Authorization, Content-Type, traceId 等)
+                allowCredentials: true      # 允许携带 Cookie/凭证
+                maxAge: 3600                # 跨域检测有效期 (秒)
           routes:
             - id: user-service
               uri: lb://user-service
