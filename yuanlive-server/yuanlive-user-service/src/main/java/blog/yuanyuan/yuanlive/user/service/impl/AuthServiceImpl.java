@@ -1,16 +1,15 @@
 package blog.yuanyuan.yuanlive.user.service.impl;
 
 import blog.yuanyuan.yuanlive.common.exception.ApiException;
+import blog.yuanyuan.yuanlive.entity.user.entity.SysRole;
 import blog.yuanyuan.yuanlive.entity.user.entity.SysUser;
+import blog.yuanyuan.yuanlive.entity.user.entity.UserRoleEnum;
 import blog.yuanyuan.yuanlive.user.domain.dto.CodeDTO;
 import blog.yuanyuan.yuanlive.user.domain.dto.ForgetPassDTO;
 import blog.yuanyuan.yuanlive.user.domain.dto.LoginDTO;
 import blog.yuanyuan.yuanlive.user.domain.dto.RegisterDTO;
 import blog.yuanyuan.yuanlive.user.domain.enums.QrCodeStatus;
-import blog.yuanyuan.yuanlive.user.domain.vo.LoginVO;
-import blog.yuanyuan.yuanlive.user.domain.vo.QrCodeCheckVO;
-import blog.yuanyuan.yuanlive.user.domain.vo.QrCodeVO;
-import blog.yuanyuan.yuanlive.user.domain.vo.RefreshVO;
+import blog.yuanyuan.yuanlive.user.domain.vo.*;
 import blog.yuanyuan.yuanlive.user.properties.*;
 import blog.yuanyuan.yuanlive.user.service.AuthService;
 import blog.yuanyuan.yuanlive.user.service.SysUserService;
@@ -18,6 +17,7 @@ import cn.dev33.satoken.session.SaSession;
 import cn.dev33.satoken.stp.StpUtil;
 import cn.dev33.satoken.stp.parameter.SaLoginParameter;
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.lang.Validator;
 import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.StrUtil;
@@ -32,10 +32,7 @@ import org.springframework.stereotype.Service;
 import blog.yuanyuan.yuanlive.common.result.Result;
 import blog.yuanyuan.yuanlive.common.result.ResultCode;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Random;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 @Service
@@ -61,6 +58,8 @@ public class AuthServiceImpl implements AuthService {
     private PasswordEncoder passwordEncoder;
     @Resource
     private IdGeneratorProvider idGeneratorProvider;
+    @Resource
+    private SysUserService userService;
 
     @Override
     public void getCode(CodeDTO codeDTO) {
@@ -134,7 +133,17 @@ public class AuthServiceImpl implements AuthService {
         }
         clearOldRefreshToken(user.getUid(), loginDTO.getDevice());
         StpUtil.login(user.getUid(), loginDTO.getDevice());
-        StpUtil.getSession().set("role", user.getRole().name());
+        // 设置用户角色与权限
+        if (user.getRole() == UserRoleEnum.ADMIN) {
+            // 如果为管理员获取具体分配的角色
+            UserVO userVO = userService.getUserById(user.getUid());
+            List<String> roles = new ArrayList<>(userVO.getRoles().stream().map(SysRole::getRoleKey).toList());
+            roles.add(UserRoleEnum.ADMIN.name());
+            String join = String.join(",", roles);
+            StpUtil.getSession().set("role", join);
+        } else {
+            StpUtil.getSession().set("role", user.getRole().name());
+        }
         StpUtil.getTokenSession().set("deviceID", loginDTO.getDeviceID());
         String accessToken = StpUtil.getTokenInfo().getTokenValue();
         String refreshToken = IdUtil.simpleUUID();

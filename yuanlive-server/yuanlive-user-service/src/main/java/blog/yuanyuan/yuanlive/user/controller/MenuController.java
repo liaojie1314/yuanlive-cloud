@@ -19,7 +19,7 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/menu")
-@Tag(name = "菜单管理", description = "菜单管理")
+@Tag(name = "menu-controller", description = "菜单管理")
 public class MenuController {
 
     @Resource

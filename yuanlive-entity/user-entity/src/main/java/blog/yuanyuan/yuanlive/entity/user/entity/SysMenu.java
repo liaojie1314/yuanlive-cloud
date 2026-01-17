@@ -3,6 +3,7 @@ package blog.yuanyuan.yuanlive.entity.user.entity;
 
 import java.util.Date;
 
+import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
@@ -10,7 +11,7 @@ import lombok.Data;
 @Data
 public class SysMenu {
     @Schema(description="")
-    @TableId
+    @TableId(type = IdType.AUTO)
     private Long menuId;
     @Schema(description="菜单/权限名称")
     private String name;

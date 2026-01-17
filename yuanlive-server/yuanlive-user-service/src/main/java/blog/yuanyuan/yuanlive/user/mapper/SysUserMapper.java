@@ -1,7 +1,12 @@
 package blog.yuanyuan.yuanlive.user.mapper;
 
 import blog.yuanyuan.yuanlive.entity.user.entity.SysUser;
+import blog.yuanyuan.yuanlive.user.domain.dto.UserQueryDTO;
+import blog.yuanyuan.yuanlive.user.domain.vo.UserVO;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import org.apache.ibatis.annotations.Param;
+
+import java.util.List;
 
 /**
 * @author frodepu
@@ -11,6 +16,9 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 */
 public interface SysUserMapper extends BaseMapper<SysUser> {
 
+    UserVO getUserVOByID(Long userId);
+
+    List<UserVO> getUserVOByIDs(@Param("userIds") List<Long> userIds);
 }
 
 

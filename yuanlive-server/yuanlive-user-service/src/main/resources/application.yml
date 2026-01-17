@@ -41,6 +41,9 @@ spring:
 mybatis-plus:
   mapper-locations: classpath*:mapper/*.xml
   type-aliases-package: blog.yuanyuan.yuanlive.entity.user.entity
+  global-config:
+    db-config:
+      id-type: auto
 
 redis-key:
   register:

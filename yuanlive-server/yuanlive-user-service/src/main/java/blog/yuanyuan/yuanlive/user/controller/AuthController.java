@@ -7,6 +7,7 @@ import blog.yuanyuan.yuanlive.user.domain.vo.QrCodeVO;
 import blog.yuanyuan.yuanlive.user.domain.vo.RefreshVO;
 import blog.yuanyuan.yuanlive.user.service.AuthService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -14,6 +15,7 @@ import blog.yuanyuan.yuanlive.common.result.Result;
 
 @RestController
 @RequestMapping("/auth")
+@Tag(name = "auth-controller", description = "认证管理")
 public class AuthController {
     @Resource
     private AuthService authService;

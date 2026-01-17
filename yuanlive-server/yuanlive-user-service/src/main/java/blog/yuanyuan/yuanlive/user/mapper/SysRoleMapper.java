@@ -1,6 +1,7 @@
 package blog.yuanyuan.yuanlive.user.mapper;
 
 import blog.yuanyuan.yuanlive.entity.user.entity.SysRole;
+import blog.yuanyuan.yuanlive.user.domain.vo.RoleVO;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 
 /**
@@ -10,7 +11,7 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 * @Entity blog.yuanyuan.yuanlive.entity.user.entity.SysRole
 */
 public interface SysRoleMapper extends BaseMapper<SysRole> {
-
+    RoleVO getRoleVOByID(Long roleId);
 }
 
 

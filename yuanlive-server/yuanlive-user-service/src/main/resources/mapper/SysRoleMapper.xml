@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="blog.yuanyuan.yuanlive.user.mapper.SysRoleMapper">
+
+    <resultMap id="BaseResultMap" type="blog.yuanyuan.yuanlive.entity.user.entity.SysRole">
+            <id property="roleId" column="role_id" />
+            <result property="roleName" column="role_name" />
+            <result property="roleKey" column="role_key" />
+            <result property="status" column="status" />
+            <result property="createTime" column="create_time" />
+            <result property="updateTime" column="update_time" />
+    </resultMap>
+    <resultMap id="getRoleVOByID" type="blog.yuanyuan.yuanlive.user.domain.vo.RoleVO"
+            extends="blog.yuanyuan.yuanlive.user.mapper.SysRoleMapper.BaseResultMap">
+        <collection property="menus" columnPrefix="menu_" resultMap="blog.yuanyuan.yuanlive.user.mapper.SysMenuMapper.BaseResultMap"/>
+    </resultMap>
+
+    <select id="getRoleVOByID" resultMap="getRoleVOByID" parameterType="java.lang.Long">
+        select ro.*,
+               me.menu_id     as menu_menu_id,
+               me.name        as menu_name,
+               me.parent_id   as menu_parent_id,
+               me.sort        as menu_sort,
+               me.path        as menu_path,
+               me.component   as menu_component,
+               me.menu_type   as menu_menu_type,
+               me.perms       as menu_perms,
+               me.icon        as menu_icon,
+               me.create_time as menu_create_time,
+               me.update_time as menu_update_time
+
+        from sys_role ro
+                 left join sys_role_menu on ro.role_id = sys_role_menu.role_id
+                 left join sys_menu me on sys_role_menu.menu_id = me.menu_id
+    </select>
+</mapper>
