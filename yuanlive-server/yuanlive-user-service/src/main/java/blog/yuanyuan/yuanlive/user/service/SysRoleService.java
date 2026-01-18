@@ -1,6 +1,7 @@
 package blog.yuanyuan.yuanlive.user.service;
 
 import blog.yuanyuan.yuanlive.common.result.ResultPage;
+import blog.yuanyuan.yuanlive.entity.user.entity.SysMenu;
 import blog.yuanyuan.yuanlive.entity.user.entity.SysRole;
 import blog.yuanyuan.yuanlive.user.domain.dto.RoleDTO;
 import blog.yuanyuan.yuanlive.user.domain.dto.RoleQueryDTO;
@@ -50,4 +51,8 @@ public interface SysRoleService extends IService<SysRole> {
      * @return 分页结果
      */
     ResultPage<RoleVO> pageRoles(RoleQueryDTO queryDTO);
+
+    Boolean grantAll(String roleKey);
+
+    List<SysMenu> getRolesMenus(List<Long> roleIds);
 }

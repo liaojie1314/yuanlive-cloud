@@ -3,7 +3,6 @@ package blog.yuanyuan.yuanlive.entity.user.entity;
 
 import java.util.Date;
 
-import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
@@ -11,7 +10,7 @@ import lombok.Data;
 @Data
 public class SysMenu {
     @Schema(description="")
-    @TableId(type = IdType.AUTO)
+    @TableId
     private Long menuId;
     @Schema(description="菜单/权限名称")
     private String name;
@@ -37,4 +36,6 @@ public class SysMenu {
     private String title;
     @Schema(description="是否显示启用(0 -> 隐藏，1 -> 显示)")
     private Integer isVisible;
+    @Schema(description="是否缓存 0否 1是")
+    private Integer isCache;
 }

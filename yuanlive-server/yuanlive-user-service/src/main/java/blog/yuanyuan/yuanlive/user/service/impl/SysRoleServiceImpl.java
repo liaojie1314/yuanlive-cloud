@@ -1,12 +1,15 @@
 package blog.yuanyuan.yuanlive.user.service.impl;
 
+import blog.yuanyuan.yuanlive.common.exception.ApiException;
 import blog.yuanyuan.yuanlive.common.result.ResultPage;
+import blog.yuanyuan.yuanlive.entity.user.entity.SysMenu;
 import blog.yuanyuan.yuanlive.entity.user.entity.SysRole;
 import blog.yuanyuan.yuanlive.entity.user.entity.SysRoleMenu;
 import blog.yuanyuan.yuanlive.user.domain.dto.RoleDTO;
 import blog.yuanyuan.yuanlive.user.domain.dto.RoleQueryDTO;
 import blog.yuanyuan.yuanlive.user.domain.vo.RoleVO;
 import blog.yuanyuan.yuanlive.user.mapper.SysRoleMapper;
+import blog.yuanyuan.yuanlive.user.service.SysMenuService;
 import blog.yuanyuan.yuanlive.user.service.SysRoleMenuService;
 import blog.yuanyuan.yuanlive.user.service.SysRoleService;
 import cn.hutool.core.bean.BeanUtil;
@@ -37,6 +40,8 @@ public class SysRoleServiceImpl extends ServiceImpl<SysRoleMapper, SysRole>
     SysRoleMenuService roleMenuService;
     @Resource
     SysRoleMapper sysRoleMapper;
+    @Resource
+    SysMenuService menuService;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -101,6 +106,36 @@ public class SysRoleServiceImpl extends ServiceImpl<SysRoleMapper, SysRole>
         Page<RoleVO> pageVO = new Page<>(page.getCurrent(), page.getSize(), page.getTotal());
         pageVO.setRecords(vos);
         return ResultPage.of(pageVO);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Boolean grantAll(String roleKey) {
+        // 1. 根据 Key 查询角色
+        SysRole role = this.lambdaQuery().eq(SysRole::getRoleKey, roleKey).one();
+        if (role == null) {
+            throw new ApiException("角色不存在: " + roleKey);
+        }
+        Long roleId = role.getRoleId();
+        // 2. 查询所有菜单的 ID 列表
+        // 只查 ID 列，性能更好
+        List<Long> allMenuIds = menuService.listObjs(
+                new LambdaQueryWrapper<SysMenu>().select(SysMenu::getMenuId)
+        );
+        if (allMenuIds.isEmpty()) {
+            return false;
+        }
+        // 3. 删除该角色原有的所有权限 (清理旧数据)
+        roleMenuService.remove(
+                new LambdaQueryWrapper<SysRoleMenu>().eq(SysRoleMenu::getRoleId, roleId)
+        );
+        // 4. 批量插入
+        insertRoleMenu(roleId, allMenuIds);
+        return true;
+    }
+
+    public List<SysMenu> getRolesMenus(List<Long> roleIds) {
+        return sysRoleMapper.getRolesMenus(roleIds);
     }
 
     private void insertRoleMenu(Long roleId, List<Long> menuIds) {

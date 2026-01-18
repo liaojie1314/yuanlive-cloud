@@ -39,5 +39,10 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-mail</artifactId>
         </dependency>
+        <dependency>
+            <groupId>blog.yuanyuan</groupId>
+            <artifactId>common-security</artifactId>
+            <version>${revision}</version>
+        </dependency>
     </dependencies>
 </project>

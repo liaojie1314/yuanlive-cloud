@@ -22,8 +22,8 @@ public class RoleDTO {
     @NotBlank(message = "角色名称不能为空")
     private String roleName;
 
-    @Schema(description = "角色权限字符串")
-    @NotBlank(message = "角色权限字符串不能为空")
+    @Schema(description = "角色字符串")
+    @NotBlank(message = "角色字符串不能为空")
     private String roleKey;
 
     @Schema(description = "状态:1-正常,0-停用")

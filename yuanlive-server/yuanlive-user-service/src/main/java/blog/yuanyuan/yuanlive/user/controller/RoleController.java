@@ -6,6 +6,7 @@ import blog.yuanyuan.yuanlive.user.domain.dto.RoleDTO;
 import blog.yuanyuan.yuanlive.user.domain.dto.RoleQueryDTO;
 import blog.yuanyuan.yuanlive.user.domain.vo.RoleVO;
 import blog.yuanyuan.yuanlive.user.service.SysRoleService;
+import cn.dev33.satoken.annotation.SaCheckRole;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
@@ -61,5 +62,15 @@ public class RoleController {
     @Operation(summary = "分页查询角色列表")
     public Result<ResultPage<RoleVO>> list(@ParameterObject RoleQueryDTO queryDTO) {
         return Result.success(roleService.pageRoles(queryDTO));
+    }
+
+    @PostMapping("/grantAll")
+    @Operation(summary = "为指定角色分配所有权限 需要super-admin角色")
+    @SaCheckRole("super-admin")
+    public Result<String> grantAll(@RequestParam("roleKey") String roleKey) {
+        if (roleService.grantAll(roleKey)) {
+            return Result.success(null, "分配成功");
+        }
+        return Result.failed("分配失败,权限菜单为空");
     }
 }

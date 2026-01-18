@@ -27,7 +27,6 @@ public class MenuController {
 
     @GetMapping("/tree")
     @Operation(summary = "获取菜单树")
-    @SaCheckRole("admin")
     public Result<List<MenuVO>> tree() {
         return Result.success(sysMenuService.treeList());
     }

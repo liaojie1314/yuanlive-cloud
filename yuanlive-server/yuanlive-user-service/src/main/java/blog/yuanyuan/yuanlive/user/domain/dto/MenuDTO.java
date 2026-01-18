@@ -18,7 +18,6 @@ public class MenuDTO {
     private Long menuId;
 
     @Schema(description = "菜单/权限名称")
-    @NotBlank(message = "菜单名称不能为空")
     private String name;
 
     @Schema(description = "父菜单ID")
@@ -50,4 +49,7 @@ public class MenuDTO {
 
     @Schema(description = "是否显示启用(0 -> 隐藏，1 -> 显示)")
     private Integer isVisible;
+
+    @Schema(description = "是否缓存 0否 1是")
+    private Integer isCache;
 }

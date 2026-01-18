@@ -4,6 +4,7 @@ import blog.yuanyuan.yuanlive.common.result.ResultPage;
 import blog.yuanyuan.yuanlive.entity.user.entity.SysUser;
 import blog.yuanyuan.yuanlive.user.domain.dto.UserQueryDTO;
 import blog.yuanyuan.yuanlive.user.domain.dto.UserRoleDTO;
+import blog.yuanyuan.yuanlive.user.domain.vo.RouterVO;
 import blog.yuanyuan.yuanlive.user.domain.vo.UserVO;
 import com.baomidou.mybatisplus.extension.service.IService;
 
@@ -51,4 +52,5 @@ public interface SysUserService extends IService<SysUser> {
      */
     boolean assignRoles(UserRoleDTO userRoleDTO);
 
+    List<RouterVO> getRouters();
 }

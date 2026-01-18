@@ -8,7 +8,7 @@ import org.springframework.context.annotation.ComponentScan;
 
 @SpringBootApplication
 @MapperScan("blog.yuanyuan.yuanlive.user.mapper")
-@ComponentScan(basePackages = {"blog.yuanyuan.yuanlive.user", "blog.yuanyuan.yuanlive.common"})
+@ComponentScan(basePackages = {"blog.yuanyuan.yuanlive"})
 public class UserApplication {
 
     public static void main(String[] args) {

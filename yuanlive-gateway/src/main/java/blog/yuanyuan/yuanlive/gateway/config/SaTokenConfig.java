@@ -50,7 +50,8 @@ public class SaTokenConfig {
                 .setAuth(obj -> {
                     // 登录校验 -- 拦截所有路由，并排除/user/doLogin 用于开放登录
                     SaRouter.match("/**",  r -> StpUtil.checkLogin());
-                    SaRouter.match("/user/menu/**", r -> StpUtil.checkPermission("menu"));
+                    SaRouter.match("/user/menu/**", r -> StpUtil.checkRole(UserRoleEnum.ADMIN.name()));
+                    SaRouter.match("/user/admin/**", r -> StpUtil.checkRole(UserRoleEnum.ADMIN.name()));
                 })
                 // 异常处理方法：每次setAuth函数出现异常时进入
                 .setError(e -> {
@@ -70,7 +71,6 @@ public class SaTokenConfig {
                     } catch (JsonProcessingException ex) {
                         throw new RuntimeException(ex);
                     }
-                })
-                ;
+                });
     }
 }

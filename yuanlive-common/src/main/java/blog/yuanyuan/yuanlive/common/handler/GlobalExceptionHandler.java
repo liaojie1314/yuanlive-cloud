@@ -1,6 +1,7 @@
 package blog.yuanyuan.yuanlive.common.handler;
 
 import blog.yuanyuan.yuanlive.common.exception.ApiException;
+import cn.dev33.satoken.exception.NotRoleException;
 import cn.hutool.json.JSONUtil;
 import io.swagger.v3.oas.annotations.Hidden;
 import jakarta.validation.ConstraintViolation;
@@ -52,6 +53,14 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(ApiException.class)
     public Result<String> handleException(ApiException e) {
         Result<String> result = Result.failed(e.getResultCode());
+        result.setMsg(e.getMessage());
+        log.warn("Response     : {}", JSONUtil.toJsonStr(result));
+        return result;
+    }
+
+    @ExceptionHandler(NotRoleException.class)
+    public Result<String> handleException(NotRoleException e) {
+        Result<String> result = Result.failed(ResultCode.FORBIDDEN);
         log.warn("Response     : {}", JSONUtil.toJsonStr(result));
         return result;
     }

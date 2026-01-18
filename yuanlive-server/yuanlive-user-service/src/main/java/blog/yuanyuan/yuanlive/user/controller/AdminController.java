@@ -4,6 +4,7 @@ import blog.yuanyuan.yuanlive.common.result.Result;
 import blog.yuanyuan.yuanlive.common.result.ResultPage;
 import blog.yuanyuan.yuanlive.user.domain.dto.UserQueryDTO;
 import blog.yuanyuan.yuanlive.user.domain.dto.UserRoleDTO;
+import blog.yuanyuan.yuanlive.user.domain.vo.RouterVO;
 import blog.yuanyuan.yuanlive.user.domain.vo.UserVO;
 import blog.yuanyuan.yuanlive.user.service.SysUserService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -16,9 +17,9 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/user")
-@Tag(name = "user-controller", description = "用户管理")
-public class UserController {
+@RequestMapping("/admin")
+@Tag(name = "admin-controller", description = "管理端接口")
+public class AdminController {
 
     @Resource
     SysUserService userService;
@@ -57,6 +58,12 @@ public class UserController {
     @Operation(summary = "为用户分配角色")
     public Result<Boolean> assignRoles(@RequestBody @Validated UserRoleDTO userRoleDTO) {
         return Result.success(userService.assignRoles(userRoleDTO));
+    }
+
+    @GetMapping("/getRouters")
+    @Operation(summary = "获取管理端用户路由")
+    public Result<List<RouterVO>> getRouters() {
+        return Result.success(userService.getRouters());
     }
 
 }
