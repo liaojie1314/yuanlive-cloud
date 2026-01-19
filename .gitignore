@@ -45,3 +45,4 @@ docker/nacos
 docker/SrsConfig/logs
 docker/SrsConfig/nginx
 docker/minio
+docker/rabbitmq/mq-data

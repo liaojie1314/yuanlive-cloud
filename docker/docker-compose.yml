@@ -135,6 +135,23 @@ services:
     restart: unless-stopped
     networks:
       - live-net
+  # rabbitmq
+  mq:
+    image: rabbitmq:4-management
+    container_name: yuanlive-mq
+    hostname: mq
+    restart: unless-stopped
+    ports:
+      - "15672:15672"  # 管理界面端口
+      - "5672:5672"    # AMQP 通讯端口
+    environment:
+      RABBITMQ_DEFAULT_USER: yuanlive
+      RABBITMQ_DEFAULT_PASS: yuanlive
+    volumes:
+      - ./rabbitmq/mq-plugins/rabbitmq_delayed_message_exchange-4.2.0.ez:/opt/rabbitmq/plugins/rabbitmq_delayed_message_exchange-4.2.0.ez
+      - ./rabbitmq/mq-data:/var/lib/rabbitmq
+    networks:
+      - live-net
 
 networks:
   live-net:
