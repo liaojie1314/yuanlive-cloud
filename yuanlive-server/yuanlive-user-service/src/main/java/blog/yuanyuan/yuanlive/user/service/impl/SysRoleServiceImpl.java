@@ -13,6 +13,7 @@ import blog.yuanyuan.yuanlive.user.service.SysMenuService;
 import blog.yuanyuan.yuanlive.user.service.SysRoleMenuService;
 import blog.yuanyuan.yuanlive.user.service.SysRoleService;
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -24,6 +25,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -135,6 +137,9 @@ public class SysRoleServiceImpl extends ServiceImpl<SysRoleMapper, SysRole>
     }
 
     public List<SysMenu> getRolesMenus(List<Long> roleIds) {
+        if (CollUtil.isEmpty(roleIds)) {
+            return Collections.emptyList();
+        }
         return sysRoleMapper.getRolesMenus(roleIds);
     }
 

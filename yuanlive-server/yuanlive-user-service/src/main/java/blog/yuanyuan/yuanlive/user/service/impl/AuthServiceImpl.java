@@ -1,6 +1,7 @@
 package blog.yuanyuan.yuanlive.user.service.impl;
 
 import blog.yuanyuan.yuanlive.common.exception.ApiException;
+import blog.yuanyuan.yuanlive.entity.user.entity.SysMenu;
 import blog.yuanyuan.yuanlive.entity.user.entity.SysRole;
 import blog.yuanyuan.yuanlive.entity.user.entity.SysUser;
 import blog.yuanyuan.yuanlive.entity.user.entity.UserRoleEnum;
@@ -12,6 +13,7 @@ import blog.yuanyuan.yuanlive.user.domain.enums.QrCodeStatus;
 import blog.yuanyuan.yuanlive.user.domain.vo.*;
 import blog.yuanyuan.yuanlive.user.properties.*;
 import blog.yuanyuan.yuanlive.user.service.AuthService;
+import blog.yuanyuan.yuanlive.user.service.SysRoleService;
 import blog.yuanyuan.yuanlive.user.service.SysUserService;
 import cn.dev33.satoken.session.SaSession;
 import cn.dev33.satoken.stp.StpUtil;
@@ -51,8 +53,6 @@ public class AuthServiceImpl implements AuthService {
     @Resource
     private StringRedisTemplate stringRedisTemplate;
     @Resource
-    private SysUserService sysUserService;
-    @Resource
     private MailService mailService;
     @Resource
     private PasswordEncoder passwordEncoder;
@@ -60,6 +60,8 @@ public class AuthServiceImpl implements AuthService {
     private IdGeneratorProvider idGeneratorProvider;
     @Resource
     private SysUserService userService;
+    @Resource
+    private SysRoleService roleService;
 
     @Override
     public void getCode(CodeDTO codeDTO) {
@@ -71,7 +73,7 @@ public class AuthServiceImpl implements AuthService {
             ttl = registerProperties.getTtl();
             timeunit = registerProperties.getTimeunit();
         } else {
-            if (!sysUserService.lambdaQuery().eq(SysUser::getEmail, codeDTO.getEmail()).exists()) {
+            if (!userService.lambdaQuery().eq(SysUser::getEmail, codeDTO.getEmail()).exists()) {
                 throw new RuntimeException("该邮箱不存在");
             }
             key = forgetProperties.getPrefix() + codeDTO.getEmail();
@@ -106,7 +108,7 @@ public class AuthServiceImpl implements AuthService {
             registerDTO.setUsername(name);
         }
         SysUser user = BeanUtil.copyProperties(registerDTO, SysUser.class);
-        sysUserService.save(user);
+        userService.save(user);
         stringRedisTemplate.delete(registerProperties.getPrefix() + email);
         return true;
     }
@@ -115,9 +117,9 @@ public class AuthServiceImpl implements AuthService {
     public LoginVO login(LoginDTO loginDTO) {
         SysUser user;
         if (Validator.isEmail(loginDTO.getAccount())) {
-            user = sysUserService.lambdaQuery().eq(SysUser::getEmail, loginDTO.getAccount()).one();
+            user = userService.lambdaQuery().eq(SysUser::getEmail, loginDTO.getAccount()).one();
         } else {
-            user = sysUserService.lambdaQuery().eq(SysUser::getUsername, loginDTO.getAccount()).one();
+            user = userService.lambdaQuery().eq(SysUser::getUsername, loginDTO.getAccount()).one();
         }
         if (user == null || !passwordEncoder.matches(loginDTO.getPassword(), user.getPassword())) {
             throw new RuntimeException("账号或密码错误");
@@ -134,16 +136,7 @@ public class AuthServiceImpl implements AuthService {
         clearOldRefreshToken(user.getUid(), loginDTO.getDevice());
         StpUtil.login(user.getUid(), loginDTO.getDevice());
         // 设置用户角色与权限
-        if (user.getRole() == UserRoleEnum.ADMIN) {
-            // 如果为管理员获取具体分配的角色
-            UserVO userVO = userService.getUserById(user.getUid());
-            List<String> roles = new ArrayList<>(userVO.getRoles().stream().map(SysRole::getRoleKey).toList());
-            roles.add(UserRoleEnum.ADMIN.name());
-            String join = String.join(",", roles);
-            StpUtil.getSession().set("role", join);
-        } else {
-            StpUtil.getSession().set("role", user.getRole().name());
-        }
+        setRoleAndPerms(user);
         StpUtil.getTokenSession().set("deviceID", loginDTO.getDeviceID());
         String accessToken = StpUtil.getTokenInfo().getTokenValue();
         String refreshToken = IdUtil.simpleUUID();
@@ -157,6 +150,21 @@ public class AuthServiceImpl implements AuthService {
                 .set(mappingKey, refreshToken, user2RefreshTokenProperties.getTtl(), TimeUnit.valueOf(user2RefreshTokenProperties.getTimeunit()));
         Long expireTimeStamp = getExpireTimeStamp(StpUtil.getTokenTimeout());
         return new LoginVO(accessToken, refreshToken, user.getRole().getCode(), user.getUid().toString(), expireTimeStamp);
+    }
+
+    private void setRoleAndPerms(SysUser user) {
+            UserVO userVO = userService.getUserById(user.getUid());
+            List<String> roles = new ArrayList<>(userVO.getRoles().stream().map(SysRole::getRoleKey).toList());
+            roles.add(user.getRole().name());
+            String join = String.join(",", roles);
+            StpUtil.getSession().set("role", join);
+            List<Long> roleIds = userVO.getRoles().stream().map(SysRole::getRoleId).toList();
+            List<SysMenu> menus = roleService.getRolesMenus(roleIds);
+            List<String> perms = menus.stream()
+                    .map(menu -> StrUtil.isNotBlank(menu.getPerms()) ? menu.getPerms() : null)
+                    .filter(Objects::nonNull).toList();
+            String permsJoin = String.join(",", perms);
+            StpUtil.getSession().set("perms", permsJoin);
     }
 
     @Override
@@ -180,7 +188,7 @@ public class AuthServiceImpl implements AuthService {
 
         // 4. 刷新 Refresh Token 的有效期 (续命)
         stringRedisTemplate.expire(redisKey, refreshTokenProperties.getTtl(), TimeUnit.valueOf(refreshTokenProperties.getTimeunit()));
-
+        setRoleAndPerms(userService.getById(userId));
         // 5. 返回新的 Access Token
         // Refresh Token 可以保持不变传回去，也可以生成新的（通常保持不变即可）
         return new RefreshVO(newTokenInfo, refreshToken, expireTimeStamp);
@@ -308,18 +316,14 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public Result logout() {
         // 清除refreshToken
-        String refreshToken = StpUtil.getTokenSession().getString("REFRESH_TOKEN");
-        if (refreshToken != null) {
-            String rtKey = refreshTokenProperties.getPrefix() + refreshToken;
-            stringRedisTemplate.delete(rtKey);
-        }
+        clearOldRefreshToken(StpUtil.getLoginIdAsLong(), StpUtil.getLoginDeviceType());
         StpUtil.logout();
         return Result.success("注销成功");
     }
 
     @Override
     public Result<String> forgetPassword(ForgetPassDTO forgetPassDTO) {
-        SysUser user = sysUserService.lambdaQuery()
+        SysUser user = userService.lambdaQuery()
                 .eq(SysUser::getEmail, forgetPassDTO.getEmail())
                 .one();
         if (!forgetPassDTO.getPassword().equals(forgetPassDTO.getConfirmPassword())) {
@@ -332,7 +336,7 @@ public class AuthServiceImpl implements AuthService {
         if (!Objects.equals(stringRedisTemplate.opsForValue().get(key), forgetPassDTO.getCode())) {
             return Result.failed("验证码错误");
         }
-        boolean updated = sysUserService.lambdaUpdate()
+        boolean updated = userService.lambdaUpdate()
                 .eq(SysUser::getEmail, forgetPassDTO.getEmail())
                 .set(SysUser::getPassword, passwordEncoder.encode(forgetPassDTO.getPassword()))
                 .update();
