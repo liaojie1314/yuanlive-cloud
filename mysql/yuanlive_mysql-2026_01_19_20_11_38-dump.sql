@@ -35,10 +35,21 @@ CREATE TABLE `sys_menu` (
   `create_time` datetime DEFAULT CURRENT_TIMESTAMP,
   `update_time` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `title` varchar(50) DEFAULT NULL COMMENT '菜单名称/标题',
-  `is_visible` tinyint(1) DEFAULT '1' COMMENT '是否显示启用(0 -> 隐藏，1 -> 显示)',
+  `is_visible` tinyint(1) NOT NULL DEFAULT '1' COMMENT '是否显示启用(0 -> 隐藏，1 -> 显示)',
+  `is_cache` tinyint(1) NOT NULL DEFAULT '0' COMMENT '是否缓存 0否 1是',
   PRIMARY KEY (`menu_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='菜单权限表';
+) ENGINE=InnoDB AUTO_INCREMENT=14 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='菜单权限表';
 /*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `sys_menu`
+--
+
+LOCK TABLES `sys_menu` WRITE;
+/*!40000 ALTER TABLE `sys_menu` DISABLE KEYS */;
+INSERT INTO `sys_menu` VALUES (4,'',0,4,'/system','','M','','ri:settings-3-line','2026-01-18 14:46:30','2026-01-18 14:46:30','menus.sysManagement',1,0),(5,'SystemUser',4,1,'/system/user/index','','C','','ri:admin-line','2026-01-18 14:49:17','2026-01-18 14:49:17','menus.user',1,0),(7,'SystemRole',4,2,'/system/role/index','','C','','ri:admin-fill','2026-01-18 14:51:16','2026-01-18 15:07:19','menus.role',1,0),(8,'SystemMenu',4,3,'/system/menu/index','','C','','ep:menu','2026-01-18 14:52:22','2026-01-18 15:07:19','menus.systemMenu',1,0),(9,'',0,5,'/monitor','','M','','ep:monitor','2026-01-18 14:53:45','2026-01-18 14:53:45','menus.sysMonitor',1,0),(10,'OnlineUser',9,1,'/monitor/online-user','monitor/online/index','C','','ri:user-voice-line','2026-01-18 14:55:21','2026-01-18 15:08:40','menus.onlineUser',1,0),(11,'LoginLog',9,2,'/monitor/login-logs','monitor/logs/login/index','C','','ri:window-line','2026-01-18 14:57:17','2026-01-18 14:57:17','menus.loginLog',1,0),(12,'OperationLog',9,3,'/monitor/operation-logs','monitor/logs/operation/index','C','','ri:history-fill','2026-01-18 14:58:51','2026-01-18 14:58:51','menus.operationLog',1,0),(13,'',10,1,'','','F','user:add','ri:history-fill','2026-01-19 08:21:03','2026-01-19 08:21:03','menus.addUser',1,0);
+/*!40000 ALTER TABLE `sys_menu` ENABLE KEYS */;
+UNLOCK TABLES;
 
 --
 -- Table structure for table `sys_role`
@@ -55,9 +66,20 @@ CREATE TABLE `sys_role` (
   `create_time` datetime DEFAULT CURRENT_TIMESTAMP,
   `update_time` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`role_id`),
-  UNIQUE KEY `uk_role_key` (`role_key`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='角色表';
+  UNIQUE KEY `uk_role_key` (`role_key`),
+  UNIQUE KEY `sys_role_pk` (`role_name`)
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='角色表';
 /*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `sys_role`
+--
+
+LOCK TABLES `sys_role` WRITE;
+/*!40000 ALTER TABLE `sys_role` DISABLE KEYS */;
+INSERT INTO `sys_role` VALUES (1,'超级管理员','super-admin',1,'2026-01-17 10:47:01','2026-01-17 10:47:01');
+/*!40000 ALTER TABLE `sys_role` ENABLE KEYS */;
+UNLOCK TABLES;
 
 --
 -- Table structure for table `sys_role_menu`
@@ -72,6 +94,16 @@ CREATE TABLE `sys_role_menu` (
   PRIMARY KEY (`role_id`,`menu_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='角色和菜单关联表';
 /*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `sys_role_menu`
+--
+
+LOCK TABLES `sys_role_menu` WRITE;
+/*!40000 ALTER TABLE `sys_role_menu` DISABLE KEYS */;
+INSERT INTO `sys_role_menu` VALUES (1,4),(1,5),(1,7),(1,8),(1,9),(1,10),(1,11),(1,12),(1,13);
+/*!40000 ALTER TABLE `sys_role_menu` ENABLE KEYS */;
+UNLOCK TABLES;
 
 --
 -- Table structure for table `sys_user`
@@ -95,8 +127,18 @@ CREATE TABLE `sys_user` (
   PRIMARY KEY (`uid`),
   UNIQUE KEY `uk_username` (`username`),
   UNIQUE KEY `uk_email` (`email`)
-) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='用户表';
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='用户表';
 /*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `sys_user`
+--
+
+LOCK TABLES `sys_user` WRITE;
+/*!40000 ALTER TABLE `sys_user` DISABLE KEYS */;
+INSERT INTO `sys_user` VALUES (6,'fordepu','$2a$10$4s6MYwnX5YHzQhfZ6XEzDO10lTNsVndzfUbqi0cP4vaSVmFCgMDPC',NULL,NULL,'j1425127495@126.com',1,0,'2025-12-30 08:04:20','2026-01-17 08:19:07',2),(7,'jjw','$2a$10$Yx7FktSN5oIJ8rGNM3VTzunuyF91MC7Ys9X/yir03YZhBETzNhSRy',NULL,NULL,'2121789489@qq.com',1,0,'2026-01-19 09:04:04','2026-01-19 09:04:04',0);
+/*!40000 ALTER TABLE `sys_user` ENABLE KEYS */;
+UNLOCK TABLES;
 
 --
 -- Table structure for table `sys_user_role`
@@ -111,6 +153,16 @@ CREATE TABLE `sys_user_role` (
   PRIMARY KEY (`user_id`,`role_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='用户和角色关联表';
 /*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `sys_user_role`
+--
+
+LOCK TABLES `sys_user_role` WRITE;
+/*!40000 ALTER TABLE `sys_user_role` DISABLE KEYS */;
+INSERT INTO `sys_user_role` VALUES (6,1);
+/*!40000 ALTER TABLE `sys_user_role` ENABLE KEYS */;
+UNLOCK TABLES;
 
 --
 -- Table structure for table `undo_log`
@@ -130,6 +182,15 @@ CREATE TABLE `undo_log` (
   UNIQUE KEY `ux_undo_log` (`xid`,`branch_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='AT回滚表';
 /*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `undo_log`
+--
+
+LOCK TABLES `undo_log` WRITE;
+/*!40000 ALTER TABLE `undo_log` DISABLE KEYS */;
+/*!40000 ALTER TABLE `undo_log` ENABLE KEYS */;
+UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
@@ -140,4 +201,4 @@ CREATE TABLE `undo_log` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-01-16 21:19:19
+-- Dump completed on 2026-01-19 20:11:38
