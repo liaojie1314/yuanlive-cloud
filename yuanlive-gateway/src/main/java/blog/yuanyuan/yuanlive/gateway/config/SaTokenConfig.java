@@ -2,17 +2,20 @@ package blog.yuanyuan.yuanlive.gateway.config;
 
 import blog.yuanyuan.yuanlive.common.result.ResultCode;
 import blog.yuanyuan.yuanlive.entity.user.entity.UserRoleEnum;
+import cn.dev33.satoken.context.SaHolder;
 import cn.dev33.satoken.exception.NotLoginException;
 import cn.dev33.satoken.exception.NotRoleException;
 import cn.dev33.satoken.reactor.filter.SaReactorFilter;
 import cn.dev33.satoken.router.SaRouter;
 import cn.dev33.satoken.stp.StpUtil;
+import cn.dev33.satoken.util.SaResult;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import blog.yuanyuan.yuanlive.common.result.Result;
+import org.springframework.web.bind.annotation.RequestMethod;
 
 @Configuration
 @Slf4j
@@ -46,6 +49,23 @@ public class SaTokenConfig {
                 .addInclude("/**")    /* 拦截全部path */
                 // 开放地址
                 .addExclude(WHITE_LIST)
+                // 前置函数：在每次认证函数之前执行
+                .setBeforeAuth(obj -> {
+                    // ---------- 设置跨域响应头 ----------
+                    SaHolder.getResponse()
+                            // 允许指定域访问跨域资源
+                            .setHeader("Access-Control-Allow-Origin", "*")
+                            // 允许所有请求方式
+                            .setHeader("Access-Control-Allow-Methods", "POST, GET, OPTIONS, DELETE, PUT")
+                            // 有效时间
+                            .setHeader("Access-Control-Max-Age", "3600")
+                            // 允许的header参数
+                            .setHeader("Access-Control-Allow-Headers", "*");
+                    // 如果是 OPTIONS 请求，则结束请求
+                    if (SaHolder.getRequest().getMethod().equals(RequestMethod.OPTIONS.name())) {
+                        SaRouter.back();
+                    }
+                })
                 // 鉴权方法：每次访问进入
                 .setAuth(obj -> {
                     // 登录校验 -- 拦截所有路由，并排除/user/doLogin 用于开放登录
@@ -55,6 +75,9 @@ public class SaTokenConfig {
                 })
                 // 异常处理方法：每次setAuth函数出现异常时进入
                 .setError(e -> {
+                    // 设置响应头
+                    SaHolder.getResponse().setHeader("Content-Type", "application/json;charset=UTF-8");
+
                     Result<Object> result = Result.failed(e.getMessage());
                     if (e instanceof NotLoginException exception) {
                         if (exception.getType().equals(NotLoginException.INVALID_TOKEN)) {

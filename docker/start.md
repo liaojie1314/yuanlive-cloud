@@ -78,3 +78,6 @@
   - 修改 `yuanlive-user-service`中`yaml`文件中的 `spring.mail.host`配置为对应邮箱设置
   - 添加 `YUANLIVE_MAIL_USER`环境变量, 值为邮箱账号
   - 添加 `YUANLIVE_MAIL_PASSWORD`环境变量, 值为授权码
+
+## 5. SRS配置
+  - 每次重启时需要在.env文件中修改为自己的ip地址

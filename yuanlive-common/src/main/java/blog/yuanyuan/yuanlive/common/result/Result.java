@@ -1,10 +1,12 @@
 package blog.yuanyuan.yuanlive.common.result;
 
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
 
 @Data
+@NoArgsConstructor
 public class Result<T> implements Serializable {
     // 默认接口版本号
     private static final String DEFAULT_VERSION = "1.0";

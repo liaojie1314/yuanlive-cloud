@@ -36,6 +36,7 @@
         <hutool.version>5.8.42</hutool.version>
         <sa-token.version>1.44.0</sa-token.version>
         <cosid.version>2.13.0</cosid.version>
+        <netty.version>4.2.9.Final</netty.version>
 
     </properties>
 
@@ -116,6 +117,12 @@
                 <groupId>me.ahoo.cosid</groupId>
                 <artifactId>cosid-spring-boot-starter</artifactId>
                 <version>${cosid.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.netty</groupId>
+                <artifactId>netty-all</artifactId>
+                <version>4.2.9.Final</version>
+                <scope>compile</scope>
             </dependency>
         </dependencies>
     </dependencyManagement>

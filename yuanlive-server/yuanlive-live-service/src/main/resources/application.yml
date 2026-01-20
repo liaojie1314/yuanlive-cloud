@@ -1,8 +1,48 @@
 server:
   port: 8082
 spring:
+  application:
+    name: live-service
+
   cloud:
     nacos:
       server-addr: 127.0.0.1:8848
-  application:
-    name: live-service
+      config:
+        namespace: public
+
+  config:
+    import:
+      - nacos:sa-token.yaml?group=SA_TOKEN_GROUP&refresh-enabled=true
+      - nacos:redis.yaml?group=REDIS_GROUP&refresh-enabled=true
+
+  datasource:
+    url: jdbc:mysql://localhost:3307/yuanlive_live?useSSL=false&serverTimezone=Asia/Shanghai&useUnicode=true&characterEncoding=utf-8
+    username: root
+    password: yuanlive
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  rabbitmq:
+    host: localhost   # 你的 Docker MQ 地址
+    port: 5672
+    username: yuanlive
+    password: yuanlive
+    # 关键：开启消息确认机制 (可选)
+    publisher-confirm-type: correlated
+    publisher-returns: true
+
+
+mybatis-plus:
+  mapper-locations: classpath*:mapper/*.xml
+#  type-aliases-package: blog.yuanyuan.yuanlive.entity.user.entity
+  global-config:
+    db-config:
+      id-type: auto
+
+yuanlive:
+  chat:
+    mq:
+      exchange: live.chat.fanout
+    heartbeat: 30 # 心跳间隔 单位秒
+  netty:
+    port: 18081
+    path: /ws

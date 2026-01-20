@@ -3,11 +3,13 @@ package blog.yuanyuan.yuanlive.common.result;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.util.List;
 
 @Data
 @Schema(description = "分页结果")
+@NoArgsConstructor
 public class ResultPage <T>{
     @Schema(description = "列表")
     private List<T> list;

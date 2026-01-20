@@ -10,6 +10,7 @@
     </parent>
     <modules>
         <module>user-entity</module>
+        <module>live-entity</module>
     </modules>
     <packaging>pom</packaging>
 

@@ -53,4 +53,11 @@ public interface SysUserService extends IService<SysUser> {
     boolean assignRoles(UserRoleDTO userRoleDTO);
 
     List<RouterVO> getRouters();
+
+    /**
+     * 校验token
+     * @param token token
+     * @return 用户ID
+     */
+    Long checkToken(String token);
 }

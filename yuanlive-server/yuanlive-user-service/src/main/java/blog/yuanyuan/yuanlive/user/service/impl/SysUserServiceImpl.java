@@ -1,5 +1,6 @@
 package blog.yuanyuan.yuanlive.user.service.impl;
 
+import blog.yuanyuan.yuanlive.common.exception.ApiException;
 import blog.yuanyuan.yuanlive.common.result.ResultPage;
 import blog.yuanyuan.yuanlive.entity.user.entity.SysMenu;
 import blog.yuanyuan.yuanlive.entity.user.entity.SysRole;
@@ -132,6 +133,18 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
         return buildRouterVO(menus);
     }
 
+    @Override
+    public Long checkToken(String token) {
+        try {
+            String userId = (String)StpUtil.getLoginIdByToken(token);
+            Long uid = Long.valueOf(userId);
+            log.info("用户id{}", uid);
+            return uid;
+        } catch (NumberFormatException e) {
+            throw new ApiException("Token 无效");
+        }
+    }
+
     private void insertUserRole(Long userId, List<Long> roleIds) {
         List<SysUserRole> userRoles = roleIds.stream().map(roleId -> {
             SysUserRole userRole = new SysUserRole();
@@ -190,8 +203,8 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
                     return router;
                 })
                 .sorted((r1, r2) -> {
-                    Integer sort1 = r1.getMeta() != null ? r1.getMeta().getSort() : null;
-                    Integer sort2 = r2.getMeta() != null ? r2.getMeta().getSort() : null;
+                    Integer sort1 = r1.getMeta() != null ? r1.getMeta().getRank() : null;
+                    Integer sort2 = r2.getMeta() != null ? r2.getMeta().getRank() : null;
                     if (sort1 == null && sort2 == null) return 0;
                     if (sort1 == null) return 1;
                     if (sort2 == null) return -1;
@@ -217,7 +230,7 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
         return RouterVO.MetaVO.builder()
                 .title(menu.getTitle())
                 .icon(menu.getIcon())
-                .sort(menu.getSort())
+                .rank(menu.getSort())
                 .auths(auths.isEmpty() ? null : auths)
                 .showLink(menu.getIsVisible() != null && menu.getIsVisible() == 1)
                 .keepAlive(menu.getIsCache() != null && menu.getIsCache() == 1)

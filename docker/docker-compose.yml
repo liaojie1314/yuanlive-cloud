@@ -9,12 +9,15 @@ services:
       - "1935:1935"
       - "1985:1985"
       - "18080:8080"
-    #      - "8000:8000/udp"
+      - "8000:8000/udp"
     #      - "10080:10080/udp"
+    environment:
+      - CANDIDATE=${HOST_IP}
+
     volumes:
       - ./SrsConfig/srs.conf:/usr/local/srs/conf/docker.conf
       - ./SrsConfig/logs:/usr/local/srs/objs/logs
-      - ./SrsConfig/nginx/html:/usr/local/srs/objs/nginx/html
+#      - ./SrsConfig/nginx/html:/usr/local/srs/objs/nginx/html
     command: ./objs/srs -c conf/docker.conf
     networks:
       - live-net

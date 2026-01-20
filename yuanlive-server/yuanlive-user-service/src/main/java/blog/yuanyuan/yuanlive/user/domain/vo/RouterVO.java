@@ -48,7 +48,7 @@ public class RouterVO {
         private String icon;
 
         @Schema(description = "菜单排序")
-        private Integer sort;
+        private Integer rank;
 
         @Schema(description = "当前页面的按钮权限集合", example = "['user:add', 'user:edit']")
         private List<String> auths;
