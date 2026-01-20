@@ -33,6 +33,16 @@ spring:
                 - Path=/user/**
               filters:
                 - StripPrefix=1
+            - id: live-service
+              uri: lb://live-service
+              predicates:
+                - Path=/live/**
+              filters:
+                - StripPrefix=1
+            - id: websocket-route
+              uri: lb:ws://live-service
+              predicates:
+                - Path=/ws/**
   config:
     import:
       - nacos:sa-token.yaml?group=SA_TOKEN_GROUP&refresh-enabled=true
@@ -49,3 +59,9 @@ knife4j:
       excluded-services:
         - seata-server
         - gateway-service
+#logging:
+#  level:
+#    org.springframework.cloud.gateway: TRACE
+#    org.springframework.http.server.reactive: DEBUG
+#    org.springframework.web.reactive: DEBUG
+#    reactor.netty: DEBUG

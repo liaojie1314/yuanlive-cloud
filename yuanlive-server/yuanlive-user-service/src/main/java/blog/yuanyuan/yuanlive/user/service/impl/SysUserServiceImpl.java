@@ -141,7 +141,7 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
             log.info("用户id{}", uid);
             return uid;
         } catch (NumberFormatException e) {
-            throw new ApiException("Token 无效");
+            throw new ApiException("Token 无效或过期");
         }
     }
 
