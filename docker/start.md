@@ -3,17 +3,24 @@
 ## 1. seata 配置
 
 - 首先通过compose.yml启动下载容器 (***注意nacos与seata可能会启动失败，等待几秒即可***)
+
 - 登录[nacos](http://localhost:8034),初始账号密码均为`nacos`
+
 - 在nacos中创建seata的配置
+  
   - 命名空间默认`public`即可
+  
   - Data ID: `seata-server.properties`
+  
   - Group: `SEATA_GROUP`
+  
   - 配置格式: `Properties`
+  
   - 配置内容:
     
     ```properties
     store.mode=db
-
+    
     store.db.datasource=druid
     store.db.dbType=mysql
     store.db.driverClassName=com.mysql.cj.jdbc.Driver
@@ -25,17 +32,24 @@
     store.db.lockTable=lock_table
     store.db.distributedLockTable=distributed_lock
     store.db.queryLimit=100
-
     ```
+    
 ## 2. redis 配置
-- 按上述过程打开[nacos](http://localhost:8034)
-- 在nacos中添加`redis`配置
-  - 命名空间默认`public`
-  - Data ID: `redis.yaml`
-  - Group: `REDIS_GROUP`
-  - 配置格式: `YAML`
-  - 配置内容:
 
+- 按上述过程打开[nacos](http://localhost:8034)
+
+- 在nacos中添加`redis`配置
+  
+  - 命名空间默认`public`
+  
+  - Data ID: `redis.yaml`
+  
+  - Group: `REDIS_GROUP`
+  
+  - 配置格式: `YAML`
+  
+  - 配置内容:
+    
     ```yaml
     spring:
       data:
@@ -53,14 +67,21 @@
     ```
 
 ## 3. sa-token 配置
-- 按上述过程打开[nacos](http://localhost:8034)
-- 在nacos中添加`sa-token`配置
-  - 命名空间默认`public`
-  - Data ID: `sa-token.yaml`
-  - Group: `SA_TOKEN_GROUP`
-  - 配置格式: `YAML`
-  - 配置内容:
 
+- 按上述过程打开[nacos](http://localhost:8034)
+
+- 在nacos中添加`sa-token`配置
+  
+  - 命名空间默认`public`
+  
+  - Data ID: `sa-token.yaml`
+  
+  - Group: `SA_TOKEN_GROUP`
+  
+  - 配置格式: `YAML`
+  
+  - 配置内容:
+    
     ```yaml
     sa-token:
       token-name: token
@@ -72,20 +93,101 @@
       active-timeout: -1
       is-log: true
     ```
+    
 ## 4. SMTP 配置
+  
   - 选择任意邮箱 126、163、QQ等
+  
   - 打开`POP3/SMTP`, 获取授权码
+  
   - 修改 `yuanlive-user-service`中`yaml`文件中的 `spring.mail.host`配置为对应邮箱设置
+  
   - 添加 `YUANLIVE_MAIL_USER`环境变量, 值为邮箱账号
+  
   - 添加 `YUANLIVE_MAIL_PASSWORD`环境变量, 值为授权码
 
 ## 5. SRS配置
-  - 每次重启时需要在.env文件中修改为自己的ip地址
+
+- 每次重启时需要在.env文件中修改为自己的ip地址
 
 ## 6. ELK配置
-  - dockercompose后通过访问[kibana](http://localhost:5601)进入可视化界面
-  - 选择`Management` -> `Stack Management` -> `Data Views` -> `Create data view`
-  - `name` 设置为`yuanlive-logs`  `Index Pattern` 设置为`yuanlive-*`
-  - `Time field` 设置为`@timestamp`
-  - 创建后进入`Discover`查看日志
-  - 每次重启后需要通过 `docker compose up -d --force-recreate filebeat` 重新创建容器
+
+- 在创建logstash容器之前，先进入[kibana](http://localhost:5601)的 Dev Tools 界面
+
+- 运行以下指令创建索引模式
+  
+  ```
+  PUT /_index_template/yuanlive_chinese_template
+  {
+    "index_patterns": ["yuanlive-logs-*"], 
+    "priority": 10,
+    "template": {
+      "settings": {
+        "number_of_shards": 1
+      },
+      "mappings": {
+        "properties": {
+          // --- 1. 核心业务字段 (Grok 切分出来的) ---
+          "msg": {
+            "type": "text",
+            "analyzer": "ik_max_word",       // 存的时候：做最细粒度拆分 (用户、登录、用户登录)
+            "search_analyzer": "ik_smart",   // 搜的时候：做智能拆分 (搜"用户登录"就匹配"用户登录")
+            "fields": {
+              "keyword": { "type": "keyword", "ignore_above": 256 }
+            }
+          },
+  
+          // --- 2. 原始日志字段 ---
+          "message": {
+            "type": "text",
+            "analyzer": "ik_max_word",
+            "search_analyzer": "ik_smart",
+            "fields": {
+               // 防止 message 太长导致报错，只保留 text，不留 keyword，或者设大 ignore_above
+              "keyword": { "type": "keyword", "ignore_above": 512 }
+            }
+          },
+  
+          // --- 3. 其他不需要分词的字段 (显式声明以提高性能) ---
+          "traceId": { "type": "keyword" },
+          "service_name": { "type": "keyword" },
+          "level": { "type": "keyword" },
+          "logger": {
+          "type": "text",
+          "analyzer": "standard",
+          "fields": {
+            "keyword": {
+              "type": "keyword",
+              "ignore_above": 256
+            }
+          }
+        },
+          "thread": { "type": "keyword" },
+  
+          // --- 4. 时间字段 ---
+          "@timestamp": { "type": "date" },
+          "host": {
+          "properties": {
+            "name": {
+              "type": "text",
+              "fields": {
+                "keyword": {
+                  "type": "keyword",
+                  "ignore_above": 256
+                }
+              }
+            }
+          }
+        }
+        }
+      }
+    }
+  }
+  ```
+
+- docker compose后通过访问[kibana](http://localhost:5601)进入可视化界面
+- 选择`Management` -> `Stack Management` -> `Data Views` -> `Create data view`
+- `name` 设置为`yuanlive-logs`  `Index Pattern` 设置为`yuanlive-logs-*`
+- `Time field` 设置为`@timestamp`
+- 创建后进入`Discover`查看日志
+- 每次重启后需要通过 `docker compose up -d --force-recreate filebeat` 重新创建容器
