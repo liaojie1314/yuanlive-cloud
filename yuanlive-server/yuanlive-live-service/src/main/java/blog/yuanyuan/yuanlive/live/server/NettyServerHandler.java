@@ -13,6 +13,7 @@ import io.netty.handler.timeout.IdleState;
 import io.netty.handler.timeout.IdleStateEvent;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.MDC;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -69,15 +70,6 @@ public class NettyServerHandler extends SimpleChannelInboundHandler<TextWebSocke
         }
     }
 
-//    @Override
-//    public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-//        // 打印一下进来的对象类型
-//        log.info("收到消息类型: {}", msg.getClass().getName());
-//
-//        // 必须保留这句，否则消息也会在这里断掉
-//        super.channelRead(ctx, msg);
-//    }
-
     // 1. 处理心跳
     private void handlePing(ChannelHandlerContext ctx) {
         IMPacket pong = new IMPacket();
@@ -120,23 +112,29 @@ public class NettyServerHandler extends SimpleChannelInboundHandler<TextWebSocke
     // 处理心跳超时 (IdleStateHandler 触发)
     @Override
     public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
-        if (evt instanceof WebSocketServerProtocolHandler.HandshakeComplete) {
-            // 此时 AuthHandshakeHandler 已经执行完毕，Attribute 里有值了
-            Long userId = ctx.channel().attr(SessionManager.KEY_USER_ID).get();
-            String deviceId = ctx.channel().attr(SessionManager.KEY_DEVICE_ID).get();
+        String traceId = ctx.channel().attr(SessionManager.KEY_TRACE_ID).get();
+        MDC.put("traceId", traceId);
+        try {
+            if (evt instanceof WebSocketServerProtocolHandler.HandshakeComplete) {
+                // 此时 AuthHandshakeHandler 已经执行完毕，Attribute 里有值了
+                Long userId = ctx.channel().attr(SessionManager.KEY_USER_ID).get();
+                String deviceId = ctx.channel().attr(SessionManager.KEY_DEVICE_ID).get();
 
-            if (userId != null) {
-                // ✅ 在这里注册才是真正有效的
-                sessionManager.register(userId, ctx.channel());
-                log.info("✅ 用户[{}] 设备[{}] 握手成功，正式上线！", userId, deviceId);
+                if (userId != null) {
+                    // ✅ 在这里注册才是真正有效的
+                    sessionManager.register(userId, ctx.channel());
+                    log.info("✅ 用户[{}] 设备[{}] 握手成功，正式上线！", userId, deviceId);
+                }
+            } else if (evt instanceof IdleStateEvent event) {
+                if (event.state() == IdleState.READER_IDLE) {
+                    log.warn("心跳超时，关闭连接: {}", ctx.channel().id());
+                    ctx.close();
+                }
+            } else {
+                super.userEventTriggered(ctx, evt);
             }
-        } else if (evt instanceof IdleStateEvent event) {
-            if (event.state() == IdleState.READER_IDLE) {
-                log.warn("心跳超时，关闭连接: {}", ctx.channel().id());
-                ctx.close();
-            }
-        } else {
-            super.userEventTriggered(ctx, evt);
+        } finally {
+            MDC.remove("traceId");
         }
     }
 }

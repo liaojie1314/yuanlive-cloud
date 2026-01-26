@@ -81,3 +81,11 @@
 
 ## 5. SRS配置
   - 每次重启时需要在.env文件中修改为自己的ip地址
+
+## 6. ELK配置
+  - dockercompose后通过访问[kibana](http://localhost:5601)进入可视化界面
+  - 选择`Management` -> `Stack Management` -> `Data Views` -> `Create data view`
+  - `name` 设置为`yuanlive-logs`  `Index Pattern` 设置为`yuanlive-*`
+  - `Time field` 设置为`@timestamp`
+  - 创建后进入`Discover`查看日志
+  - 每次重启后需要通过 `docker compose up -d --force-recreate filebeat` 重新创建容器

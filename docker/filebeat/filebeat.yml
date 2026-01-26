@@ -1,0 +1,51 @@
+filebeat.inputs:
+
+  # --- Gateway 日志 ---
+  - type: filestream
+    id: gateway-service-logs
+    enabled: true
+    paths:
+      - /var/log/yuanlive-logs/gateway-service/*.log
+    fields:
+      service_name: gateway
+    fields_under_root: true
+    parsers:
+      - multiline:
+          type: pattern
+          pattern: '^[0-9]{4}-[0-9]{2}-[0-9]{2}'
+          negate: true
+          match: after
+
+  # --- Live Service 日志 ---
+  - type: filestream
+    id: live-service-logs
+    enabled: true
+    paths:
+      - /var/log/yuanlive-logs/live-service/*.log
+    fields:
+      service_name: live
+    fields_under_root: true
+    parsers:
+      - multiline:
+          type: pattern
+          pattern: '^[0-9]{4}-[0-9]{2}-[0-9]{2}'
+          negate: true
+          match: after
+  # --- User Service 日志 ---
+  - type: filestream
+    id: user-service-logs
+    enabled: true
+    paths:
+      - /var/log/yuanlive-logs/user-service/*.log
+    fields:
+      service_name: user
+    fields_under_root: true
+    parsers:
+      - multiline:
+          type: pattern
+          pattern: '^[0-9]{4}-[0-9]{2}-[0-9]{2}'
+          negate: true
+          match: after
+
+output.logstash:
+  hosts: ["logstash:5044"]

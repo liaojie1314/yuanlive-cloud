@@ -54,7 +54,6 @@ public class GlobalExceptionHandler {
     public Result<String> handleException(ApiException e) {
         Result<String> result = Result.failed(e.getResultCode());
         result.setMsg(e.getMessage());
-        log.warn("API Exception");
         log.warn("Response     : {}", JSONUtil.toJsonStr(result));
         return result;
     }
@@ -69,7 +68,6 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(Exception.class)
     public Result<String> handleException(Exception e) {
         Result<String> result = Result.failed(e.getMessage());
-        log.warn("Exception Class   : {}", e.getClass());
         log.warn("Response     : {}", JSONUtil.toJsonStr(result));
         return result;
     }

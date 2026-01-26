@@ -6,6 +6,7 @@ import io.netty.channel.group.DefaultChannelGroup;
 import io.netty.util.AttributeKey;
 import io.netty.util.concurrent.GlobalEventExecutor;
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.MDC;
 import org.springframework.stereotype.Component;
 
 import java.util.Map;
@@ -24,6 +25,7 @@ public class SessionManager {
     public static final AttributeKey<String> KEY_ROOM_ID = AttributeKey.valueOf("roomId");
     public static final AttributeKey<String> KEY_DEVICE_ID = AttributeKey.valueOf("deviceId");
     public static final AttributeKey<String> KEY_TOKEN = AttributeKey.valueOf("token");
+    public static final AttributeKey<String> KEY_TRACE_ID = AttributeKey.valueOf("traceId");
 
     /**
      * 1. 用户上线 (连接建立时调用)
@@ -53,10 +55,16 @@ public class SessionManager {
      * 3. 用户下线/断开
      */
     public void remove(Channel channel) {
-        Long userId = channel.attr(KEY_USER_ID).get();
-        if (userId != null) {
-            USER_MAP.remove(userId);
-            log.info("用户[{}] 断开连接", userId);
+        String traceId = channel.attr(KEY_TRACE_ID).get();
+        MDC.put("traceId", traceId);
+        try {
+            Long userId = channel.attr(KEY_USER_ID).get();
+            if (userId != null) {
+                USER_MAP.remove(userId);
+                log.info("用户[{}] 断开连接", userId);
+            }
+        } finally {
+            MDC.remove("traceId");
         }
         // Netty 的 ChannelGroup 会自动移除断开的 Channel，不需要手动操作 ROOM_MAP
     }

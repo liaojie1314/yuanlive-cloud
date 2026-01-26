@@ -9,6 +9,7 @@ import cn.dev33.satoken.reactor.filter.SaReactorFilter;
 import cn.dev33.satoken.router.SaRouter;
 import cn.dev33.satoken.stp.StpUtil;
 import cn.dev33.satoken.util.SaResult;
+import cn.hutool.json.JSONUtil;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
@@ -91,6 +92,7 @@ public class SaTokenConfig {
                         result.setCode(ResultCode.FORBIDDEN.getCode());
                         result.setMsg(ResultCode.FORBIDDEN.getMsg());
                     }
+                    log.warn("Response     : {}", JSONUtil.toJsonStr(result));
                     try {
                         return new ObjectMapper().writeValueAsString(result);
                     } catch (JsonProcessingException ex) {

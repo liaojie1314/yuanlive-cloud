@@ -156,6 +156,65 @@ services:
     networks:
       - live-net
 
+  # elasticsearch
+  es:
+    image: elasticsearch:9.2.4
+    container_name: yuanlive-es
+    restart: unless-stopped
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - xpack.security.enrollment.enabled=false
+      - ES_JAVA_OPTS=-Xms512m -Xmx512m
+    volumes:
+      - ./elasticsearch/data:/usr/share/elasticsearch/data
+      - ./elasticsearch/plugins:/usr/share/elasticsearch/plugins
+    networks:
+      - live-net
+  # kibana
+  kibana:
+    image: elastic/kibana:9.2.4
+    container_name: yuanlive-kibana
+    restart: unless-stopped
+    ports:
+      - "5601:5601"
+    environment:
+      - ELASTICSEARCH_HOSTS=http://es:9200
+    depends_on:
+      - es
+    networks:
+      - live-net
+  # logstash
+  logstash:
+    image: elastic/logstash:9.2.4
+    container_name: yuanlive-logstash
+    restart: unless-stopped
+    ports:
+      - "5044:5044"
+    volumes:
+      - ./logstash/pipeline/logstash.conf:/usr/share/logstash/pipeline/logstash.conf
+    depends_on:
+      - es
+    networks:
+      - live-net
+  # 4. Filebeat (日志搬运工)
+  filebeat:
+    image: elastic/filebeat:9.2.4
+    container_name: yuanlive-filebeat
+    restart: unless-stopped
+    user: root
+    volumes:
+      - ./filebeat/filebeat.yml:/usr/share/filebeat/filebeat.yml:ro
+      - ../logs:/var/log/yuanlive-logs
+    command: ["-e", "--strict.perms=false", "-d", "*"]
+    depends_on:
+      - logstash
+    networks:
+      - live-net
+
 networks:
   live-net:
     driver: bridge

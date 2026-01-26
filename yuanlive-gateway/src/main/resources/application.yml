@@ -59,9 +59,10 @@ knife4j:
       excluded-services:
         - seata-server
         - gateway-service
-#logging:
-#  level:
-#    org.springframework.cloud.gateway: TRACE
-#    org.springframework.http.server.reactive: DEBUG
-#    org.springframework.web.reactive: DEBUG
-#    reactor.netty: DEBUG
+
+logging:
+  level:
+    org.springframework.cloud.gateway: TRACE
+    org.springframework.http.server.reactive: DEBUG
+    org.springframework.web.reactive: DEBUG
+    reactor.netty: DEBUG

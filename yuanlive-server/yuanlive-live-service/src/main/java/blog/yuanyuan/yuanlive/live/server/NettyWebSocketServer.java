@@ -34,6 +34,8 @@ public class NettyWebSocketServer {
     private NettyServerHandler nettyServerHandler;
     @Resource
     private AuthHandshakeHandler authHandshakeHandler;
+    @Resource
+    private MdcHandler mdcHandler;
 
     private NioEventLoopGroup boss;
     private NioEventLoopGroup worker;
@@ -59,6 +61,7 @@ public class NettyWebSocketServer {
                                 pipeline.addLast(new ChunkedWriteHandler());
                                 pipeline.addLast(new HttpObjectAggregator(65536));
                                 pipeline.addLast(authHandshakeHandler);
+                                pipeline.addLast(mdcHandler);
 
                                 // 心跳检测: 30秒无读操作则触发 userEventTriggered
                                 pipeline.addLast(new IdleStateHandler(heartbeat, 0, 0));
