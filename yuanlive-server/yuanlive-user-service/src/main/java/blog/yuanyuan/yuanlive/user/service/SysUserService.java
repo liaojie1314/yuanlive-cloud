@@ -60,4 +60,6 @@ public interface SysUserService extends IService<SysUser> {
      * @return 用户ID
      */
     Long checkToken(String token);
+
+    UserVO getUserInfo();
 }

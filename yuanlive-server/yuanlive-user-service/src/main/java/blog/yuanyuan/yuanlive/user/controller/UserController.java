@@ -1,6 +1,8 @@
 package blog.yuanyuan.yuanlive.user.controller;
 
 import blog.yuanyuan.yuanlive.common.result.Result;
+import blog.yuanyuan.yuanlive.entity.user.entity.SysUser;
+import blog.yuanyuan.yuanlive.user.domain.vo.UserVO;
 import blog.yuanyuan.yuanlive.user.service.SysUserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -23,5 +25,11 @@ public class UserController {
     @GetMapping("/checkToken")
     public Result<Long> checkToken(@RequestParam("token") String token) {
         return Result.success(userService.checkToken(token));
+    }
+
+    @Operation(summary = "获取用户信息")
+    @GetMapping("/getUserInfo")
+    public Result<UserVO> getUserInfo() {
+        return Result.success(userService.getUserInfo());
     }
 }

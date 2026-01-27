@@ -145,6 +145,12 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
         }
     }
 
+    @Override
+    public UserVO getUserInfo() {
+        long uid = StpUtil.getLoginIdAsLong();
+        return getUserById(uid);
+    }
+
     private void insertUserRole(Long userId, List<Long> roleIds) {
         List<SysUserRole> userRoles = roleIds.stream().map(roleId -> {
             SysUserRole userRole = new SysUserRole();
