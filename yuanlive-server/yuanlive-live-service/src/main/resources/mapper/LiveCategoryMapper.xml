@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="blog.yuanyuan.yuanlive.live.mapper.LiveCategoryMapper">
+
+    <resultMap id="BaseResultMap" type="blog.yuanyuan.yuanlive.entity.live.entity.LiveCategory">
+            <id property="id" column="id" />
+            <result property="parentId" column="parent_id" />
+            <result property="name" column="name" />
+            <result property="iconUrl" column="icon_url" />
+            <result property="sortWeight" column="sort_weight" />
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id,parent_id,name,icon_url,sort_weight
+    </sql>
+</mapper>

@@ -41,7 +41,13 @@ public class SaTokenConfig {
             "/user/auth/qrcode/check",
             "/user/auth/forgetPassword",
             // 5. 放行WebSocket
-            "/ws/**"
+            "/ws/**",
+            // 6. 其他需要放行的地址
+            "/live/category/getInfo/**",
+            "/live/category/list",
+            "/live/category/tree",
+            "/live/category/firstLevel",
+
     };
 
     // 注册 Sa-Token全局过滤器
@@ -75,6 +81,7 @@ public class SaTokenConfig {
                     SaRouter.match("/**",  r -> StpUtil.checkLogin());
                     SaRouter.match("/user/menu/**", r -> StpUtil.checkRole(UserRoleEnum.ADMIN.name()));
                     SaRouter.match("/user/admin/**", r -> StpUtil.checkRole(UserRoleEnum.ADMIN.name()));
+                    SaRouter.match("/live/category/**", r -> StpUtil.checkRole(UserRoleEnum.ADMIN.name()));
                 })
                 // 异常处理方法：每次setAuth函数出现异常时进入
                 .setError(e -> {

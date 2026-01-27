@@ -33,12 +33,14 @@ spring:
                 - Path=/user/**
               filters:
                 - StripPrefix=1
+
             - id: live-service
               uri: lb://live-service
               predicates:
                 - Path=/live/**
               filters:
                 - StripPrefix=1
+
             - id: websocket-route
               uri: lb:ws://live-service
               predicates:

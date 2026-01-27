@@ -35,6 +35,21 @@
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-starter-loadbalancer</artifactId>
         </dependency>
+        <dependency>
+            <groupId>blog.yuanyuan</groupId>
+            <artifactId>live-entity</artifactId>
+            <version>${revision}</version>
+        </dependency>
+        <dependency>
+            <groupId>blog.yuanyuan</groupId>
+            <artifactId>common-security</artifactId>
+            <version>${revision}</version>
+        </dependency>
+        <dependency>
+            <groupId>blog.yuanyuan</groupId>
+            <artifactId>user-entity</artifactId>
+            <version>${revision}</version>
+        </dependency>
     </dependencies>
 
 </project>
