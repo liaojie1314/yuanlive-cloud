@@ -135,7 +135,7 @@ public class AuthServiceImpl implements AuthService {
         }
         clearOldRefreshToken(user.getUid(), loginDTO.getDevice());
         StpUtil.login(user.getUid(), loginDTO.getDevice());
-        // 设置用户角色与权限
+        // 设置用户角色与权限 同时也可在session中存放用户名等信息
         setRoleAndPerms(user);
         StpUtil.getTokenSession().set("deviceID", loginDTO.getDeviceID());
         String accessToken = StpUtil.getTokenInfo().getTokenValue();
@@ -165,6 +165,8 @@ public class AuthServiceImpl implements AuthService {
                     .filter(Objects::nonNull).toList();
             String permsJoin = String.join(",", perms);
             StpUtil.getSession().set("perms", permsJoin);
+            StpUtil.getSession().set("username", user.getUsername());
+            StpUtil.getSession().set("avatar", user.getAvatar() != null ? user.getAvatar() : "");
     }
 
     @Override

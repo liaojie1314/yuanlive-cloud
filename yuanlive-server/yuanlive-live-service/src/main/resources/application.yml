@@ -50,3 +50,9 @@ yuanlive:
   netty:
     port: 18081
     path: /ws
+RedisKey:
+  active-rooms:
+    key: "yuanlive:live:active_rooms"
+  room2client:
+    prefix: "yuanlive:live:room2client:"
+

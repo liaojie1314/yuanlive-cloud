@@ -30,6 +30,12 @@
             <groupId>blog.yuanyuan</groupId>
             <artifactId>yuanlive-user-client</artifactId>
             <version>${revision}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.springframework.cloud</groupId>

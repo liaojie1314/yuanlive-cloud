@@ -1,9 +1,15 @@
 package blog.yuanyuan.yuanlive.live.model;
 
 import blog.yuanyuan.yuanlive.live.constant.MsgType;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class IMPacket {
     private MsgType type;     // 消息类型
     private String msgId;     // 消息ID (前端生成的UUID)

@@ -32,6 +32,7 @@ services:
       - "3307:3306"
     environment:
       MYSQL_ROOT_PASSWORD: yuanlive
+      TZ: Asia/Shanghai
     volumes:
       - ./mysql/data:/var/lib/mysql
       - ./mysql/init:/docker-entrypoint-initdb.d

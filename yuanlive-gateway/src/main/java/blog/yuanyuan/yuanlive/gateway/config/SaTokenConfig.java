@@ -47,6 +47,8 @@ public class SaTokenConfig {
             "/live/category/list",
             "/live/category/tree",
             "/live/category/firstLevel",
+            "/live/room/start",
+            "/live/room/end"
 
     };
 
