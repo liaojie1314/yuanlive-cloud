@@ -7,12 +7,14 @@ import io.swagger.v3.oas.annotations.Hidden;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.MessageSourceResolvable;
 import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import blog.yuanyuan.yuanlive.common.result.Result;
 import blog.yuanyuan.yuanlive.common.result.ResultCode;
+import org.springframework.web.method.annotation.HandlerMethodValidationException;
 
 import java.sql.SQLIntegrityConstraintViolationException;
 import java.util.stream.Collectors;
@@ -50,6 +52,16 @@ public class GlobalExceptionHandler {
         return result;
     }
 
+    @ExceptionHandler(HandlerMethodValidationException.class)
+    public Result<String> handleException(HandlerMethodValidationException e) {
+        String message = e.getAllErrors().stream()
+                .map(MessageSourceResolvable::getDefaultMessage)
+                .collect(Collectors.joining("\n"));
+        Result<String> result = Result.failed(ResultCode.VALIDATE_FAILED, message);
+        log.warn("Response     : {}", JSONUtil.toJsonStr(result));
+        return result;
+    }
+
     @ExceptionHandler(ApiException.class)
     public Result<String> handleException(ApiException e) {
         Result<String> result = Result.failed(e.getResultCode());
@@ -67,6 +79,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public Result<String> handleException(Exception e) {
+        log.warn("Exception Class: {}", e.getClass().getName());
         Result<String> result = Result.failed(e.getMessage());
         log.warn("Response     : {}", JSONUtil.toJsonStr(result));
         return result;

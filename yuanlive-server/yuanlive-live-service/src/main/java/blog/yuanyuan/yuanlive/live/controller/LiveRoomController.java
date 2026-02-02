@@ -7,7 +7,6 @@ import blog.yuanyuan.yuanlive.live.domain.dto.LiveRoomQueryDTO;
 import blog.yuanyuan.yuanlive.live.domain.dto.SrsCallBackDTO;
 import blog.yuanyuan.yuanlive.live.domain.vo.LiveRoomDetailVO;
 import blog.yuanyuan.yuanlive.live.domain.vo.LiveRoomVO;
-import blog.yuanyuan.yuanlive.live.model.IMPacket;
 import blog.yuanyuan.yuanlive.live.service.LiveRoomService;
 import cn.dev33.satoken.annotation.SaCheckRole;
 import cn.dev33.satoken.stp.StpUtil;
@@ -60,8 +59,6 @@ public class LiveRoomController {
     @Operation(summary = "开始直播")
     public Result<String> startLive(@RequestBody SrsCallBackDTO srsCallBackDTO) {
         if (liveRoomService.startLive(srsCallBackDTO)) {
-            // TODO netty 通知所有关注了该直播间的用户
-//            rabbitTemplate.convertAndSend(exchange, "live.start", srsCallBackDTO);
             return Result.success(null, "开始直播成功");
         }
         return Result.failed("开始直播失败");

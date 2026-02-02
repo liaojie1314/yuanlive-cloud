@@ -222,7 +222,7 @@ public class AuthServiceImpl implements AuthService {
                     .accessToken(json.getStr("accessToken"))
                     .refreshToken(json.getStr("refreshToken"))
                     .uid(json.getStr("uid"))
-                    .expire(expireTimeStamp)                    .build();
+                    .expire(expireTimeStamp).build();
         } else {
             // 还没成功，直接返回状态码 (0 或 1)
             return QrCodeCheckVO.builder()

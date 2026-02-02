@@ -22,6 +22,7 @@ public class SessionManager {
     private static final Map<String, ChannelGroup> ROOM_MAP = new ConcurrentHashMap<>();
 
     public static final AttributeKey<Long> KEY_USER_ID = AttributeKey.valueOf("userId");
+    public static final AttributeKey<String> KEY_USER_NAME = AttributeKey.valueOf("name");
     public static final AttributeKey<String> KEY_ROOM_ID = AttributeKey.valueOf("roomId");
     public static final AttributeKey<String> KEY_DEVICE_ID = AttributeKey.valueOf("deviceId");
     public static final AttributeKey<String> KEY_TOKEN = AttributeKey.valueOf("token");
@@ -63,14 +64,18 @@ public class SessionManager {
                 USER_MAP.remove(userId);
                 log.info("用户[{}] 断开连接", userId);
             }
+            // Netty 的 ChannelGroup 会自动移除断开的 Channel，不需要手动操作 ROOM_MAP
         } finally {
             MDC.remove("traceId");
         }
-        // Netty 的 ChannelGroup 会自动移除断开的 Channel，不需要手动操作 ROOM_MAP
     }
 
     // 获取房间组（用于广播）
     public ChannelGroup getRoomChannels(String roomId) {
         return ROOM_MAP.get(roomId);
+    }
+
+    public Channel getUserChannel(Long userId) {
+        return USER_MAP.get(userId);
     }
 }

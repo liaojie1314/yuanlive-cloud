@@ -1,12 +1,14 @@
 package blog.yuanyuan.yuanlive.live.service.impl;
 
 import blog.yuanyuan.yuanlive.common.exception.ApiException;
+import blog.yuanyuan.yuanlive.common.result.Result;
 import blog.yuanyuan.yuanlive.common.result.ResultCode;
 import blog.yuanyuan.yuanlive.common.result.ResultPage;
 import blog.yuanyuan.yuanlive.entity.live.entity.LiveCategory;
 import blog.yuanyuan.yuanlive.entity.live.entity.LiveRoom;
 import blog.yuanyuan.yuanlive.entity.user.entity.SysUser;
 import blog.yuanyuan.yuanlive.feign.user.UserFeignClient;
+import blog.yuanyuan.yuanlive.live.constant.MsgType;
 import blog.yuanyuan.yuanlive.live.domain.dto.LiveRoomDTO;
 import blog.yuanyuan.yuanlive.live.domain.dto.LiveRoomQueryDTO;
 import blog.yuanyuan.yuanlive.live.domain.dto.SrsCallBackDTO;
@@ -14,15 +16,19 @@ import blog.yuanyuan.yuanlive.live.domain.vo.LiveRoomDetailVO;
 import blog.yuanyuan.yuanlive.live.domain.vo.LiveRoomVO;
 import blog.yuanyuan.yuanlive.live.mapper.LiveCategoryMapper;
 import blog.yuanyuan.yuanlive.live.mapper.LiveRoomMapper;
+import blog.yuanyuan.yuanlive.live.message.notification.LiveStartMessage;
+import blog.yuanyuan.yuanlive.live.service.LiveCategoryService;
 import blog.yuanyuan.yuanlive.live.service.LiveRoomService;
 import cn.dev33.satoken.stp.StpUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.http.HttpUtil;
+import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -52,10 +58,17 @@ public class LiveRoomServiceImpl extends ServiceImpl<LiveRoomMapper, LiveRoom>
     private UserFeignClient userFeignClient;
     @Resource
     private LiveCategoryMapper liveCategoryMapper;
+    @Resource
+    private RabbitTemplate rabbitTemplate;
+    @Resource
+    private LiveCategoryService categoryService;
+
     @Value("${RedisKey.active-rooms.key}")
     private String active;
     @Value("${RedisKey.room2client.prefix}")
     private String room2client;
+    @Value("${yuanlive.chat.mq.exchange}")
+    private String exchange;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -147,6 +160,22 @@ public class LiveRoomServiceImpl extends ServiceImpl<LiveRoomMapper, LiveRoom>
             stringRedisTemplate.opsForSet().add(active, String.valueOf(roomId));
             stringRedisTemplate.opsForValue().set(room2client + roomId, dto.getClient_id());
             log.info("开始直播 | 房间ID: {} | 主播ID: {}", roomId, uid);
+            // 发送消息给rabbitmq
+            // 构造消息内容
+            Result<SysUser> result = userFeignClient.getInfo(liveRoom.getAnchorId());
+            if (result == null || !result.isSuccess()) {
+                throw new ApiException("获取主播信息失败");
+            }
+            String categoryName = categoryService.lambdaQuery()
+                    .select(LiveCategory::getName)
+                    .eq(LiveCategory::getId, liveRoom.getCategoryId()).list().get(0).getName();
+            LiveStartMessage message = LiveStartMessage.builder()
+                    .roomId(String.valueOf(roomId))
+                    .title(liveRoom.getTitle())
+                    .anchorName(result.getData().getUsername())
+                    .category(categoryName)
+                    .coverImage(liveRoom.getCoverImg()).build();
+            rabbitTemplate.convertAndSend(exchange, "", JSONUtil.toJsonStr(message));
         }
         return updated;
     }

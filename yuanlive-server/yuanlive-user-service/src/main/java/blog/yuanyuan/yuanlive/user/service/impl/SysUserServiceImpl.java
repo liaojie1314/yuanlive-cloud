@@ -134,12 +134,12 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
     }
 
     @Override
-    public Long checkToken(String token) {
+    public SysUser checkToken(String token) {
         try {
             String userId = (String)StpUtil.getLoginIdByToken(token);
             Long uid = Long.valueOf(userId);
             log.info("用户id{}", uid);
-            return uid;
+            return getById(uid);
         } catch (NumberFormatException e) {
             throw new ApiException("Token 无效或过期");
         }

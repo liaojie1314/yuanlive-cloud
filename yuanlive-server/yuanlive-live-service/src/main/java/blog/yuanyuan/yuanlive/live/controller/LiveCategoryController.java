@@ -21,7 +21,7 @@ import java.util.List;
 @Slf4j
 @RestController
 @RequestMapping("/category")
-@Tag(name = "live-category-controller", description = "直播类别管理")
+@Tag(name = "直播类别管理")
 public class LiveCategoryController {
     @Resource
     private LiveCategoryService categoryService;

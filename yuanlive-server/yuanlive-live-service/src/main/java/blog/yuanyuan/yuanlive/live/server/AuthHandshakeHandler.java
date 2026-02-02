@@ -1,6 +1,7 @@
 package blog.yuanyuan.yuanlive.live.server;
 
 import blog.yuanyuan.yuanlive.common.result.Result;
+import blog.yuanyuan.yuanlive.entity.user.entity.SysUser;
 import blog.yuanyuan.yuanlive.feign.user.UserFeignClient;
 import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.StrUtil;
@@ -61,7 +62,6 @@ public class AuthHandshakeHandler extends ChannelDuplexHandler {
                     ctx.close();
                     return;
                 }
-
                 // --- B. 获取 Header 中的 Token ---
                 // 约定 Token 放在 Sec-WebSocket-Protocol 中
                 String token = request.headers().get("Sec-WebSocket-Protocol");
@@ -69,23 +69,22 @@ public class AuthHandshakeHandler extends ChannelDuplexHandler {
                     ctx.channel().attr(SessionManager.KEY_TOKEN).set(token);
                 }
 
-                Result<Long> result = userFeignClient.checkToken(token);
-                Long userId = result.getData();
-                if (userId == null) {
+                Result<SysUser> result = userFeignClient.checkToken(token);
+                SysUser user = result.getData();
+                if (user == null) {
                     log.warn("握手失败: {}", result.getMsg());
                     ctx.close();
                     return;
                 }
-
                 // --- C. 绑定属性到 Channel ---
-                // 绑定基本信息 (只绑 User，不绑 Room)
+                // 绑定基本信息
                 ctx.channel().attr(SessionManager.KEY_DEVICE_ID).set(deviceId);
-                ctx.channel().attr(SessionManager.KEY_USER_ID).set(userId);
-
+                ctx.channel().attr(SessionManager.KEY_USER_ID).set(user.getUid());
+                ctx.channel().attr(SessionManager.KEY_USER_NAME).set(user.getUsername());
                 // --- D. 关键处理：Token 协议头 ---
                 request.headers().remove("Sec-WebSocket-Protocol");
 
-                log.info("握手认证成功 | Device: {} | User: {}", deviceId, userId);
+                log.info("握手认证成功 | Device: {} | User: {}", deviceId, user.getUid());
                 request.setUri("/ws");
             } finally {
                 MDC.remove("traceId");

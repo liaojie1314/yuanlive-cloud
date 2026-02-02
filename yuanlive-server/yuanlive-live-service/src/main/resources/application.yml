@@ -56,3 +56,6 @@ RedisKey:
   room2client:
     prefix: "yuanlive:live:room2client:"
 
+#logging:
+#  level:
+#    blog.yuanyuan.yuanlive: debug

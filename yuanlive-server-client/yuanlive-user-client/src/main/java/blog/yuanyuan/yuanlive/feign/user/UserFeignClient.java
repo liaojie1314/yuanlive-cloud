@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 public interface UserFeignClient {
 
     @GetMapping("/user/checkToken")
-    public Result<Long> checkToken(@RequestParam("token") String token);
+    public Result<SysUser> checkToken(@RequestParam("token") String token);
 
     @GetMapping("/user/getInfo/{userId}")
     public Result<SysUser> getInfo(@PathVariable("userId") Long userId);

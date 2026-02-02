@@ -18,7 +18,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/admin")
-@Tag(name = "admin-controller", description = "管理端接口")
+@Tag(name = "管理端接口")
 public class AdminController {
 
     @Resource

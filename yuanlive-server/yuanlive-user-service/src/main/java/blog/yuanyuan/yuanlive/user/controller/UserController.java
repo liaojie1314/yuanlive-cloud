@@ -14,14 +14,14 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @Slf4j
 @RequestMapping("/user")
-@Tag(name = "user-controller", description = "用户接口")
+@Tag(name = "用户接口")
 public class UserController {
     @Resource
     private SysUserService userService;
 
     @Operation(summary = "检查用户token, 返回用户id")
     @GetMapping("/checkToken")
-    public Result<Long> checkToken(@RequestParam("token") String token) {
+    public Result<SysUser> checkToken(@RequestParam("token") String token) {
         return Result.success(userService.checkToken(token));
     }
 

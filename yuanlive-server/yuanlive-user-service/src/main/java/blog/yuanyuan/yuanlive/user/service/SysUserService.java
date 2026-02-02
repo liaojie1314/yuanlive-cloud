@@ -59,7 +59,7 @@ public interface SysUserService extends IService<SysUser> {
      * @param token token
      * @return 用户ID
      */
-    Long checkToken(String token);
+    SysUser checkToken(String token);
 
     UserVO getUserInfo();
 }

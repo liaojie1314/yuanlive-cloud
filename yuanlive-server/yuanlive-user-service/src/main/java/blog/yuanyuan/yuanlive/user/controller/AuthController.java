@@ -9,13 +9,14 @@ import blog.yuanyuan.yuanlive.user.service.AuthService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
+import jakarta.validation.constraints.NotBlank;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import blog.yuanyuan.yuanlive.common.result.Result;
 
 @RestController
 @RequestMapping("/auth")
-@Tag(name = "auth-controller", description = "认证管理")
+@Tag(name = "用户登录认证相关接口")
 public class AuthController {
     @Resource
     private AuthService authService;
@@ -63,7 +64,7 @@ public class AuthController {
 
     @GetMapping("/qrcode/init")
     @Operation(summary = "获取二维码")
-    public Result<QrCodeVO> initQrCode(@RequestParam("deviceID") String deviceID) {
+    public Result<QrCodeVO> initQrCode(@RequestParam("deviceID") @NotBlank(message = "deviceID不能为空") String deviceID) {
         return Result.success(authService.initQrCode(deviceID));
     }
 

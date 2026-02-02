@@ -1,9 +1,17 @@
 package blog.yuanyuan.yuanlive.live.server;
 
 import blog.yuanyuan.yuanlive.live.constant.MsgType;
-import blog.yuanyuan.yuanlive.live.model.IMPacket;
+import blog.yuanyuan.yuanlive.live.message.*;
+import blog.yuanyuan.yuanlive.live.message.notification.GroupChatNotification;
+import blog.yuanyuan.yuanlive.live.message.request.GroupChatRequest;
+import blog.yuanyuan.yuanlive.live.message.request.JoinRequest;
+import blog.yuanyuan.yuanlive.live.message.request.PingMessage;
+import blog.yuanyuan.yuanlive.live.message.response.AckMessage;
+import blog.yuanyuan.yuanlive.live.message.response.JoinResponse;
+import blog.yuanyuan.yuanlive.live.message.response.PongMessage;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONUtil;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
@@ -26,6 +34,8 @@ public class NettyServerHandler extends SimpleChannelInboundHandler<TextWebSocke
     private SessionManager sessionManager;
     @Resource
     private RabbitTemplate rabbitTemplate;
+    @Resource
+    private ObjectMapper objectMapper;
     @Value("${yuanlive.chat.mq.exchange}")
     private String exchangeName;
 
@@ -44,69 +54,91 @@ public class NettyServerHandler extends SimpleChannelInboundHandler<TextWebSocke
     protected void channelRead0(ChannelHandlerContext ctx, TextWebSocketFrame frame) throws Exception {
         // 1. 解析消息
         log.info("收到消息: {}", frame.text());
-        IMPacket packet = JSONUtil.toBean(frame.text(), IMPacket.class);
-        log.info("收到消息: {}", packet);
-        if (packet == null) return;
+        Message message = objectMapper.readValue(frame.text(), Message.class);
+        log.info("收到消息: {}", message);
+        if (message == null) return;
 
-        switch (packet.getType()) {
-            case PING:
-                // 心跳保持不变
-                log.info("收到心跳包");
-                handlePing(ctx);
-                break;
-
-            case JOIN:
-                // 👉 重点：在这里处理加入房间
-                handleJoinRoom(ctx, packet);
-                break;
-
-            case CHAT:
-                // 发送聊天
-                handleChat(ctx, packet);
-                break;
-
-            default:
-                break;
+        // 根据具体消息类型进行处理
+        if (message instanceof PingMessage ping) {
+            log.info("收到心跳包");
+            handlePing(ctx, ping);
+        } else if (message instanceof JoinRequest join) {
+            // 👉 重点：在这里处理加入房间
+            handleJoinRoom(ctx, join);
+        } else if (message instanceof GroupChatRequest chat) {
+            // 发送聊天
+            handleChat(ctx, chat);
+        } else {
+            // 处理其他通用消息类型
+            handleGenericMessage(ctx, message);
         }
     }
 
     // 1. 处理心跳
-    private void handlePing(ChannelHandlerContext ctx) {
-        IMPacket pong = new IMPacket();
-        pong.setType(MsgType.PONG);
+    private void handlePing(ChannelHandlerContext ctx, PingMessage ping) {
+        PongMessage pong = PongMessage.builder()
+                .msgId(ping.getMsgId())
+                .build();
         sendMsg(ctx, pong);
     }
 
-    private void handleJoinRoom(ChannelHandlerContext ctx, IMPacket packet) {
-        String roomId = packet.getRoomId();
+    private void handleJoinRoom(ChannelHandlerContext ctx, JoinRequest join) {
+        String roomId = join.getRoomId();
         if (StrUtil.isNotBlank(roomId)) {
             // 将当前连接加入到 Room Group
             sessionManager.joinRoom(roomId, ctx.channel());
-
-            // 可选：回复一个 LOGIN_SUCCESS 消息给前端
-            // ctx.writeAndFlush(...)
+            JoinResponse response = JoinResponse.builder()
+                    .msgId(join.getMsgId())
+                    .code(200)
+                    .type(MsgType.JOIN_RESP)
+                    .success(true)
+                    .onlineCount(1)
+                    .build();
+            sendMsg(ctx, response);
+            log.info("用户[{}] 加入房间[{}] 成功", ctx.channel().attr(SessionManager.KEY_USER_ID).get(), roomId);
         }
     }
 
     // 2. 处理聊天
-    private void handleChat(ChannelHandlerContext ctx, IMPacket packet) {
-        IMPacket ack = new IMPacket();
-        ack.setType(MsgType.ACK);
+    private void handleChat(ChannelHandlerContext ctx, GroupChatRequest chat) {
+        AckMessage ack = AckMessage.builder()
+                .msgId(chat.getMsgId())
+                .build();
         sendMsg(ctx, ack);
-        String currentRoomId = ctx.channel().attr(SessionManager.KEY_ROOM_ID).get();
-        if (currentRoomId == null) {
-            return;
+
+        // 构造广播通知 (Notification)，补全发送者信息
+        Long userId = ctx.channel().attr(SessionManager.KEY_USER_ID).get();
+        String roomId = ctx.channel().attr(SessionManager.KEY_ROOM_ID).get();
+        String username = ctx.channel().attr(SessionManager.KEY_USER_NAME).get();
+
+        if (roomId != null) {
+            GroupChatNotification notification = GroupChatNotification.builder()
+                    .type(MsgType.CHAT_NOTIFY) // 使用专用的通知类型
+                    .roomId(roomId)
+                    .userId(userId)
+                    .username(username)
+                    .content(chat.getContent())
+                    .timestamp(System.currentTimeMillis())
+                    .build();
+            rabbitTemplate.convertAndSend(exchangeName, "", JSONUtil.toJsonStr(notification));
         }
-        packet.setUserId(ctx.channel().attr(SessionManager.KEY_USER_ID).get());
-        packet.setRoomId(currentRoomId);
-        // 广播
-        String json = JSONUtil.toJsonStr(packet);
-        rabbitTemplate.convertAndSend(exchangeName, "", json);
+    }
+
+    // 处理通用消息
+    private void handleGenericMessage(ChannelHandlerContext ctx, Message message) {
+        // 对于其他类型的消息，直接转发到消息队列
+        String currentRoomId = ctx.channel().attr(SessionManager.KEY_ROOM_ID).get();
+        if (currentRoomId != null) {
+            message.setRoomId(currentRoomId);
+            message.setUserId(ctx.channel().attr(SessionManager.KEY_USER_ID).get());
+            String json = JSONUtil.toJsonStr(message);
+            rabbitTemplate.convertAndSend(exchangeName, "", json);
+        }
     }
 
     // 辅助发送方法
-    private void sendMsg(ChannelHandlerContext ctx, IMPacket packet) {
-        ctx.channel().writeAndFlush(new TextWebSocketFrame(JSONUtil.toJsonStr(packet)));
+    private void sendMsg(ChannelHandlerContext ctx, Message message) {
+        ctx.channel().writeAndFlush(new TextWebSocketFrame(JSONUtil.toJsonStr(message)));
     }
 
     // 处理心跳超时 (IdleStateHandler 触发)
