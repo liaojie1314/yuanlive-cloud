@@ -67,14 +67,14 @@ redis-key:
     ttl: ${redis-key.refresh-token.ttl}
     timeunit: ${redis-key.refresh-token.timeunit}
   login-limit:
-    threshold: 3
+    threshold: 3 # 登录失败次数阈值
     lock:
       prefix: "yuanlive:user:login:limit:"
-      ttl: 180
+      ttl: 180 # 登陆失败锁定时间
       timeunit: SECONDS
     fail-count:
       prefix: "yuanlive:user:login:failcount:"
-      ttl: 10
+      ttl: 10 # 登录失败次数缓存时间
       timeunit: SECONDS
 
 
