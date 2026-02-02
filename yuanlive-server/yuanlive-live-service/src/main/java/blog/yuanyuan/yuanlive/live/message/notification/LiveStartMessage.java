@@ -22,6 +22,7 @@ public class LiveStartMessage extends Message {
     private String category;
     private String anchorName;
 
+
     @Override
     public MsgType getType() {
         return MsgType.LIVE_START;

@@ -52,6 +52,7 @@ public class ChatMessageConsumer {
                     log.info("私聊[{}]发送成功: {}", singleMsg.getToUserId(), message.getType());
                 }
             }
+            //TODO 对开播消息通知订阅了该房间的用户
         } catch (Exception e) {
             log.error("MQ消费异常", e);
         }

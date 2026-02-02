@@ -66,6 +66,16 @@ redis-key:
     prefix: "yuanlive:user:user2refresh-token:"
     ttl: ${redis-key.refresh-token.ttl}
     timeunit: ${redis-key.refresh-token.timeunit}
+  login-limit:
+    threshold: 3
+    lock:
+      prefix: "yuanlive:user:login:limit:"
+      ttl: 180
+      timeunit: SECONDS
+    fail-count:
+      prefix: "yuanlive:user:login:failcount:"
+      ttl: 10
+      timeunit: SECONDS
 
 
 cosid:

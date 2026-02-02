@@ -29,6 +29,7 @@ import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import me.ahoo.cosid.provider.IdGeneratorProvider;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.data.redis.core.script.DefaultRedisScript;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import blog.yuanyuan.yuanlive.common.result.Result;
@@ -62,6 +63,10 @@ public class AuthServiceImpl implements AuthService {
     private SysUserService userService;
     @Resource
     private SysRoleService roleService;
+    @Resource
+    private LoginLimitProperties loginLimitProperties;
+    @Resource(name = "loginLimitScript")
+    private DefaultRedisScript<Long> loginLimitScript;
 
     @Override
     public void getCode(CodeDTO codeDTO) {
@@ -121,9 +126,18 @@ public class AuthServiceImpl implements AuthService {
         } else {
             user = userService.lambdaQuery().eq(SysUser::getUsername, loginDTO.getAccount()).one();
         }
-        if (user == null || !passwordEncoder.matches(loginDTO.getPassword(), user.getPassword())) {
-            throw new RuntimeException("账号或密码错误");
+        if (user == null) {
+            throw new ApiException("账号");
         }
+        // 先判断账号是否存在，在执行lua脚本，防止针对账号的攻击
+        LoginLimit(user);
+        if (!passwordEncoder.matches(loginDTO.getPassword(), user.getPassword())) {
+            throw new ApiException("密码错误");
+        }
+        // 登陆成功，清理failCount
+        String failKey = loginLimitProperties.getFailCount().getPrefix() + user.getUid();
+        stringRedisTemplate.delete(failKey);
+
         if (isRepeatLogin(user.getUid(), loginDTO.getDevice(), loginDTO.getDeviceID())) {
             // 如果重复登陆
             String accessToken = StpUtil.getTokenValueByLoginId(user.getUid(), loginDTO.getDevice());
@@ -150,6 +164,29 @@ public class AuthServiceImpl implements AuthService {
                 .set(mappingKey, refreshToken, user2RefreshTokenProperties.getTtl(), TimeUnit.valueOf(user2RefreshTokenProperties.getTimeunit()));
         Long expireTimeStamp = getExpireTimeStamp(StpUtil.getTokenTimeout());
         return new LoginVO(accessToken, refreshToken, user.getRole().getCode(), user.getUid().toString(), expireTimeStamp);
+    }
+
+    private void LoginLimit(SysUser user) {
+        // 构造脚本参数
+        String failKey = loginLimitProperties.getFailCount().getPrefix() + user.getUid();
+        Long failTtl = loginLimitProperties.getFailCount().getTtl();
+        String failTimeunit = loginLimitProperties.getFailCount().getTimeunit();
+        long failSeconds = TimeUnit.valueOf(failTimeunit).toSeconds(failTtl);
+
+        String lockKey = loginLimitProperties.getLock().getPrefix() + user.getUid();
+        Long lockTtl = loginLimitProperties.getLock().getTtl();
+        String lockTimeunit = loginLimitProperties.getLock().getTimeunit();
+        long lockSeconds = TimeUnit.valueOf(lockTimeunit).toSeconds(lockTtl);
+
+        Long lockTime = stringRedisTemplate
+                .execute(loginLimitScript,
+                        Arrays.asList(failKey, lockKey),
+                        String.valueOf(loginLimitProperties.getThreshold()),
+                        String.valueOf(failSeconds),
+                        String.valueOf(lockSeconds));
+        if (lockTime > 0) {
+            throw new ApiException("登录失败次数过多，请在 " + lockTime + " 秒后重试");
+        }
     }
 
     private void setRoleAndPerms(SysUser user) {
