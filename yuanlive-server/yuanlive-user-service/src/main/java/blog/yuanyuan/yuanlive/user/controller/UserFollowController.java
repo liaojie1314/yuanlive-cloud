@@ -50,6 +50,13 @@ public class UserFollowController {
         return Result.success(following);
     }
 
+    @GetMapping("/following/live/{userId}")
+    @Operation(summary = "获取某人正在直播的关注列表")
+    public Result<List<UserFollowVO>> getFollowingLive(@PathVariable("userId") Long userId) {
+        List<UserFollowVO> followingLive = userFollowService.getFollowingLive(userId);
+        return Result.success(followingLive);
+    }
+
     @GetMapping("/check/{followUserId}")
     @Operation(summary = "检查当前用户是否关注了指定用户")
     public Result<Boolean> checkFollowing(@PathVariable("followUserId") Long followUserId) {

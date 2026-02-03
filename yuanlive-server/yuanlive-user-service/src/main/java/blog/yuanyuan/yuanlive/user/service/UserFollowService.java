@@ -34,4 +34,6 @@ public interface UserFollowService extends IService<UserFollow> {
      * 检查用户是否关注了目标用户
      */
     Boolean checkFollowing(Long userId, Long followUserId);
+
+    List<UserFollowVO> getFollowingLive(Long userId);
 }

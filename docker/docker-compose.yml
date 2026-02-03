@@ -112,6 +112,18 @@ services:
     extra_hosts:
       - "host.docker.internal:host-gateway"
     restart: unless-stopped
+  # sentinel 熔断
+  sentinel:
+    image: bladex/sentinel-dashboard:1.8.9
+    container_name: yuanlive-sentinel
+    environment:
+      - SENTINEL_DASHBOARD_AUTH_USERNAME=sentinel
+      - SENTINEL_DASHBOARD_AUTH_PASSWORD=sentinel
+    ports:
+      - "8858:8858"
+    networks:
+      - live-net
+    restart: unless-stopped
   # redis
   redis:
     image: redis:8.4.0

@@ -77,6 +77,8 @@ redis-key:
       prefix: "yuanlive:user:login:failcount:"
       ttl: 10 # 登录失败次数缓存时间
       timeunit: SECONDS
+  anchor-map: # 存储在线主播与房间id的映射 anchor_id -> room_id
+    key: "yuanlive:live:anchor_map"
 
 
 cosid:

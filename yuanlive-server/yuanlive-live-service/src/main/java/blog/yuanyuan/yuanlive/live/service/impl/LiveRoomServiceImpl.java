@@ -65,6 +65,8 @@ public class LiveRoomServiceImpl extends ServiceImpl<LiveRoomMapper, LiveRoom>
 
     @Value("${RedisKey.active-rooms.key}")
     private String active;
+    @Value("${RedisKey.anchor-map.key}")
+    private String anchorMap;
     @Value("${RedisKey.room2client.prefix}")
     private String room2client;
     @Value("${yuanlive.chat.mq.exchange}")
@@ -159,6 +161,7 @@ public class LiveRoomServiceImpl extends ServiceImpl<LiveRoomMapper, LiveRoom>
         if (updated) {
             stringRedisTemplate.opsForSet().add(active, String.valueOf(roomId));
             stringRedisTemplate.opsForValue().set(room2client + roomId, dto.getClient_id());
+            stringRedisTemplate.opsForHash().put(anchorMap, String.valueOf(uid), String.valueOf(roomId));
             log.info("开始直播 | 房间ID: {} | 主播ID: {}", roomId, uid);
             // 发送消息给rabbitmq
             // 构造消息内容
@@ -190,7 +193,7 @@ public class LiveRoomServiceImpl extends ServiceImpl<LiveRoomMapper, LiveRoom>
             log.info("忽略陈旧的下播回调，当前房间[{}]已有新连接[{}]", roomId, dto.getClient_id());
             return false;
         }
-
+        Long anchorId = getById(roomId).getAnchorId();
         LiveRoom liveRoom = getById(roomId);
         if (liveRoom == null) {
             throw new ApiException("直播间不存在");
@@ -208,6 +211,7 @@ public class LiveRoomServiceImpl extends ServiceImpl<LiveRoomMapper, LiveRoom>
             log.info("结束直播 | 房间ID: {}", roomId);
             stringRedisTemplate.delete(room2client + roomId);
             stringRedisTemplate.opsForSet().remove(active, String.valueOf(roomId));
+            stringRedisTemplate.opsForHash().delete(anchorMap, String.valueOf(anchorId));
         }
         return updated;
     }

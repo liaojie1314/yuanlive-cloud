@@ -14,13 +14,12 @@ import blog.yuanyuan.yuanlive.user.service.SysUserService;
 import blog.yuanyuan.yuanlive.user.mapper.UserFollowMapper;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 
@@ -31,6 +30,11 @@ public class UserFollowServiceImpl extends ServiceImpl<UserFollowMapper, UserFol
 
     @Resource
     private SysUserService sysUserService;
+    @Resource
+    private StringRedisTemplate stringRedisTemplate;
+
+    @Value("${redis-key.anchor-map.key}")
+    private String anchorMap;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -162,6 +166,65 @@ public class UserFollowServiceImpl extends ServiceImpl<UserFollowMapper, UserFol
                 .eq(UserFollow::getFollowUserId, followUserId)
                 .eq(UserFollow::getStatus, 1); // 只查询已关注的
         return this.count(wrapper) > 0;
+    }
+
+    @Override
+    public List<UserFollowVO> getFollowingLive(Long userId) {
+        List<UserFollow> followList = lambdaQuery()
+                .eq(UserFollow::getUserId, userId)
+                .eq(UserFollow::getStatus, 1).list();
+        if (CollUtil.isEmpty(followList)) {
+            return Collections.emptyList();
+        }
+        List<Object> ids = followList.stream()
+                .map(user -> String.valueOf(user.getFollowUserId()))
+                .collect(Collectors.toList());
+        List<Object> values = stringRedisTemplate
+                .opsForHash().multiGet(anchorMap, ids);
+        
+        // 提取正在直播的主播ID列表
+        List<Long> liveAnchorIds = new ArrayList<>();
+        for (int i = 0; i < values.size(); i++) {
+            if (values.get(i) != null) {
+                liveAnchorIds.add(followList.get(i).getFollowUserId());
+            }
+        }
+        
+        if (CollUtil.isEmpty(liveAnchorIds)) {
+            return Collections.emptyList();
+        }
+        
+        // 批量查询主播信息
+        List<SysUser> liveAnchors = sysUserService.lambdaQuery()
+                .select(SysUser::getUid, SysUser::getAvatar, SysUser::getUsername)
+                .in(SysUser::getUid, liveAnchorIds).list();
+        
+        // 将主播信息转为Map便于快速查找
+        Map<Long, SysUser> anchorMapById = liveAnchors.stream()
+                .collect(Collectors.toMap(SysUser::getUid, user -> user));
+        
+        // 构建结果列表
+        List<UserFollowVO> result = new ArrayList<>();
+        for (int i = 0; i < followList.size(); i++) {
+            if (values.get(i) != null) { // 此用户正在直播
+                Long anchorId = followList.get(i).getFollowUserId();
+                SysUser anchor = anchorMapById.get(anchorId);
+                if (anchor != null) {
+                    UserFollowVO vo = UserFollowVO.builder()
+                            .id(followList.get(i).getId())
+                            .userId(followList.get(i).getUserId())
+                            .followUserId(anchorId)
+                            .createTime(followList.get(i).getCreateTime())
+                            .username(anchor.getUsername())
+                            .avatar(anchor.getAvatar())
+                            .status(1) // 表示正在直播
+                            .build();
+                    result.add(vo);
+                }
+            }
+        }
+        
+        return result;
     }
 }
 

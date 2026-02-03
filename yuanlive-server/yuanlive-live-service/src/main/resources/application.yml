@@ -56,6 +56,9 @@ RedisKey:
     key: "yuanlive:live:active_rooms"
   room2client:
     prefix: "yuanlive:live:room2client:"
+  anchor-map: # 存储在线主播与房间id的映射 anchor_id -> room_id
+    key: "yuanlive:live:anchor_map"
+
 
 #logging:
 #  level:

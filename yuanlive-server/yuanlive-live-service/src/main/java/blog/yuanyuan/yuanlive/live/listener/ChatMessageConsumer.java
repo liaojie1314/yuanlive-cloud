@@ -5,6 +5,7 @@ import blog.yuanyuan.yuanlive.entity.user.entity.UserFollow;
 import blog.yuanyuan.yuanlive.entity.user.vo.UserFollowVO;
 import blog.yuanyuan.yuanlive.feign.user.UserFeignClient;
 import blog.yuanyuan.yuanlive.live.message.Message;
+import blog.yuanyuan.yuanlive.live.message.WsResult;
 import blog.yuanyuan.yuanlive.live.message.notification.LiveStartMessage;
 import blog.yuanyuan.yuanlive.live.message.request.SingleChatRequest;
 import blog.yuanyuan.yuanlive.live.server.SessionManager;
@@ -58,7 +59,8 @@ public class ChatMessageConsumer {
                     for (UserFollowVO follow : followers) {
                         Channel channel = sessionManager.getUserChannel(follow.getUserId());
                         if (channel != null && channel.isActive()) {
-                            channel.writeAndFlush(new TextWebSocketFrame(JSONUtil.toJsonStr(liveStart)));
+                            WsResult live = WsResult.of(liveStart);
+                            channel.writeAndFlush(new TextWebSocketFrame(JSONUtil.toJsonStr(live)));
                             log.info("关注者[{}]发送成功: {}", follow.getUserId(), liveStart.getType());
                         }
                     }
@@ -67,13 +69,15 @@ public class ChatMessageConsumer {
             if (StrUtil.isNotBlank(message.getRoomId())) {
                 ChannelGroup group = sessionManager.getRoomChannels(message.getRoomId());
                 if (group != null && !group.isEmpty()) {
-                    group.writeAndFlush(new TextWebSocketFrame(messageStr));
+                    WsResult broadcast = WsResult.of(message);
+                    group.writeAndFlush(new TextWebSocketFrame(JSONUtil.toJsonStr(broadcast)));
                     log.info("房间[{}]广播成功: {}", message.getRoomId(), message.getType());
                 }
             } else if (message instanceof SingleChatRequest singleMsg) {
                 Channel channel = sessionManager.getUserChannel(singleMsg.getToUserId());
                 if (channel != null && channel.isActive()) {
-                    channel.writeAndFlush(new TextWebSocketFrame(messageStr));
+                    WsResult single = WsResult.of(singleMsg);
+                    channel.writeAndFlush(new TextWebSocketFrame(JSONUtil.toJsonStr(single)));
                     log.info("私聊[{}]发送成功: {}", singleMsg.getToUserId(), message.getType());
                 }
             }

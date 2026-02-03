@@ -138,7 +138,8 @@ public class NettyServerHandler extends SimpleChannelInboundHandler<TextWebSocke
 
     // 辅助发送方法
     private void sendMsg(ChannelHandlerContext ctx, Message message) {
-        ctx.channel().writeAndFlush(new TextWebSocketFrame(JSONUtil.toJsonStr(message)));
+        WsResult result = WsResult.of(message);
+        ctx.channel().writeAndFlush(new TextWebSocketFrame(JSONUtil.toJsonStr(result)));
     }
 
     // 处理心跳超时 (IdleStateHandler 触发)
