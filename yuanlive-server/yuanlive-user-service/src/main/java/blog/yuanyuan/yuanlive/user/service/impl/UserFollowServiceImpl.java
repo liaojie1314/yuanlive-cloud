@@ -1,6 +1,9 @@
 package blog.yuanyuan.yuanlive.user.service.impl;
 
+import blog.yuanyuan.yuanlive.common.exception.ApiException;
+import blog.yuanyuan.yuanlive.user.domain.vo.UserVO;
 import cn.dev33.satoken.stp.StpUtil;
+import cn.hutool.core.collection.CollUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import blog.yuanyuan.yuanlive.entity.user.entity.SysUser;
@@ -11,15 +14,19 @@ import blog.yuanyuan.yuanlive.user.service.UserFollowService;
 import blog.yuanyuan.yuanlive.user.service.SysUserService;
 import blog.yuanyuan.yuanlive.user.mapper.UserFollowMapper;
 import jakarta.annotation.Resource;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 
 @Service
+@Slf4j
 public class UserFollowServiceImpl extends ServiceImpl<UserFollowMapper, UserFollow>
     implements UserFollowService{
 
@@ -27,16 +34,22 @@ public class UserFollowServiceImpl extends ServiceImpl<UserFollowMapper, UserFol
     private SysUserService sysUserService;
 
     @Override
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public Boolean followUser(UserFollowDTO userFollowDTO) {
         Long userId = userFollowDTO.getUserId();
         Long followUserId = userFollowDTO.getFollowUserId();
-
+        UserVO following = sysUserService.getUserById(followUserId);
+        if (Objects.equals(userId, followUserId)) {
+            throw new ApiException("不能关注自己");
+        }
+        if (following == null || following.getStatus() != 1) {
+            throw new ApiException("用户不存在或已停用");
+        }
         // 检查是否已经关注
         LambdaQueryWrapper<UserFollow> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(UserFollow::getUserId, userId)
                 .eq(UserFollow::getFollowUserId, followUserId);
-        UserFollow existingFollow = this.list(wrapper).get(0);
+        UserFollow existingFollow = CollUtil.getFirst(list(wrapper));
 
         if (existingFollow != null) {
             // 如果是取消状态，则更新为关注状态
@@ -65,7 +78,7 @@ public class UserFollowServiceImpl extends ServiceImpl<UserFollowMapper, UserFol
         LambdaQueryWrapper<UserFollow> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(UserFollow::getUserId, userId)
                 .eq(UserFollow::getFollowUserId, followUserId);
-        UserFollow existingFollow = this.list(wrapper).get(0);
+        UserFollow existingFollow = CollUtil.getFirst(list(wrapper));
         if (existingFollow != null && existingFollow.getStatus() == 1) {
             // 更新状态为取消关注
             existingFollow.setStatus(0);
@@ -80,10 +93,12 @@ public class UserFollowServiceImpl extends ServiceImpl<UserFollowMapper, UserFol
         wrapper.eq(UserFollow::getFollowUserId, followUserId)
                 .eq(UserFollow::getStatus, 1); // 只查询已关注的
         List<UserFollow> userFollows = this.list(wrapper);
-
         List<Long> followersIds = userFollows.stream().map(UserFollow::getUserId).toList();
+        if (CollUtil.isEmpty(followersIds)) {
+            return Collections.emptyList();
+        }
         List<SysUser> followers = sysUserService.lambdaQuery()
-                .select(SysUser::getAvatar, SysUser::getUsername)
+                .select(SysUser::getUid, SysUser::getAvatar, SysUser::getUsername)
                 .in(SysUser::getUid, followersIds).list();
 
         return userFollows.stream().map(follow -> {
@@ -113,9 +128,12 @@ public class UserFollowServiceImpl extends ServiceImpl<UserFollowMapper, UserFol
                 .eq(UserFollow::getStatus, 1); // 只查询已关注的
         List<UserFollow> userFollows = this.list(wrapper);
 
-        List<Long> followingIds = userFollows.stream().map(UserFollow::getUserId).toList();
+        List<Long> followingIds = userFollows.stream().map(UserFollow::getFollowUserId).toList();
+        if (CollUtil.isEmpty(followingIds)) {
+            return Collections.emptyList();
+        }
         List<SysUser> following = sysUserService.lambdaQuery()
-                .select(SysUser::getAvatar, SysUser::getUsername)
+                .select(SysUser::getUid, SysUser::getAvatar, SysUser::getUsername)
                 .in(SysUser::getUid, followingIds).list();
 
         return userFollows.stream().map(follow -> {

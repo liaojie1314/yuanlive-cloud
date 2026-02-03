@@ -6,6 +6,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
 import java.util.Date;
@@ -14,6 +15,7 @@ import java.util.Date;
 @Schema(description = "用户关注信息VO")
 @SuperBuilder
 @EqualsAndHashCode(callSuper = true)
+@NoArgsConstructor
 @JsonIgnoreProperties(value = {"updateTime"})
 public class UserFollowVO extends UserFollow {
     @Schema(description = "用户名")

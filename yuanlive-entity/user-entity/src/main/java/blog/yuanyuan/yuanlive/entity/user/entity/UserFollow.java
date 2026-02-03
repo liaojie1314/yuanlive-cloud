@@ -4,10 +4,12 @@ package blog.yuanyuan.yuanlive.entity.user.entity;
 import java.util.Date;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
 @Data
 @SuperBuilder
+@NoArgsConstructor
 public class UserFollow {
     @Schema(description="主键ID")
     private Long id;

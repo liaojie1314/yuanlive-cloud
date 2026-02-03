@@ -12,6 +12,6 @@ public class UserFollowDTO {
     @NotNull(message = "被关注用户的ID不能为空")
     private Long followUserId;
 
-    @Schema(description = "当前操作用户的ID")
+    @Schema(description = "当前操作用户的ID,由后端设置")
     private Long userId;
 }
