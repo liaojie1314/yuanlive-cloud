@@ -2,7 +2,7 @@ package blog.yuanyuan.yuanlive.user.controller;
 
 import blog.yuanyuan.yuanlive.common.result.Result;
 import blog.yuanyuan.yuanlive.user.domain.dto.UserFollowDTO;
-import blog.yuanyuan.yuanlive.user.domain.vo.UserFollowVO;
+import blog.yuanyuan.yuanlive.entity.user.vo.UserFollowVO;
 import blog.yuanyuan.yuanlive.user.service.UserFollowService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;

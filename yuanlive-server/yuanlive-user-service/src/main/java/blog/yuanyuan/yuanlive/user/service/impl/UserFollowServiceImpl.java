@@ -2,14 +2,13 @@ package blog.yuanyuan.yuanlive.user.service.impl;
 
 import blog.yuanyuan.yuanlive.common.exception.ApiException;
 import blog.yuanyuan.yuanlive.user.domain.vo.UserVO;
-import cn.dev33.satoken.stp.StpUtil;
 import cn.hutool.core.collection.CollUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import blog.yuanyuan.yuanlive.entity.user.entity.SysUser;
 import blog.yuanyuan.yuanlive.entity.user.entity.UserFollow;
 import blog.yuanyuan.yuanlive.user.domain.dto.UserFollowDTO;
-import blog.yuanyuan.yuanlive.user.domain.vo.UserFollowVO;
+import blog.yuanyuan.yuanlive.entity.user.vo.UserFollowVO;
 import blog.yuanyuan.yuanlive.user.service.UserFollowService;
 import blog.yuanyuan.yuanlive.user.service.SysUserService;
 import blog.yuanyuan.yuanlive.user.mapper.UserFollowMapper;

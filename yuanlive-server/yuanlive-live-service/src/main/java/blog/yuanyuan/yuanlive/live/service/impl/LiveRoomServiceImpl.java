@@ -172,6 +172,7 @@ public class LiveRoomServiceImpl extends ServiceImpl<LiveRoomMapper, LiveRoom>
             LiveStartMessage message = LiveStartMessage.builder()
                     .roomId(String.valueOf(roomId))
                     .title(liveRoom.getTitle())
+                    .userId(uid)
                     .anchorName(result.getData().getUsername())
                     .category(categoryName)
                     .coverImage(liveRoom.getCoverImg()).build();

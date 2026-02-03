@@ -1,6 +1,11 @@
 package blog.yuanyuan.yuanlive.live.listener;
 
+import blog.yuanyuan.yuanlive.common.result.Result;
+import blog.yuanyuan.yuanlive.entity.user.entity.UserFollow;
+import blog.yuanyuan.yuanlive.entity.user.vo.UserFollowVO;
+import blog.yuanyuan.yuanlive.feign.user.UserFeignClient;
 import blog.yuanyuan.yuanlive.live.message.Message;
+import blog.yuanyuan.yuanlive.live.message.notification.LiveStartMessage;
 import blog.yuanyuan.yuanlive.live.message.request.SingleChatRequest;
 import blog.yuanyuan.yuanlive.live.server.SessionManager;
 import cn.hutool.core.util.StrUtil;
@@ -18,6 +23,8 @@ import org.springframework.amqp.rabbit.annotation.QueueBinding;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
+
 @Component
 @Slf4j
 public class ChatMessageConsumer {
@@ -25,6 +32,8 @@ public class ChatMessageConsumer {
     SessionManager sessionManager;
     @Resource
     ObjectMapper objectMapper;
+    @Resource
+    UserFeignClient userFeignClient;
 
     @RabbitListener(bindings = @QueueBinding(
             value = @Queue(
@@ -39,6 +48,22 @@ public class ChatMessageConsumer {
         log.info("收到 MQ 消息: {}", messageStr);
         try {
             Message message = objectMapper.readValue(messageStr, Message.class);
+            log.info("message class: {}", message.getClass());
+            if (message instanceof LiveStartMessage liveStart) {
+                // 为关注者发送开播消息
+                // 获取关注者
+                Result<List<UserFollowVO>> result = userFeignClient.getFollowers(liveStart.getUserId());
+                if (result.getData() != null) {
+                    List<UserFollowVO> followers = result.getData();
+                    for (UserFollowVO follow : followers) {
+                        Channel channel = sessionManager.getUserChannel(follow.getUserId());
+                        if (channel != null && channel.isActive()) {
+                            channel.writeAndFlush(new TextWebSocketFrame(JSONUtil.toJsonStr(liveStart)));
+                            log.info("关注者[{}]发送成功: {}", follow.getUserId(), liveStart.getType());
+                        }
+                    }
+                }
+            }
             if (StrUtil.isNotBlank(message.getRoomId())) {
                 ChannelGroup group = sessionManager.getRoomChannels(message.getRoomId());
                 if (group != null && !group.isEmpty()) {
@@ -52,7 +77,6 @@ public class ChatMessageConsumer {
                     log.info("私聊[{}]发送成功: {}", singleMsg.getToUserId(), message.getType());
                 }
             }
-            //TODO 对开播消息通知订阅了该房间的用户
         } catch (Exception e) {
             log.error("MQ消费异常", e);
         }

@@ -1,15 +1,12 @@
-package blog.yuanyuan.yuanlive.user.domain.vo;
+package blog.yuanyuan.yuanlive.entity.user.vo;
 
 import blog.yuanyuan.yuanlive.entity.user.entity.UserFollow;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
-
-import java.util.Date;
 
 @Data
 @Schema(description = "用户关注信息VO")
