@@ -28,6 +28,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
+import me.ahoo.cosid.provider.IdGeneratorProvider;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Value;
@@ -54,6 +55,8 @@ public class LiveRoomServiceImpl extends ServiceImpl<LiveRoomMapper, LiveRoom>
 
     @Resource
     private StringRedisTemplate stringRedisTemplate;
+    @Resource
+    private IdGeneratorProvider idGeneratorProvider;
     @Resource
     private UserFeignClient userFeignClient;
     @Resource
@@ -91,6 +94,7 @@ public class LiveRoomServiceImpl extends ServiceImpl<LiveRoomMapper, LiveRoom>
         liveRoom.setAnchorId(anchorId);
         liveRoom.setRoomStatus(0); // 默认未开播
         liveRoom.setViewCount(0);
+        liveRoom.setId(idGeneratorProvider.getRequired("safe-js").generate());
 
         boolean saved = save(liveRoom);
         if (saved) {

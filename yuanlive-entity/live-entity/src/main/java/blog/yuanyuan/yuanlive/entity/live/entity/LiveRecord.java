@@ -2,12 +2,17 @@ package blog.yuanyuan.yuanlive.entity.live.entity;
 
 
 import java.util.Date;
+
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableId;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
+import me.ahoo.cosid.annotation.CosId;
 
 @Data
 public class LiveRecord {
     @Schema(description="记录ID")
+    @TableId(type = IdType.INPUT)
     private Long id;
     @Schema(description="主播ID")
     private Long anchorId;

@@ -80,20 +80,29 @@ redis-key:
   anchor-map: # 存储在线主播与房间id的映射 anchor_id -> room_id
     key: "yuanlive:live:anchor_map"
 
-
 cosid:
-  namespace: yuanlive
+  namespace: ${spring.application.name}
   machine:
     enabled: true
     distributor:
       type: redis
+  generator:
+    enabled: true
   snowflake:
     enabled: true
+    share:
+      clock-sync: true
+    zone-id: Asia/Shanghai
+    provider:
+      safe-js:
+        machine-bit: 4
+        sequence-bit: 8
+    epoch: 1577203200000
   segment:
     enabled: true
     distributor:
       type: redis
     provider:
-      user_id:
-        offset: 100000
-        step: 1000
+      user-follow:
+        step: 5000
+        offset: 1000

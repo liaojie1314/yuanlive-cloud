@@ -2,16 +2,21 @@ package blog.yuanyuan.yuanlive.entity.user.entity;
 
 
 import java.util.Date;
+
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableId;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
+import me.ahoo.cosid.annotation.CosId;
 
 @Data
 @SuperBuilder
 @NoArgsConstructor
 public class UserFollow {
     @Schema(description="主键ID")
+    @TableId(type = IdType.INPUT)
     private Long id;
     @Schema(description="粉丝ID (发起关注的人)")
     private Long userId;

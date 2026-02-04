@@ -3,20 +3,27 @@ package blog.yuanyuan.yuanlive.entity.user.entity;
 
 import java.util.Date;
 
+import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
+import me.ahoo.cosid.annotation.CosId;
+import org.apache.ibatis.annotations.Update;
 
 @Data
 public class SysUser {
     @Schema(description="用户ID")
-    @TableId
+    @NotNull(message = "用户ID不能为空", groups = Update.class)
+    @TableId(type = IdType.INPUT)
+    @JsonSerialize(using = ToStringSerializer.class)
     private Long uid;
     @Schema(description="用户名")
     private String username;
     @Schema(description="密码(BCrypt加密)")
-    @JsonIgnore
     private String password;
     @Schema(description="头像")
     private String avatar;

@@ -108,11 +108,13 @@ public class AuthServiceImpl implements AuthService {
         String password = registerDTO.getPassword();
         password = passwordEncoder.encode(password);
         registerDTO.setPassword(password);
+        long uid = idGeneratorProvider.getRequired("safe-js").generate();
         if (registerDTO.getUsername().isEmpty()) {
-            String name = "user" + idGeneratorProvider.getRequired("user_id").generate();
+            String name = "user-" + uid;
             registerDTO.setUsername(name);
         }
         SysUser user = BeanUtil.copyProperties(registerDTO, SysUser.class);
+        user.setUid(uid);
         userService.save(user);
         stringRedisTemplate.delete(registerProperties.getPrefix() + email);
         return true;

@@ -14,6 +14,7 @@ import blog.yuanyuan.yuanlive.user.service.SysUserService;
 import blog.yuanyuan.yuanlive.user.mapper.UserFollowMapper;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
+import me.ahoo.cosid.provider.IdGeneratorProvider;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
@@ -32,6 +33,8 @@ public class UserFollowServiceImpl extends ServiceImpl<UserFollowMapper, UserFol
     private SysUserService sysUserService;
     @Resource
     private StringRedisTemplate stringRedisTemplate;
+    @Resource
+    private IdGeneratorProvider idGeneratorProvider;
 
     @Value("${redis-key.anchor-map.key}")
     private String anchorMap;
@@ -65,8 +68,10 @@ public class UserFollowServiceImpl extends ServiceImpl<UserFollowMapper, UserFol
                 return true;
             }
         } else {
+            long generate = idGeneratorProvider.getRequired("user-follow").generate();
             // 创建新的关注记录
             UserFollow userFollow = UserFollow.builder()
+                    .id(generate)
                     .userId(userId)
                     .followUserId(followUserId)
                     .status(1)

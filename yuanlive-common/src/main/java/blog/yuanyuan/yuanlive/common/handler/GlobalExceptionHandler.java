@@ -8,6 +8,7 @@ import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.MessageSourceResolvable;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -23,7 +24,7 @@ import java.util.stream.Collectors;
 @Hidden
 @Slf4j
 public class GlobalExceptionHandler {
-    @ExceptionHandler(SQLIntegrityConstraintViolationException.class)
+    @ExceptionHandler({SQLIntegrityConstraintViolationException.class, DuplicateKeyException.class})
     public Result<String> handleException(SQLIntegrityConstraintViolationException e) {
         String message = e.getMessage();
         String name = message.split(" ")[2];

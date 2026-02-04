@@ -8,6 +8,7 @@ import blog.yuanyuan.yuanlive.entity.user.entity.SysUser;
 import blog.yuanyuan.yuanlive.entity.user.entity.SysUserRole;
 import blog.yuanyuan.yuanlive.user.domain.dto.UserQueryDTO;
 import blog.yuanyuan.yuanlive.user.domain.dto.UserRoleDTO;
+import blog.yuanyuan.yuanlive.user.domain.dto.UserDTO;
 import blog.yuanyuan.yuanlive.user.domain.vo.RouterVO;
 import blog.yuanyuan.yuanlive.user.domain.vo.UserVO;
 import blog.yuanyuan.yuanlive.user.mapper.SysUserMapper;
@@ -15,13 +16,15 @@ import blog.yuanyuan.yuanlive.user.service.SysRoleService;
 import blog.yuanyuan.yuanlive.user.service.SysUserRoleService;
 import blog.yuanyuan.yuanlive.user.service.SysUserService;
 import cn.dev33.satoken.stp.StpUtil;
+import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import jakarta.annotation.Resource;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import me.ahoo.cosid.provider.IdGeneratorProvider;
 import org.springframework.beans.BeanUtils;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -43,51 +46,39 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
 
 
     @Resource
-    SysUserRoleService userRoleService;
+    private SysUserRoleService userRoleService;
     @Resource
-    SysRoleService roleService;
+    private SysRoleService roleService;
     @Resource
-    SysUserMapper userMapper;
+    private SysUserMapper userMapper;
+    @Resource
+    private PasswordEncoder passwordEncoder;
+    @Resource
+    private IdGeneratorProvider idGeneratorProvider;
 
-//    @Override
-//    @Transactional(rollbackFor = Exception.class)
-//    public boolean updateUser(UserDTO userDTO) {
-//        SysUser sysUser = new SysUser();
-//        BeanUtils.copyProperties(userDTO, sysUser);
-//
-//        // 如果修改了密码，需要加密
-//        if (StringUtils.hasText(userDTO.getPassword())) {
-//            sysUser.setPassword(passwordEncoder.encode(userDTO.getPassword()));
-//        } else {
-//            // 不修改密码则置为null
-//            sysUser.setPassword(null);
-//        }
-//
-//        boolean updated = updateById(sysUser);
-//        if (updated && userDTO.getRoleIds() != null) {
-//            // 删除原有关联
-//            userRoleService.remove(new LambdaQueryWrapper<SysUserRole>()
-//                    .eq(SysUserRole::getUserId, sysUser.getUid()));
-//            // 插入新关联
-//            if (!userDTO.getRoleIds().isEmpty()) {
-//                insertUserRole(sysUser.getUid(), userDTO.getRoleIds());
-//            }
-//        }
-//        return updated;
-//    }
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public boolean updateUser(UserDTO userDTO) {
+        SysUser sysUser = new SysUser();
+        BeanUtils.copyProperties(userDTO, sysUser);
 
-//    @Override
-//    @Transactional(rollbackFor = Exception.class)
-//    public boolean deleteUsers(List<Long> userIds) {
-//        // 删除用户
-//        boolean removed = removeByIds(userIds);
-//        if (removed) {
-//            // 删除用户角色关联
-//            userRoleService.remove(new LambdaQueryWrapper<SysUserRole>()
-//                    .in(SysUserRole::getUserId, userIds));
-//        }
-//        return removed;
-//    }
+        boolean updated = updateById(sysUser);
+        if (updated && CollUtil.isNotEmpty(userDTO.getRoleIds())) {
+            UserRoleDTO roleDTO = new UserRoleDTO(userDTO.getUid(), userDTO.getRoleIds());
+            assignRoles(roleDTO);
+        }
+        return updated;
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public boolean deleteUsers(List<Long> userIds) {
+        // 逻辑删除用户
+        return lambdaUpdate()
+                .set(SysUser::getDelFlag, 1)
+                .in(SysUser::getUid, userIds)
+                .update();
+    }
 
     @Override
     public UserVO getUserById(Long userId) {
@@ -149,6 +140,23 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
     public UserVO getUserInfo() {
         long uid = StpUtil.getLoginIdAsLong();
         return getUserById(uid);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Boolean saveUser(UserDTO userDTO) {
+        SysUser user = BeanUtil.copyProperties(userDTO, SysUser.class);
+        user.setUid(idGeneratorProvider.getRequired("safe-js").generate());
+        if (StrUtil.isNotBlank(userDTO.getPassword())) {
+            user.setPassword(passwordEncoder.encode(userDTO.getPassword()));
+        }
+        if (save(user)) {
+            if (CollUtil.isNotEmpty(userDTO.getRoleIds())) {
+                insertUserRole(user.getUid(), userDTO.getRoleIds());
+            }
+            return true;
+        }
+        return false;
     }
 
     private void insertUserRole(Long userId, List<Long> roleIds) {

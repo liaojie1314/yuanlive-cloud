@@ -4,12 +4,15 @@ import blog.yuanyuan.yuanlive.common.result.Result;
 import blog.yuanyuan.yuanlive.common.result.ResultPage;
 import blog.yuanyuan.yuanlive.user.domain.dto.UserQueryDTO;
 import blog.yuanyuan.yuanlive.user.domain.dto.UserRoleDTO;
+import blog.yuanyuan.yuanlive.user.domain.dto.UserDTO;
 import blog.yuanyuan.yuanlive.user.domain.vo.RouterVO;
 import blog.yuanyuan.yuanlive.user.domain.vo.UserVO;
 import blog.yuanyuan.yuanlive.user.service.SysUserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
+import org.apache.ibatis.annotations.Insert;
+import org.apache.ibatis.annotations.Update;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -24,24 +27,24 @@ public class AdminController {
     @Resource
     SysUserService userService;
 
-//    @PostMapping
-//    @Operation(summary = "新增用户")
-//    public Result<Boolean> add(@RequestBody @Validated UserDTO userDTO) {
-//        return Result.success(userService.saveUser(userDTO));
-//    }
-//
-//    @PutMapping
-//    @Operation(summary = "修改用户")
-//    public Result<Boolean> edit(@RequestBody @Validated(Update.class) UserDTO userDTO) {
-//        return Result.success(userService.updateUser(userDTO));
-//    }
-//
-//    @DeleteMapping("/{userIds}")
-//    @Operation(summary = "批量删除用户")
-//    public Result<Boolean> remove(@PathVariable List<Long> userIds) {
-//        return Result.success(userService.deleteUsers(userIds));
-//    }
-//
+    @PostMapping
+    @Operation(summary = "管理员新增用户")
+    public Result<Boolean> add(@RequestBody @Validated(Insert.class) UserDTO userDTO) {
+        return Result.success(userService.saveUser(userDTO));
+    }
+
+    @PutMapping
+    @Operation(summary = "修改用户")
+    public Result<Boolean> edit(@RequestBody @Validated(Update.class) UserDTO userDTO) {
+        return Result.success(userService.updateUser(userDTO));
+    }
+
+    @DeleteMapping("/{userIds}")
+    @Operation(summary = "批量删除用户")
+    public Result<Boolean> remove(@PathVariable("userIds") List<Long> userIds) {
+        return Result.success(userService.deleteUsers(userIds));
+    }
+
     @GetMapping("/getInfo/{userId}")
     @Operation(summary = "获取用户详情")
     public Result<UserVO> getInfo(@PathVariable("userId") Long userId) {
