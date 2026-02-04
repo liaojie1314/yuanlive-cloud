@@ -1,4 +1,4 @@
--- MySQL dump 10.13  Distrib 8.0.44, for Linux (x86_64)
+-- MySQL dump 10.13  Distrib 8.0.45, for Linux (x86_64)
 --
 -- Host: 127.0.0.1    Database: yuanlive_live
 -- ------------------------------------------------------
@@ -30,7 +30,7 @@ CREATE TABLE `live_category` (
   `sort_weight` int DEFAULT '0' COMMENT '排序权重 (越大越靠前)',
   PRIMARY KEY (`id`),
   KEY `idx_parent_id` (`parent_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='直播分类表';
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='直播分类表';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -75,7 +75,26 @@ CREATE TABLE `live_room` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `uk_anchor_id` (`anchor_id`),
   KEY `idx_status` (`room_status`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='直播间表';
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='直播间表';
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `undo_log`
+--
+
+DROP TABLE IF EXISTS `undo_log`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `undo_log` (
+  `branch_id` bigint NOT NULL COMMENT 'branch transaction id',
+  `xid` varchar(128) NOT NULL COMMENT 'global transaction id',
+  `context` varchar(128) NOT NULL COMMENT 'undo_log context,such as serialization',
+  `rollback_info` longblob NOT NULL COMMENT 'rollback info',
+  `log_status` int NOT NULL COMMENT '0:normal status,1:defense status',
+  `log_created` datetime(6) NOT NULL COMMENT 'create datetime',
+  `log_modified` datetime(6) NOT NULL COMMENT 'modify datetime',
+  UNIQUE KEY `ux_undo_log` (`xid`,`branch_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='AT回滚表';
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
@@ -87,4 +106,4 @@ CREATE TABLE `live_room` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-01-27 16:37:20
+-- Dump completed on 2026-02-04 11:33:00
