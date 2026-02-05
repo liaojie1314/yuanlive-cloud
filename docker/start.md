@@ -33,7 +33,7 @@
     store.db.distributedLockTable=distributed_lock
     store.db.queryLimit=100
     ```
-    
+
 ## 2. redis 配置
 
 - 按上述过程打开[nacos](http://localhost:8034)
@@ -93,18 +93,18 @@
       active-timeout: -1
       is-log: true
     ```
-    
+
 ## 4. SMTP 配置
-  
-  - 选择任意邮箱 126、163、QQ等
-  
-  - 打开`POP3/SMTP`, 获取授权码
-  
-  - 修改 `yuanlive-user-service`中`yaml`文件中的 `spring.mail.host`配置为对应邮箱设置
-  
-  - 添加 `YUANLIVE_MAIL_USER`环境变量, 值为邮箱账号
-  
-  - 添加 `YUANLIVE_MAIL_PASSWORD`环境变量, 值为授权码
+
+- 选择任意邮箱 126、163、QQ等
+
+- 打开`POP3/SMTP`, 获取授权码
+
+- 修改 `yuanlive-user-service`中`yaml`文件中的 `spring.mail.host`配置为对应邮箱设置
+
+- 添加 `YUANLIVE_MAIL_USER`环境变量, 值为邮箱账号
+
+- 添加 `YUANLIVE_MAIL_PASSWORD`环境变量, 值为授权码
 
 ## 5. SRS配置
 
@@ -186,8 +186,31 @@
   ```
 
 - docker compose后通过访问[kibana](http://localhost:5601)进入可视化界面
+
 - 选择`Management` -> `Stack Management` -> `Data Views` -> `Create data view`
+
 - `name` 设置为`yuanlive-logs`  `Index Pattern` 设置为`yuanlive-logs-*`
+
 - `Time field` 设置为`@timestamp`
+
 - 创建后进入`Discover`查看日志
+
 - 每次重启后需要通过 `docker compose up -d --force-recreate filebeat` 重新创建容器
+
+## 7. Naco配置
+
+- 先进入[nacos](http://127.0.0.1:8034/)界面，接下来进入创建配置界面
+  
+  - jackon统一配置项
+    
+    - `Data ID`:  jackson.yaml  `Group`:  DEFAULT_GROUP  `配置格式`:  YAML
+    
+    - 配置内容如下:
+      
+      ```yaml
+      spring:
+        jackson:
+          date-format: yyyy-MM-dd HH:mm:ss
+          time-zone: Asia/Shanghai
+          default-property-inclusion: non_empty
+      ```

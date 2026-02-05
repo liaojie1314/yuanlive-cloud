@@ -25,7 +25,10 @@
         SELECT u.*,
                r.role_id   AS role_role_id,
                r.role_name AS role_role_name,
-               r.role_key AS role_role_key
+               r.role_key AS role_role_key,
+               r.status AS role_status,
+               r.create_time AS role_create_time,
+               r.update_time AS role_update_time
         FROM sys_user u
                  LEFT JOIN
              sys_user_role ur ON u.uid = ur.user_id
