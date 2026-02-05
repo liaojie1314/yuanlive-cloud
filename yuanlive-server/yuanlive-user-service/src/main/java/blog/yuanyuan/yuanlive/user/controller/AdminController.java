@@ -2,6 +2,7 @@ package blog.yuanyuan.yuanlive.user.controller;
 
 import blog.yuanyuan.yuanlive.common.result.Result;
 import blog.yuanyuan.yuanlive.common.result.ResultPage;
+import blog.yuanyuan.yuanlive.user.domain.dto.PasswordDTO;
 import blog.yuanyuan.yuanlive.user.domain.dto.UserQueryDTO;
 import blog.yuanyuan.yuanlive.user.domain.dto.UserRoleDTO;
 import blog.yuanyuan.yuanlive.user.domain.dto.UserDTO;
@@ -69,4 +70,21 @@ public class AdminController {
         return Result.success(userService.getRouters());
     }
 
+    @PutMapping("/password")
+    @Operation(summary = "管理员修改用户密码")
+    public Result<Boolean> changePassword(@RequestBody @Validated PasswordDTO passwordDTO) {
+        return Result.success(userService.changePassword(passwordDTO));
+    }
+
+    @PutMapping("/updateStatus/{uid}")
+    @Operation(summary = "修改用户状态")
+    public Result<Boolean> updateStatus(@PathVariable("uid") Long uid) {
+        return Result.success(userService.updateStatus(uid));
+    }
+
+    @PutMapping("/restore/{uid}")
+    @Operation(summary = "恢复或删除用户")
+    public Result<Boolean> restore(@PathVariable("uid") Long uid) {
+        return Result.success(userService.restoreOrDelete(uid));
+    }
 }

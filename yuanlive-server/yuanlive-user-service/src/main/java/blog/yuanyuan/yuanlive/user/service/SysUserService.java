@@ -2,6 +2,7 @@ package blog.yuanyuan.yuanlive.user.service;
 
 import blog.yuanyuan.yuanlive.common.result.ResultPage;
 import blog.yuanyuan.yuanlive.entity.user.entity.SysUser;
+import blog.yuanyuan.yuanlive.user.domain.dto.PasswordDTO;
 import blog.yuanyuan.yuanlive.user.domain.dto.UserQueryDTO;
 import blog.yuanyuan.yuanlive.user.domain.dto.UserRoleDTO;
 import blog.yuanyuan.yuanlive.user.domain.dto.UserDTO;
@@ -65,4 +66,10 @@ public interface SysUserService extends IService<SysUser> {
     UserVO getUserInfo();
 
     Boolean saveUser(UserDTO userDTO);
+
+    Boolean changePassword(PasswordDTO passwordDTO);
+
+    Boolean updateStatus(Long uid);
+
+    Boolean restoreOrDelete(Long uid);
 }

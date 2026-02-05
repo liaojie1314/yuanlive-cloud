@@ -6,6 +6,7 @@ import blog.yuanyuan.yuanlive.entity.user.entity.SysMenu;
 import blog.yuanyuan.yuanlive.entity.user.entity.SysRole;
 import blog.yuanyuan.yuanlive.entity.user.entity.SysUser;
 import blog.yuanyuan.yuanlive.entity.user.entity.SysUserRole;
+import blog.yuanyuan.yuanlive.user.domain.dto.PasswordDTO;
 import blog.yuanyuan.yuanlive.user.domain.dto.UserQueryDTO;
 import blog.yuanyuan.yuanlive.user.domain.dto.UserRoleDTO;
 import blog.yuanyuan.yuanlive.user.domain.dto.UserDTO;
@@ -32,6 +33,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -157,6 +159,32 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
             return true;
         }
         return false;
+    }
+
+    @Override
+    public Boolean changePassword(PasswordDTO passwordDTO) {
+        if (!Objects.equals(passwordDTO.getPassword(), passwordDTO.getConfirmPassword())) {
+            throw new ApiException("两次输入的密码不一致");
+        }
+        String password = passwordEncoder.encode(passwordDTO.getPassword());
+        SysUser user = new SysUser();
+        user.setUid(passwordDTO.getUid());
+        user.setPassword(password);
+        return updateById(user);
+    }
+
+    @Override
+    public Boolean updateStatus(Long uid) {
+        SysUser user = getById(uid);
+        user.setStatus(user.getStatus() == 1 ? 0 : 1);
+        return updateById(user);
+    }
+
+    @Override
+    public Boolean restoreOrDelete(Long uid) {
+        SysUser user = getById(uid);
+        user.setDelFlag(user.getDelFlag() == 1 ? 0 : 1);
+        return updateById(user);
     }
 
     private void insertUserRole(Long userId, List<Long> roleIds) {

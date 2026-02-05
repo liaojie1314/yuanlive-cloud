@@ -15,6 +15,7 @@ spring:
         namespace: public
   jackson:
     date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: Asia/Shanghai
   config:
     import:
       - nacos:sa-token.yaml?group=SA_TOKEN_GROUP&refresh-enabled=true
