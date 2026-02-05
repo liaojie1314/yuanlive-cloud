@@ -29,4 +29,6 @@ public class SrsCallBackDTO {
 
     // SRS 服务器自身的标识，多节点集群时很有用
     private String server_id;
+
+    private String file;
 }

@@ -49,6 +49,7 @@ public class SaTokenConfig {
             "/live/category/firstLevel",
             "/live/room/start",
             "/live/room/end",
+            "/live/room/dvr",
             "/user/follow/followers/*",
             "/user/follow/following/*"
 

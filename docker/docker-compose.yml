@@ -17,7 +17,7 @@ services:
     volumes:
       - ./SrsConfig/srs.conf:/usr/local/srs/conf/docker.conf
       - ./SrsConfig/logs:/usr/local/srs/objs/logs
-#      - ./SrsConfig/nginx/html:/usr/local/srs/objs/nginx/html
+      - ./SrsConfig/nginx/html:/usr/local/srs/objs/nginx/html
     command: ./objs/srs -c conf/docker.conf
     networks:
       - live-net

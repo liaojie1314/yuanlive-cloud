@@ -5,6 +5,7 @@ import blog.yuanyuan.yuanlive.common.result.Result;
 import blog.yuanyuan.yuanlive.common.result.ResultCode;
 import blog.yuanyuan.yuanlive.common.result.ResultPage;
 import blog.yuanyuan.yuanlive.entity.live.entity.LiveCategory;
+import blog.yuanyuan.yuanlive.entity.live.entity.LiveRecord;
 import blog.yuanyuan.yuanlive.entity.live.entity.LiveRoom;
 import blog.yuanyuan.yuanlive.entity.user.entity.SysUser;
 import blog.yuanyuan.yuanlive.feign.user.UserFeignClient;
@@ -17,7 +18,9 @@ import blog.yuanyuan.yuanlive.live.domain.vo.LiveRoomVO;
 import blog.yuanyuan.yuanlive.live.mapper.LiveCategoryMapper;
 import blog.yuanyuan.yuanlive.live.mapper.LiveRoomMapper;
 import blog.yuanyuan.yuanlive.live.message.notification.LiveStartMessage;
+import blog.yuanyuan.yuanlive.live.properties.LiveRoomProperties;
 import blog.yuanyuan.yuanlive.live.service.LiveCategoryService;
+import blog.yuanyuan.yuanlive.live.service.LiveRecordService;
 import blog.yuanyuan.yuanlive.live.service.LiveRoomService;
 import cn.dev33.satoken.stp.StpUtil;
 import cn.hutool.core.util.StrUtil;
@@ -38,9 +41,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.nio.charset.Charset;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
@@ -65,15 +67,19 @@ public class LiveRoomServiceImpl extends ServiceImpl<LiveRoomMapper, LiveRoom>
     private RabbitTemplate rabbitTemplate;
     @Resource
     private LiveCategoryService categoryService;
+    @Resource
+    private LiveRecordService liveRecordService;
 
-    @Value("${RedisKey.active-rooms.key}")
+    @Value("${redis-key.active-rooms.key}")
     private String active;
-    @Value("${RedisKey.anchor-map.key}")
+    @Value("${redis-key.anchor-map.key}")
     private String anchorMap;
-    @Value("${RedisKey.room2client.prefix}")
+    @Value("${redis-key.room2client.prefix}")
     private String room2client;
     @Value("${yuanlive.chat.mq.exchange}")
     private String exchange;
+    @Resource
+    private LiveRoomProperties liveRoomProperties;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -163,8 +169,21 @@ public class LiveRoomServiceImpl extends ServiceImpl<LiveRoomMapper, LiveRoom>
         liveRoom.setUpdateTime(new Date());
         boolean updated = updateById(liveRoom);
         if (updated) {
+            LiveRecord record = new LiveRecord();
+            record.setId(idGeneratorProvider.getRequired("live-record").generate());
+            record.setAnchorId(liveRoom.getAnchorId());
+            record.setRoomId(roomId);
+            liveRecordService.save(record);
+
+            String sessionKey = liveRoomProperties.getSessionPrefix() + roomId;
+            Map<String, String> session = new HashMap<>();
+            session.put("recordId", String.valueOf(record.getId()));
+            session.put("peak", "0");
+            session.put("client", dto.getClient_id());
+            stringRedisTemplate.opsForHash().putAll(sessionKey, session);
+            stringRedisTemplate.persist(sessionKey);
+
             stringRedisTemplate.opsForSet().add(active, String.valueOf(roomId));
-            stringRedisTemplate.opsForValue().set(room2client + roomId, dto.getClient_id());
             stringRedisTemplate.opsForHash().put(anchorMap, String.valueOf(uid), String.valueOf(roomId));
             log.info("开始直播 | 房间ID: {} | 主播ID: {}", roomId, uid);
             // 发送消息给rabbitmq
@@ -191,14 +210,21 @@ public class LiveRoomServiceImpl extends ServiceImpl<LiveRoomMapper, LiveRoom>
     @Override
     @Transactional(rollbackFor = Exception.class)
     public boolean endLive(SrsCallBackDTO dto) {
+        log.info("结束直播 | 房间ID: {}", dto.getStream());
         long roomId = Long.parseLong(dto.getStream());
-        String activeClient = stringRedisTemplate.opsForValue().get(room2client + roomId);
+        String sessionKey = liveRoomProperties.getSessionPrefix() + roomId;
+        Map<Object, Object> session = stringRedisTemplate.opsForHash().entries(sessionKey);
+        log.info("结束直播 | 房间ID: {} | 会话信息: {}", roomId, session);
+        String activeClient = (String) session.get("client");
         if (activeClient != null && !activeClient.equals(dto.getClient_id())) {
             log.info("忽略陈旧的下播回调，当前房间[{}]已有新连接[{}]", roomId, dto.getClient_id());
             return false;
         }
-        Long anchorId = getById(roomId).getAnchorId();
+        Long recordId = Long.valueOf(session.get("recordId").toString());
+        Integer peak = Integer.parseInt(session.get("peak").toString());
+        // 获取总观看人数
         LiveRoom liveRoom = getById(roomId);
+
         if (liveRoom == null) {
             throw new ApiException("直播间不存在");
         }
@@ -209,15 +235,41 @@ public class LiveRoomServiceImpl extends ServiceImpl<LiveRoomMapper, LiveRoom>
         // 更新状态
         liveRoom.setRoomStatus(0);
         liveRoom.setViewCount(0); // 重置在线人数
-        liveRoom.setUpdateTime(new Date());
         boolean updated = updateById(liveRoom);
         if (updated) {
-            log.info("结束直播 | 房间ID: {}", roomId);
-            stringRedisTemplate.delete(room2client + roomId);
+            // 更新直播记录
+            Long anchorId = liveRoom.getAnchorId();
+            String totalKey = liveRoomProperties.getTotalPrefix() + anchorId;
+            Long total = stringRedisTemplate.opsForHyperLogLog().size(totalKey);
+            LiveRecord record = new LiveRecord();
+            record.setId(recordId);
+            record.setWatchCount(total.intValue());
+            record.setPeakViewers(peak);
+            record.setEndTime(new Date());
+            liveRecordService.updateById(record);
+            // 删除缓存
+            stringRedisTemplate
+                    .delete(Arrays.asList(totalKey, liveRoomProperties.getCurrentPrefix() + roomId));
             stringRedisTemplate.opsForSet().remove(active, String.valueOf(roomId));
             stringRedisTemplate.opsForHash().delete(anchorMap, String.valueOf(anchorId));
         }
         return updated;
+    }
+
+    @Override
+    public boolean dvr(SrsCallBackDTO dto) {
+        log.info("DVR回调 | 房间ID: {} | 录制文件: {}", dto.getStream(), dto.getFile());
+        long roomId = Long.parseLong(dto.getStream());
+        String sessionKey = liveRoomProperties.getSessionPrefix() + roomId;
+        Map<Object, Object> session = stringRedisTemplate.opsForHash().entries(sessionKey);
+        log.info("DVR回调 | 房间ID: {} | 录制文件: {} | 会话信息: {}", roomId, dto.getFile(), session);
+        Long recordId = Long.valueOf(session.get("recordId").toString());
+        LiveRecord record = new LiveRecord();
+        record.setId(recordId);
+        record.setVideoUrl(dto.getFile());
+        // 设置会话缓存2秒后过期
+        stringRedisTemplate.expire(sessionKey, 2, TimeUnit.SECONDS);
+        return liveRecordService.updateById(record);
     }
 
     @Override

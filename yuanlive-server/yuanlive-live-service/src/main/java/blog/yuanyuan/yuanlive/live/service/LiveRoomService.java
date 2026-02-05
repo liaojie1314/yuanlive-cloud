@@ -66,4 +66,6 @@ public interface LiveRoomService extends IService<LiveRoom> {
      * @return 分页结果
      */
     ResultPage<LiveRoomVO> pageRooms(LiveRoomQueryDTO queryDTO);
+
+    boolean dvr(SrsCallBackDTO dto);
 }

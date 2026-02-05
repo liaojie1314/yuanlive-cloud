@@ -57,20 +57,40 @@ public class LiveRoomController {
 
     @PostMapping("/start")
     @Operation(summary = "开始直播")
-    public Result<String> startLive(@RequestBody SrsCallBackDTO srsCallBackDTO) {
-        if (liveRoomService.startLive(srsCallBackDTO)) {
-            return Result.success(null, "开始直播成功");
+    public int startLive(@RequestBody SrsCallBackDTO srsCallBackDTO) {
+        try {
+            boolean success = liveRoomService.startLive(srsCallBackDTO);
+            // 成功返回 0，失败返回 1
+            return success ? 0 : 1;
+        } catch (Exception e) {
+            log.error("推流回调异常: ", e);
+            return 1;
         }
-        return Result.failed("开始直播失败");
     }
 
     @PostMapping("/end")
     @Operation(summary = "结束直播")
-    public Result<String> endLive(@RequestBody SrsCallBackDTO dto) {
-        if (liveRoomService.endLive(dto)) {
-            return Result.success(null, "结束直播成功");
+    public int endLive(@RequestBody SrsCallBackDTO dto) {
+        try {
+            liveRoomService.endLive(dto);
+            // SRS 收到 0 表示回调成功，即使失败通常也返回 0，因为流已经断开了
+            return 0;
+        } catch (Exception e) {
+            log.error("停止直播回调异常: ", e);
+            return 0;
         }
-        return Result.failed("结束直播失败");
+    }
+
+    @PostMapping("/dvr")
+    @Operation(summary = "DVR录制回调")
+    public int dvr(@RequestBody SrsCallBackDTO dto) {
+        try {
+            liveRoomService.dvr(dto);
+            return 0;
+        } catch (Exception e) {
+            log.error("DVR回调异常: ", e);
+            return 0;
+        }
     }
 
     @GetMapping("/detail/{roomId}")
