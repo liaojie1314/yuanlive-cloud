@@ -56,6 +56,11 @@
             <artifactId>user-entity</artifactId>
             <version>${revision}</version>
         </dependency>
+        <dependency>
+            <groupId>io.minio</groupId>
+            <artifactId>minio</artifactId>
+            <scope>compile</scope>
+        </dependency>
     </dependencies>
 
 </project>

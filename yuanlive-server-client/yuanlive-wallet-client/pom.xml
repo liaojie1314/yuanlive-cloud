@@ -6,7 +6,7 @@
     <parent>
         <groupId>blog.yuanyuan</groupId>
         <artifactId>yuanlive-server-client</artifactId>
-        <version>1.0.0</version>
+        <version>${revision}</version>
     </parent>
 
     <artifactId>yuanlive-wallet-client</artifactId>

@@ -4,12 +4,12 @@ import blog.yuanyuan.yuanlive.common.exception.ApiException;
 import blog.yuanyuan.yuanlive.common.result.Result;
 import blog.yuanyuan.yuanlive.common.result.ResultCode;
 import blog.yuanyuan.yuanlive.common.result.ResultPage;
+import blog.yuanyuan.yuanlive.common.util.MinioTemplate;
 import blog.yuanyuan.yuanlive.entity.live.entity.LiveCategory;
 import blog.yuanyuan.yuanlive.entity.live.entity.LiveRecord;
 import blog.yuanyuan.yuanlive.entity.live.entity.LiveRoom;
 import blog.yuanyuan.yuanlive.entity.user.entity.SysUser;
 import blog.yuanyuan.yuanlive.feign.user.UserFeignClient;
-import blog.yuanyuan.yuanlive.live.constant.MsgType;
 import blog.yuanyuan.yuanlive.live.domain.dto.LiveRoomDTO;
 import blog.yuanyuan.yuanlive.live.domain.dto.LiveRoomQueryDTO;
 import blog.yuanyuan.yuanlive.live.domain.dto.SrsCallBackDTO;
@@ -26,7 +26,6 @@ import cn.dev33.satoken.stp.StpUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.http.HttpUtil;
 import cn.hutool.json.JSONUtil;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import jakarta.annotation.Resource;
@@ -35,13 +34,14 @@ import me.ahoo.cosid.provider.IdGeneratorProvider;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.File;
 import java.nio.charset.Charset;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -69,6 +69,8 @@ public class LiveRoomServiceImpl extends ServiceImpl<LiveRoomMapper, LiveRoom>
     private LiveCategoryService categoryService;
     @Resource
     private LiveRecordService liveRecordService;
+    @Resource
+    private MinioTemplate minioTemplate;
 
     @Value("${redis-key.active-rooms.key}")
     private String active;
@@ -78,6 +80,8 @@ public class LiveRoomServiceImpl extends ServiceImpl<LiveRoomMapper, LiveRoom>
     private String room2client;
     @Value("${yuanlive.chat.mq.exchange}")
     private String exchange;
+    @Value("${file-prefix.host-prefix}")
+    private String filePrefix;
     @Resource
     private LiveRoomProperties liveRoomProperties;
 
@@ -258,18 +262,46 @@ public class LiveRoomServiceImpl extends ServiceImpl<LiveRoomMapper, LiveRoom>
 
     @Override
     public boolean dvr(SrsCallBackDTO dto) {
-        log.info("DVR回调 | 房间ID: {} | 录制文件: {}", dto.getStream(), dto.getFile());
+        String filePath = dto.getFile().replace("./objs", filePrefix);
+        log.info("DVR回调 | 房间ID: {} | 录制文件: {}", dto.getStream(), filePath);
         long roomId = Long.parseLong(dto.getStream());
         String sessionKey = liveRoomProperties.getSessionPrefix() + roomId;
         Map<Object, Object> session = stringRedisTemplate.opsForHash().entries(sessionKey);
         log.info("DVR回调 | 房间ID: {} | 录制文件: {} | 会话信息: {}", roomId, dto.getFile(), session);
         Long recordId = Long.valueOf(session.get("recordId").toString());
-        LiveRecord record = new LiveRecord();
-        record.setId(recordId);
-        record.setVideoUrl(dto.getFile());
+        // 异步迁移视频至MinIO
+        CompletableFuture.runAsync(() -> migrateVideoToMinio(recordId, filePath, dto.getStream()));
         // 设置会话缓存2秒后过期
         stringRedisTemplate.expire(sessionKey, 2, TimeUnit.SECONDS);
-        return liveRecordService.updateById(record);
+        return true;
+    }
+
+    private void migrateVideoToMinio(Long recordId, String localPath, String stream) {
+        File file = new File(localPath);
+        if (!file.exists()) {
+            log.error("迁移失败 | 本地文件不存在: {}", localPath);
+            return;
+        }
+        try {
+            log.info("开始迁移视频至MinIO | RecordID: {} | 文件: {}", recordId, localPath);
+            // 1. 生成 MinIO 中的文件名
+            String fileName = stream + "-" + System.currentTimeMillis() + ".mp4";
+            // 2. 调用你之前写的 uploadLocalFile 方法 (业务设为 "records")
+            String videoUrl = minioTemplate.uploadLocalFile("records", fileName, localPath);
+            // 3. 更新数据库
+            LiveRecord record = new LiveRecord();
+            record.setId(recordId);
+            record.setVideoUrl(videoUrl);
+            liveRecordService.updateById(record);
+            log.info("迁移完成 | RecordID: {} | MinIO地址: {}", recordId, videoUrl);
+            // 4. 清理本地临时文件
+            if (file.delete()) {
+                log.info("清理本地文件成功: {}", localPath);
+            }
+        } catch (Exception e) {
+            log.error("迁移过程发生异常 | RecordID: {}", recordId, e);
+            // 这里可以视情况决定是否将数据库状态标记为“上传失败”
+        }
     }
 
     @Override

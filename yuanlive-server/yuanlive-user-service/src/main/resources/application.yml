@@ -13,6 +13,7 @@ spring:
       - nacos:sa-token.yaml?group=SA_TOKEN_GROUP&refresh-enabled=true
       - nacos:redis.yaml?group=REDIS_GROUP&refresh-enabled=true
       - nacos:jackson.yaml?group=DEFAULT_GROUP&refresh-enabled=true
+      - nacos:minio.yaml?group=DEFAULT_GROUP&refresh-enabled=true
   datasource:
     url: jdbc:mysql://localhost:3307/yuanlive_user?useSSL=false&serverTimezone=Asia/Shanghai&useUnicode=true&characterEncoding=utf-8
     username: root

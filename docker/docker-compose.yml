@@ -5,6 +5,7 @@ services:
   srs:
     image: ossrs/srs:v6.0.184
     container_name: yuanlive-srs
+
     ports:
       - "1935:1935"
       - "1985:1985"
@@ -18,7 +19,8 @@ services:
       - ./SrsConfig/srs.conf:/usr/local/srs/conf/docker.conf
       - ./SrsConfig/logs:/usr/local/srs/objs/logs
       - ./SrsConfig/nginx/html:/usr/local/srs/objs/nginx/html
-    command: ./objs/srs -c conf/docker.conf
+    command: >
+      sh -c "umask 000 && exec ./objs/srs -c conf/docker.conf"
     networks:
       - live-net
     extra_hosts:
