@@ -21,6 +21,8 @@ import java.util.List;
 public class UserVO extends SysUser {
     @Schema(description = "角色列表")
     private List<SysRole> roles;
+    @Schema(description = "设备信息")
     private String device;
+    @Schema(description = "用户统计信息")
     private UserStats userStats;
 }

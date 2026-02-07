@@ -2,10 +2,7 @@ package blog.yuanyuan.yuanlive.user.service.impl;
 
 import blog.yuanyuan.yuanlive.common.exception.ApiException;
 import blog.yuanyuan.yuanlive.common.result.ResultPage;
-import blog.yuanyuan.yuanlive.entity.user.entity.SysMenu;
-import blog.yuanyuan.yuanlive.entity.user.entity.SysRole;
-import blog.yuanyuan.yuanlive.entity.user.entity.SysUser;
-import blog.yuanyuan.yuanlive.entity.user.entity.SysUserRole;
+import blog.yuanyuan.yuanlive.entity.user.entity.*;
 import blog.yuanyuan.yuanlive.user.domain.dto.PasswordDTO;
 import blog.yuanyuan.yuanlive.user.domain.dto.UserQueryDTO;
 import blog.yuanyuan.yuanlive.user.domain.dto.UserRoleDTO;
@@ -13,10 +10,8 @@ import blog.yuanyuan.yuanlive.user.domain.dto.UserDTO;
 import blog.yuanyuan.yuanlive.user.domain.vo.RouterVO;
 import blog.yuanyuan.yuanlive.user.domain.vo.UserVO;
 import blog.yuanyuan.yuanlive.user.mapper.SysUserMapper;
-import blog.yuanyuan.yuanlive.user.service.SysRoleService;
-import blog.yuanyuan.yuanlive.user.service.SysUserRoleService;
-import blog.yuanyuan.yuanlive.user.service.SysUserService;
-import blog.yuanyuan.yuanlive.user.service.UserStatsService;
+import blog.yuanyuan.yuanlive.user.mapper.UserFollowMapper;
+import blog.yuanyuan.yuanlive.user.service.*;
 import cn.dev33.satoken.stp.StpUtil;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
@@ -28,6 +23,8 @@ import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import me.ahoo.cosid.provider.IdGeneratorProvider;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -57,9 +54,15 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
     @Resource
     private SysUserMapper userMapper;
     @Resource
+    private UserFollowMapper userFollowMapper;
+    @Resource
     private PasswordEncoder passwordEncoder;
     @Resource
     private IdGeneratorProvider idGeneratorProvider;
+    @Resource
+    private StringRedisTemplate stringRedisTemplate;
+    @Value("${redis-key.anchor-map.key}")
+    private String anchorMap;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -147,7 +150,11 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
         long uid = StpUtil.getLoginIdAsLong();
         UserVO user = getUserById(uid);
         user.setDevice(StpUtil.getLoginDeviceType());
-        user.setUserStats(userStatsService.getById(uid));
+        UserStats stats = userStatsService.getById(uid);
+        // 获取关注列表中正在直播的人数
+        Integer followingLiveCount = getFollowingLiveCount(uid);
+        stats.setFollowingLiveCount(followingLiveCount);
+        user.setUserStats(stats);
         return user;
     }
 
@@ -284,6 +291,25 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
                 .showLink(menu.getIsVisible() != null && menu.getIsVisible() == 1)
                 .keepAlive(menu.getIsCache() != null && menu.getIsCache() == 1)
                 .build();
+    }
+
+    // 获取用户关注列表中正在直播的人数
+    private Integer getFollowingLiveCount(Long userId) {
+        // 获取用户关注列表
+        LambdaQueryWrapper<UserFollow> wrapper = new LambdaQueryWrapper<UserFollow>()
+                .eq(UserFollow::getUserId, userId)
+                .eq(UserFollow::getStatus, 1);
+        List<UserFollow> followList = userFollowMapper.selectList(wrapper);
+        if (CollUtil.isEmpty(followList)) {
+            return 0;
+        }
+        List<Object> ids = followList.stream()
+                .map(user -> String.valueOf(user.getFollowUserId()))
+                .collect(Collectors.toList());
+        List<Object> values = stringRedisTemplate
+                .opsForHash().multiGet(anchorMap, ids);
+        values = values.stream().filter(Objects::nonNull).collect(Collectors.toList());
+        return values.size();
     }
 }
 
