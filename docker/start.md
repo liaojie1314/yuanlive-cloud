@@ -245,5 +245,25 @@
     - 配置内容如下:
       
       ```yaml
-      
+      spring:
+        rabbitmq:
+          host: localhost
+          port: 5672
+          username: yuanlive
+          password: yuanlive
+          # 关键：开启消息确认机制 (可选)
+          publisher-confirm-type: correlated
+          publisher-returns: true
+      live:
+        mq:
+          chat:
+            exchange: live.chat.fanout
+          stats:
+            exchange: user.stats.exchange
+            queue:
+              video: user.stats.video.queue
+              like: user.stats.like.queue
+            routing-key:
+              video: "video.#"
+              like: "like.#"
       ```
