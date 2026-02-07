@@ -1,4 +1,4 @@
-package blog.yuanyuan.yuanlive.live.config;
+package blog.yuanyuan.yuanlive.common.config;
 
 import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
 import org.springframework.amqp.support.converter.MessageConverter;

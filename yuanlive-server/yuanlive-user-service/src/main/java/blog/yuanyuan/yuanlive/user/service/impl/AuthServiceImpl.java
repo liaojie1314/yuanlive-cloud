@@ -1,10 +1,7 @@
 package blog.yuanyuan.yuanlive.user.service.impl;
 
 import blog.yuanyuan.yuanlive.common.exception.ApiException;
-import blog.yuanyuan.yuanlive.entity.user.entity.SysMenu;
-import blog.yuanyuan.yuanlive.entity.user.entity.SysRole;
-import blog.yuanyuan.yuanlive.entity.user.entity.SysUser;
-import blog.yuanyuan.yuanlive.entity.user.entity.UserRoleEnum;
+import blog.yuanyuan.yuanlive.entity.user.entity.*;
 import blog.yuanyuan.yuanlive.user.domain.dto.CodeDTO;
 import blog.yuanyuan.yuanlive.user.domain.dto.ForgetPassDTO;
 import blog.yuanyuan.yuanlive.user.domain.dto.LoginDTO;
@@ -15,6 +12,7 @@ import blog.yuanyuan.yuanlive.user.properties.*;
 import blog.yuanyuan.yuanlive.user.service.AuthService;
 import blog.yuanyuan.yuanlive.user.service.SysRoleService;
 import blog.yuanyuan.yuanlive.user.service.SysUserService;
+import blog.yuanyuan.yuanlive.user.service.UserStatsService;
 import cn.dev33.satoken.session.SaSession;
 import cn.dev33.satoken.stp.StpUtil;
 import cn.dev33.satoken.stp.parameter.SaLoginParameter;
@@ -63,6 +61,8 @@ public class AuthServiceImpl implements AuthService {
     private SysUserService userService;
     @Resource
     private SysRoleService roleService;
+    @Resource
+    private UserStatsService userStatsService;
     @Resource
     private LoginLimitProperties loginLimitProperties;
     @Resource(name = "loginLimitScript")
@@ -117,6 +117,9 @@ public class AuthServiceImpl implements AuthService {
         user.setUid(uid);
         user.setGender(registerDTO.getGender());
         userService.save(user);
+        UserStats stats = new UserStats();
+        stats.setUserId(uid);
+        userStatsService.save(stats);
         stringRedisTemplate.delete(registerProperties.getPrefix() + email);
         return true;
     }

@@ -154,6 +154,24 @@ CREATE TABLE `user_follow` (
   KEY `idx_follow_user` (`follow_user_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='用户关注关系表';
 /*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `user_stats`
+--
+
+DROP TABLE IF EXISTS `user_stats`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `user_stats` (
+  `user_id` bigint NOT NULL,
+  `following_count` int DEFAULT '0' COMMENT '关注数',
+  `follower_count` int DEFAULT '0' COMMENT '粉丝数',
+  `total_likes_received` int DEFAULT '0' COMMENT '获赞总数',
+  `video_count` int DEFAULT '0' COMMENT '视频总数',
+  `update_time` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`user_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='用户统计表';
+/*!40101 SET character_set_client = @saved_cs_client */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
@@ -164,4 +182,4 @@ CREATE TABLE `user_follow` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-02-07 12:19:17
+-- Dump completed on 2026-02-07 22:02:59

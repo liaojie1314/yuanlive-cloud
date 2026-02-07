@@ -28,10 +28,6 @@ import org.springframework.web.bind.annotation.*;
 public class LiveRoomController {
     @Resource
     private LiveRoomService liveRoomService;
-    @Resource
-    private RabbitTemplate rabbitTemplate;
-    @Value("${yuanlive.chat.mq.exchange}")
-    private String exchange;
 
     @PostMapping("/create")
     @Operation(summary = "创建直播间")

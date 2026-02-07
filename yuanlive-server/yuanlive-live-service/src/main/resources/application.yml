@@ -18,6 +18,7 @@ spring:
       - nacos:sa-token.yaml?group=SA_TOKEN_GROUP&refresh-enabled=true
       - nacos:redis.yaml?group=REDIS_GROUP&refresh-enabled=true
       - nacos:jackson.yaml?group=DEFAULT_GROUP&refresh-enabled=true
+      - nacos:rabbitmq.yaml?group=DEFAULT_GROUP&refresh-enabled=true
       - nacos:minio.yaml?group=DEFAULT_GROUP&refresh-enabled=true
 
   datasource:
@@ -25,15 +26,6 @@ spring:
     username: root
     password: yuanlive
     driver-class-name: com.mysql.cj.jdbc.Driver
-
-  rabbitmq:
-    host: localhost   # 你的 Docker MQ 地址
-    port: 5672
-    username: yuanlive
-    password: yuanlive
-    # 关键：开启消息确认机制 (可选)
-    publisher-confirm-type: correlated
-    publisher-returns: true
 
 
 mybatis-plus:
@@ -45,8 +37,6 @@ mybatis-plus:
 
 yuanlive:
   chat:
-    mq:
-      exchange: live.chat.fanout
     heartbeat: 30 # 心跳间隔 单位秒
   netty:
     port: 18081

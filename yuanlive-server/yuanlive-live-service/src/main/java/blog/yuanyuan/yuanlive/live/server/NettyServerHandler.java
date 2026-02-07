@@ -36,7 +36,7 @@ public class NettyServerHandler extends SimpleChannelInboundHandler<TextWebSocke
     private RabbitTemplate rabbitTemplate;
     @Resource
     private ObjectMapper objectMapper;
-    @Value("${yuanlive.chat.mq.exchange}")
+    @Value("${live.mq.chat.exchange}")
     private String exchangeName;
 
     @Override

@@ -80,10 +80,14 @@ public class LiveRoomServiceImpl extends ServiceImpl<LiveRoomMapper, LiveRoom>
     private String anchorMap;
     @Value("${redis-key.room2client.prefix}")
     private String room2client;
-    @Value("${yuanlive.chat.mq.exchange}")
+    @Value("${live.mq.chat.exchange}")
     private String exchange;
+    @Value("${live.mq.stats.exchange}")
+    private String statsExchange;
     @Value("${file-prefix.host-prefix}")
     private String filePrefix;
+    @Value("${live.mq.stats.routing-key.video}")
+    private String videoRoutingKey;
     @Resource
     private LiveRoomProperties liveRoomProperties;
 
@@ -290,6 +294,8 @@ public class LiveRoomServiceImpl extends ServiceImpl<LiveRoomMapper, LiveRoom>
     }
 
     private void migrateVideoToMinio(Long recordId, String localPath, String stream) {
+        long roomId = Long.parseLong(stream);
+        Long uid = getById(roomId).getAnchorId();
         File file = new File(localPath);
         if (!file.exists()) {
             log.error("迁移失败 | 本地文件不存在: {}", localPath);
@@ -307,6 +313,8 @@ public class LiveRoomServiceImpl extends ServiceImpl<LiveRoomMapper, LiveRoom>
             video.setVideoUrl(videoUrl);
             videoResourceService.updateById(video);
             log.info("迁移完成 | RecordID: {} | MinIO地址: {}", recordId, videoUrl);
+            rabbitTemplate.convertAndSend(statsExchange, videoRoutingKey, Map
+                    .of("userId", uid, "type", "add"));
             // 4. 清理本地临时文件
             if (file.delete()) {
                 log.info("清理本地文件成功: {}", localPath);

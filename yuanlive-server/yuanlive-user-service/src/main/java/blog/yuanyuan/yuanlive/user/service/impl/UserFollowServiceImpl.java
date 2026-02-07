@@ -1,7 +1,9 @@
 package blog.yuanyuan.yuanlive.user.service.impl;
 
 import blog.yuanyuan.yuanlive.common.exception.ApiException;
+import blog.yuanyuan.yuanlive.entity.user.entity.UserStats;
 import blog.yuanyuan.yuanlive.user.domain.vo.UserVO;
+import blog.yuanyuan.yuanlive.user.service.UserStatsService;
 import cn.hutool.core.collection.CollUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -32,6 +34,8 @@ public class UserFollowServiceImpl extends ServiceImpl<UserFollowMapper, UserFol
     @Resource
     private SysUserService sysUserService;
     @Resource
+    private UserStatsService userStatsService;
+    @Resource
     private StringRedisTemplate stringRedisTemplate;
     @Resource
     private IdGeneratorProvider idGeneratorProvider;
@@ -44,54 +48,92 @@ public class UserFollowServiceImpl extends ServiceImpl<UserFollowMapper, UserFol
     public Boolean followUser(UserFollowDTO userFollowDTO) {
         Long userId = userFollowDTO.getUserId();
         Long followUserId = userFollowDTO.getFollowUserId();
-        UserVO following = sysUserService.getUserById(followUserId);
-        if (Objects.equals(userId, followUserId)) {
-            throw new ApiException("不能关注自己");
-        }
-        if (following == null || following.getStatus() != 1) {
-            throw new ApiException("用户不存在或已停用");
-        }
-        // 检查是否已经关注
-        LambdaQueryWrapper<UserFollow> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(UserFollow::getUserId, userId)
-                .eq(UserFollow::getFollowUserId, followUserId);
-        UserFollow existingFollow = CollUtil.getFirst(list(wrapper));
 
-        if (existingFollow != null) {
-            // 如果是取消状态，则更新为关注状态
-            if (existingFollow.getStatus() == 0) {
-                existingFollow.setStatus(1);
-                existingFollow.setUpdateTime(new Date());
-                return this.updateById(existingFollow);
-            } else {
-                // 已经关注了
-                return true;
-            }
-        } else {
-            long generate = idGeneratorProvider.getRequired("user-follow").generate();
-            // 创建新的关注记录
-            UserFollow userFollow = UserFollow.builder()
-                    .id(generate)
+        // 1. 基础校验
+        if (Objects.equals(userId, followUserId)) throw new ApiException("不能关注自己");
+
+        // 2. 检查记录状态
+        UserFollow existingFollow = lambdaQuery()
+                .eq(UserFollow::getUserId, userId)
+                .eq(UserFollow::getFollowUserId, followUserId)
+                .one();
+
+        boolean shouldIncr = false;
+
+        if (existingFollow == null) {
+            // 情况 A: 从未关注 -> 新增
+            UserFollow newFollow = UserFollow.builder()
+                    .id(idGeneratorProvider.getRequired("user-follow").generate())
                     .userId(userId)
                     .followUserId(followUserId)
                     .status(1)
+                    .createTime(new Date())
                     .build();
-            return this.save(userFollow);
+            this.save(newFollow);
+            shouldIncr = true;
+        } else if (existingFollow.getStatus() == 0) {
+            // 情况 B: 曾关注但已取消 -> 恢复
+            existingFollow.setStatus(1);
+            existingFollow.setUpdateTime(new Date());
+            this.updateById(existingFollow);
+            shouldIncr = true;
         }
+
+        // 3. 同步更新 MySQL 统计表 (利用注册时已有的数据)
+        if (shouldIncr) {
+            // 增加自己的关注数
+            userStatsService.update()
+                    .setSql("following_count = following_count + 1")
+                    .eq("user_id", userId)
+                    .update();
+
+            // 增加目标的粉丝数
+            userStatsService.update()
+                    .setSql("follower_count = follower_count + 1")
+                    .eq("user_id", followUserId)
+                    .update();
+        }
+
+        return true;
     }
 
     @Override
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public Boolean unfollowUser(Long userId, Long followUserId) {
-        LambdaQueryWrapper<UserFollow> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(UserFollow::getUserId, userId)
-                .eq(UserFollow::getFollowUserId, followUserId);
-        UserFollow existingFollow = CollUtil.getFirst(list(wrapper));
-        if (existingFollow != null && existingFollow.getStatus() == 1) {
-            // 更新状态为取消关注
+        // 1. 查找当前是否处于“已关注”状态（status = 1）
+        // 只有状态为 1 的记录才需要执行取关逻辑，避免重复扣减计数
+        UserFollow existingFollow = lambdaQuery()
+                .eq(UserFollow::getUserId, userId)
+                .eq(UserFollow::getFollowUserId, followUserId)
+                .eq(UserFollow::getStatus, 1)
+                .one();
+
+        if (existingFollow != null) {
+            // 2. 更新关系表状态为取消关注 (0)
             existingFollow.setStatus(0);
-            return this.updateById(existingFollow);
+            existingFollow.setUpdateTime(new Date());
+            boolean isUpdated = this.updateById(existingFollow);
+
+            if (isUpdated) {
+                // 3. 原子自减：减少自己的关注数
+                // gt("following_count", 0) 是为了兜底，确保不会因为异常导致数据变成负数
+                userStatsService.lambdaUpdate()
+                        .setSql("following_count = following_count - 1")
+                        .eq(UserStats::getUserId, userId)
+                        .gt(UserStats::getFollowingCount, 0)
+                        .update();
+
+                // 4. 原子自减：减少目标的粉丝数
+                userStatsService.lambdaUpdate()
+                        .setSql("follower_count = follower_count - 1")
+                        .eq(UserStats::getUserId, followUserId)
+                        .gt(UserStats::getFollowerCount, 0)
+                        .update();
+            }
+            return isUpdated;
         }
+
+        // 如果本来就没关注，直接返回 true，符合幂等性原则
         return true;
     }
 

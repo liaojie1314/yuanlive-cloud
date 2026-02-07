@@ -42,7 +42,7 @@ public class ChatMessageConsumer {
                     autoDelete = "true", // 关机即删
                     exclusive = "true"   // 排他队列
             ),
-            exchange = @Exchange(value = "${yuanlive.chat.mq.exchange}",
+            exchange = @Exchange(value = "${live.mq.chat.exchange}",
                     type = ExchangeTypes.FANOUT)
     ))
     public void onMessage(String messageStr) {

@@ -16,6 +16,7 @@ import blog.yuanyuan.yuanlive.user.mapper.SysUserMapper;
 import blog.yuanyuan.yuanlive.user.service.SysRoleService;
 import blog.yuanyuan.yuanlive.user.service.SysUserRoleService;
 import blog.yuanyuan.yuanlive.user.service.SysUserService;
+import blog.yuanyuan.yuanlive.user.service.UserStatsService;
 import cn.dev33.satoken.stp.StpUtil;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
@@ -51,6 +52,8 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
     private SysUserRoleService userRoleService;
     @Resource
     private SysRoleService roleService;
+    @Resource
+    private UserStatsService userStatsService;
     @Resource
     private SysUserMapper userMapper;
     @Resource
@@ -144,6 +147,7 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
         long uid = StpUtil.getLoginIdAsLong();
         UserVO user = getUserById(uid);
         user.setDevice(StpUtil.getLoginDeviceType());
+        user.setUserStats(userStatsService.getById(uid));
         return user;
     }
 
