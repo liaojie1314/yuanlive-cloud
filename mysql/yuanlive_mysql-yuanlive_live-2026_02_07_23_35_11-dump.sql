@@ -95,6 +95,7 @@ CREATE TABLE `video_resource` (
   `peak_viewers` int DEFAULT '0' COMMENT '本场最高在线人数',
   `watch_count` int DEFAULT '0' COMMENT '本场累计观看人次',
   `video_url` varchar(512) DEFAULT NULL COMMENT '回放视频地址',
+  `cover_url` varchar(512) DEFAULT NULL COMMENT '视频封面',
   `like_count` int NOT NULL DEFAULT '0' COMMENT '点赞总数',
   `comment_count` int NOT NULL DEFAULT '0' COMMENT '评论总数',
   `view_count` int NOT NULL DEFAULT '0' COMMENT '播放次数',
@@ -112,4 +113,4 @@ CREATE TABLE `video_resource` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-02-07 22:02:47
+-- Dump completed on 2026-02-07 23:35:11

@@ -31,6 +31,8 @@ public class VideoResource {
     private Integer watchCount;
     @Schema(description="回放视频地址")
     private String videoUrl;
+    @Schema(description="封面图片地址")
+    private String coverUrl;
     @Schema(description="点赞总数")
     private Integer likeCount;
     @Schema(description="评论总数")

@@ -15,6 +15,7 @@
             <result property="peakViewers" column="peak_viewers" />
             <result property="watchCount" column="watch_count" />
             <result property="videoUrl" column="video_url" />
+            <result property="coverUrl" column="cover_url" />
             <result property="likeCount" column="like_count" />
             <result property="commentCount" column="comment_count" />
             <result property="viewCount" column="view_count" />
