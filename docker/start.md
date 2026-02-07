@@ -237,3 +237,13 @@
     - 将`yuanlive-live-service`微服务下`application.yml`中的`file-preifx.host-prefix`修改为自己的`SrsConfig`实际存储目录
     
     - 重新构建运行一下`srs`容器，否则有可能因为目录权限问题导致无法迁移录播视频，可以选择使用`docker compose up -d --force-recreate srs`指令
+  
+  - rabbitmq统一配置项
+    
+    - `Data ID`: rabbitmq.yaml  其他配置同上
+    
+    - 配置内容如下:
+      
+      ```yaml
+      
+      ```
