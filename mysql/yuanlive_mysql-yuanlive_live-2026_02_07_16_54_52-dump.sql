@@ -35,27 +35,6 @@ CREATE TABLE `live_category` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `live_record`
---
-
-DROP TABLE IF EXISTS `live_record`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `live_record` (
-  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '记录ID',
-  `anchor_id` bigint NOT NULL COMMENT '主播ID',
-  `room_id` bigint NOT NULL COMMENT '直播间ID',
-  `start_time` datetime NOT NULL DEFAULT (now()) COMMENT '开播时间',
-  `end_time` datetime DEFAULT NULL COMMENT '关播时间',
-  `peak_viewers` int DEFAULT '0' COMMENT '本场最高在线人数',
-  `watch_count` int DEFAULT '0' COMMENT '本场累计观看人次',
-  `video_url` varchar(512) DEFAULT NULL COMMENT '回放视频地址',
-  PRIMARY KEY (`id`),
-  KEY `idx_anchor_time` (`anchor_id`,`start_time`)
-) ENGINE=InnoDB AUTO_INCREMENT=261002 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='直播场次记录表';
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
 -- Table structure for table `live_room`
 --
 
@@ -97,6 +76,32 @@ CREATE TABLE `undo_log` (
   UNIQUE KEY `ux_undo_log` (`xid`,`branch_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='AT回滚表';
 /*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `video_resource`
+--
+
+DROP TABLE IF EXISTS `video_resource`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `video_resource` (
+  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '记录ID',
+  `user_id` bigint NOT NULL COMMENT '用户ID',
+  `room_id` bigint DEFAULT NULL COMMENT '直播间ID',
+  `duration` bigint DEFAULT NULL COMMENT '视频时长',
+  `title` varchar(255) DEFAULT NULL COMMENT '视频标题（录播可默认为“直播回放+日期”',
+  `start_time` datetime NOT NULL DEFAULT (now()) COMMENT '开播时间',
+  `end_time` datetime DEFAULT NULL COMMENT '关播时间(录播)',
+  `peak_viewers` int DEFAULT '0' COMMENT '本场最高在线人数',
+  `watch_count` int DEFAULT '0' COMMENT '本场累计观看人次',
+  `video_url` varchar(512) DEFAULT NULL COMMENT '回放视频地址',
+  `like_count` int NOT NULL DEFAULT '0' COMMENT '点赞总数',
+  `comment_count` int NOT NULL DEFAULT '0' COMMENT '评论总数',
+  `view_count` int NOT NULL DEFAULT '0' COMMENT '播放次数',
+  PRIMARY KEY (`id`),
+  KEY `idx_anchor_time` (`user_id`,`start_time`)
+) ENGINE=InnoDB AUTO_INCREMENT=261002 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='直播或视频记录表';
+/*!40101 SET character_set_client = @saved_cs_client */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
@@ -107,4 +112,4 @@ CREATE TABLE `undo_log` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-02-07 12:19:04
+-- Dump completed on 2026-02-07 16:54:52

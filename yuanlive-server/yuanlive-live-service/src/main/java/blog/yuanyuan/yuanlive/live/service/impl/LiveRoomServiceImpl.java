@@ -6,8 +6,8 @@ import blog.yuanyuan.yuanlive.common.result.ResultCode;
 import blog.yuanyuan.yuanlive.common.result.ResultPage;
 import blog.yuanyuan.yuanlive.common.util.MinioTemplate;
 import blog.yuanyuan.yuanlive.entity.live.entity.LiveCategory;
-import blog.yuanyuan.yuanlive.entity.live.entity.LiveRecord;
 import blog.yuanyuan.yuanlive.entity.live.entity.LiveRoom;
+import blog.yuanyuan.yuanlive.entity.live.entity.VideoResource;
 import blog.yuanyuan.yuanlive.entity.user.entity.SysUser;
 import blog.yuanyuan.yuanlive.feign.user.UserFeignClient;
 import blog.yuanyuan.yuanlive.live.domain.dto.LiveRoomDTO;
@@ -20,8 +20,8 @@ import blog.yuanyuan.yuanlive.live.mapper.LiveRoomMapper;
 import blog.yuanyuan.yuanlive.live.message.notification.LiveStartMessage;
 import blog.yuanyuan.yuanlive.live.properties.LiveRoomProperties;
 import blog.yuanyuan.yuanlive.live.service.LiveCategoryService;
-import blog.yuanyuan.yuanlive.live.service.LiveRecordService;
 import blog.yuanyuan.yuanlive.live.service.LiveRoomService;
+import blog.yuanyuan.yuanlive.live.service.VideoResourceService;
 import cn.dev33.satoken.stp.StpUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.http.HttpUtil;
@@ -40,6 +40,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.io.File;
 import java.nio.charset.Charset;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
@@ -68,7 +70,7 @@ public class LiveRoomServiceImpl extends ServiceImpl<LiveRoomMapper, LiveRoom>
     @Resource
     private LiveCategoryService categoryService;
     @Resource
-    private LiveRecordService liveRecordService;
+    private VideoResourceService videoResourceService;
     @Resource
     private MinioTemplate minioTemplate;
 
@@ -135,7 +137,6 @@ public class LiveRoomServiceImpl extends ServiceImpl<LiveRoomMapper, LiveRoom>
         }
         // 更新信息
         BeanUtils.copyProperties(roomDTO, liveRoom);
-        liveRoom.setUpdateTime(new Date());
 
         boolean updated = updateById(liveRoom);
         if (updated) {
@@ -173,15 +174,25 @@ public class LiveRoomServiceImpl extends ServiceImpl<LiveRoomMapper, LiveRoom>
         liveRoom.setUpdateTime(new Date());
         boolean updated = updateById(liveRoom);
         if (updated) {
-            LiveRecord record = new LiveRecord();
-            record.setId(idGeneratorProvider.getRequired("live-record").generate());
-            record.setAnchorId(liveRoom.getAnchorId());
-            record.setRoomId(roomId);
-            liveRecordService.save(record);
+            Result<SysUser> result = userFeignClient.getInfo(liveRoom.getAnchorId());
+            if (result == null || !result.isSuccess()) {
+                throw new ApiException("获取主播信息失败");
+            }
+            VideoResource video = new VideoResource();
+            video.setId(idGeneratorProvider.getRequired("video").generate());
+            video.setUserId(liveRoom.getAnchorId());
+            video.setRoomId(roomId);
+            // 直播标题(主播名-直播间title-日期-直播回放)
+            String format = LocalDateTime.now()
+                    .format(DateTimeFormatter.ofPattern("yyyy年MM月dd日HH:mm"));
+            String title = result.getData().getUsername() + "-"
+                    + liveRoom.getTitle() + "-" + format + "-直播回放";
+            video.setTitle(title);
+            videoResourceService.save(video);
 
             String sessionKey = liveRoomProperties.getSessionPrefix() + roomId;
             Map<String, String> session = new HashMap<>();
-            session.put("recordId", String.valueOf(record.getId()));
+            session.put("recordId", String.valueOf(video.getId()));
             session.put("peak", "0");
             session.put("client", dto.getClient_id());
             stringRedisTemplate.opsForHash().putAll(sessionKey, session);
@@ -192,10 +203,6 @@ public class LiveRoomServiceImpl extends ServiceImpl<LiveRoomMapper, LiveRoom>
             log.info("开始直播 | 房间ID: {} | 主播ID: {}", roomId, uid);
             // 发送消息给rabbitmq
             // 构造消息内容
-            Result<SysUser> result = userFeignClient.getInfo(liveRoom.getAnchorId());
-            if (result == null || !result.isSuccess()) {
-                throw new ApiException("获取主播信息失败");
-            }
             String categoryName = categoryService.lambdaQuery()
                     .select(LiveCategory::getName)
                     .eq(LiveCategory::getId, liveRoom.getCategoryId()).list().get(0).getName();
@@ -245,12 +252,18 @@ public class LiveRoomServiceImpl extends ServiceImpl<LiveRoomMapper, LiveRoom>
             Long anchorId = liveRoom.getAnchorId();
             String totalKey = liveRoomProperties.getTotalPrefix() + anchorId;
             Long total = stringRedisTemplate.opsForHyperLogLog().size(totalKey);
-            LiveRecord record = new LiveRecord();
-            record.setId(recordId);
-            record.setWatchCount(total.intValue());
-            record.setPeakViewers(peak);
-            record.setEndTime(new Date());
-            liveRecordService.updateById(record);
+            VideoResource video = videoResourceService.lambdaQuery()
+                    .select(VideoResource::getStartTime)
+                    .eq(VideoResource::getId, recordId).list().get(0);
+            log.info("开播时间: {}", video.getStartTime());
+            video.setId(recordId);
+            video.setWatchCount(total.intValue());
+            video.setPeakViewers(peak);
+            Date now = new Date();
+            long duration = (now.getTime() - video.getStartTime().getTime()) / 1000;
+            video.setEndTime(now);
+            video.setDuration(duration);
+            videoResourceService.updateById(video);
             // 删除缓存
             stringRedisTemplate
                     .delete(Arrays.asList(totalKey, liveRoomProperties.getCurrentPrefix() + roomId));
@@ -289,10 +302,10 @@ public class LiveRoomServiceImpl extends ServiceImpl<LiveRoomMapper, LiveRoom>
             // 2. 调用你之前写的 uploadLocalFile 方法 (业务设为 "records")
             String videoUrl = minioTemplate.uploadLocalFile("records", fileName, localPath);
             // 3. 更新数据库
-            LiveRecord record = new LiveRecord();
-            record.setId(recordId);
-            record.setVideoUrl(videoUrl);
-            liveRecordService.updateById(record);
+            VideoResource video = new VideoResource();
+            video.setId(recordId);
+            video.setVideoUrl(videoUrl);
+            videoResourceService.updateById(video);
             log.info("迁移完成 | RecordID: {} | MinIO地址: {}", recordId, videoUrl);
             // 4. 清理本地临时文件
             if (file.delete()) {

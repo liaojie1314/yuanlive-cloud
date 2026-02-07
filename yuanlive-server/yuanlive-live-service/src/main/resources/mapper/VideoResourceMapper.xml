@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="blog.yuanyuan.yuanlive.live.mapper.VideoResourceMapper">
+
+    <resultMap id="BaseResultMap" type="blog.yuanyuan.yuanlive.entity.live.entity.VideoResource">
+            <id property="id" column="id" />
+            <result property="userId" column="user_id" />
+            <result property="roomId" column="room_id" />
+            <result property="duration" column="duration" />
+            <result property="title" column="title" />
+            <result property="startTime" column="start_time" />
+            <result property="endTime" column="end_time" />
+            <result property="peakViewers" column="peak_viewers" />
+            <result property="watchCount" column="watch_count" />
+            <result property="videoUrl" column="video_url" />
+            <result property="likeCount" column="like_count" />
+            <result property="commentCount" column="comment_count" />
+            <result property="viewCount" column="view_count" />
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id,user_id,room_id,duration,title,start_time,
+        end_time,peak_viewers,watch_count,video_url,like_count,
+        comment_count,view_count
+    </sql>
+</mapper>

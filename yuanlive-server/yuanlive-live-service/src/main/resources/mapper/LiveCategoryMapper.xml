@@ -10,9 +10,7 @@
             <result property="name" column="name" />
             <result property="iconUrl" column="icon_url" />
             <result property="sortWeight" column="sort_weight" />
+            <result property="value" column="value" />
     </resultMap>
 
-    <sql id="Base_Column_List">
-        id,parent_id,name,icon_url,sort_weight
-    </sql>
 </mapper>

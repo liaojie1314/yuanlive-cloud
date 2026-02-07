@@ -88,6 +88,6 @@ cosid:
     distributor:
       type: redis
     provider:
-      live-record:
+      video:
         step: 5000
         offset: 1000
