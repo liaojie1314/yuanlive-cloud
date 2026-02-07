@@ -2,6 +2,7 @@ package blog.yuanyuan.yuanlive.user.domain.vo;
 
 import blog.yuanyuan.yuanlive.entity.user.entity.SysRole;
 import blog.yuanyuan.yuanlive.entity.user.entity.SysUser;
+import blog.yuanyuan.yuanlive.entity.user.enums.GenderEnum;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
@@ -19,4 +20,7 @@ import java.util.List;
 public class UserVO extends SysUser {
     @Schema(description = "角色列表")
     private List<SysRole> roles;
+    private String device;
+    @Schema(description = "性别")
+    private GenderEnum gender;
 }

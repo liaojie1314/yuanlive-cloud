@@ -1,6 +1,7 @@
 package blog.yuanyuan.yuanlive.user.domain.dto;
 
 import blog.yuanyuan.yuanlive.entity.user.entity.UserRoleEnum;
+import blog.yuanyuan.yuanlive.entity.user.enums.GenderEnum;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
@@ -28,6 +29,8 @@ public class UserDTO {
     private String phone;
     @Schema(description="邮箱")
     private String email;
+    @Schema(description="性别")
+    private GenderEnum gender;
     @Schema(description="用户类型")
     private UserRoleEnum role;
 

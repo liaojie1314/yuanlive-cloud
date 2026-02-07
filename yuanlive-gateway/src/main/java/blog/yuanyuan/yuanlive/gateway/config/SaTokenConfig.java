@@ -43,7 +43,7 @@ public class SaTokenConfig {
             // 5. 放行WebSocket
             "/ws/**",
             // 6. 其他需要放行的地址
-            "/live/category/getInfo/**",
+            "/live/category/getInfo/*",
             "/live/category/list",
             "/live/category/tree",
             "/live/category/firstLevel",

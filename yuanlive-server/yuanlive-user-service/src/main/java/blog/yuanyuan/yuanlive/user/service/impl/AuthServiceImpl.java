@@ -115,6 +115,7 @@ public class AuthServiceImpl implements AuthService {
         }
         SysUser user = BeanUtil.copyProperties(registerDTO, SysUser.class);
         user.setUid(uid);
+        user.setGender(registerDTO.getGender());
         userService.save(user);
         stringRedisTemplate.delete(registerProperties.getPrefix() + email);
         return true;

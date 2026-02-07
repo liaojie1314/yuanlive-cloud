@@ -16,4 +16,6 @@ public class LiveCategory {
     private String iconUrl;
     @Schema(description="排序权重 (越大越靠前)")
     private Integer sortWeight;
+    @Schema(description = "分类名对应的英文名")
+    private String value;
 }

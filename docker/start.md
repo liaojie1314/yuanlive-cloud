@@ -234,6 +234,6 @@
     
     - `read-path`可以选择将`127.0.0.1`替换为本机IP地址，如果只在本机测试也可以选择使用`127.0.0.1`
     
-    - 将`yuanlive-live-service`微服务下的`file-preifx.host-prefix`修改为自己的`SrsConfig`实际存储目录
+    - 将`yuanlive-live-service`微服务下`application.yml`中的`file-preifx.host-prefix`修改为自己的`SrsConfig`实际存储目录
     
     - 重新构建运行一下`srs`容器，否则有可能因为目录权限问题导致无法迁移录播视频，可以选择使用`docker compose up -d --force-recreate srs`指令

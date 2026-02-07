@@ -3,15 +3,14 @@ package blog.yuanyuan.yuanlive.entity.user.entity;
 
 import java.util.Date;
 
+import blog.yuanyuan.yuanlive.entity.user.enums.GenderEnum;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
-import me.ahoo.cosid.annotation.CosId;
 import org.apache.ibatis.annotations.Update;
 
 @Data
@@ -31,6 +30,8 @@ public class SysUser {
     private String phone;
     @Schema(description="邮箱")
     private String email;
+    @Schema(description="性别")
+    private GenderEnum gender;
     @Schema(description="用户类型")
     private UserRoleEnum role;
     @Schema(description="状态:1-正常,0-停用")

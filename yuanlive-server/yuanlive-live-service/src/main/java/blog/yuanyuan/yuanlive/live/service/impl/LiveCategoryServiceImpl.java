@@ -211,7 +211,9 @@ public class LiveCategoryServiceImpl extends ServiceImpl<LiveCategoryMapper, Liv
         log.info("获取一级分类列表");
         
         LambdaQueryWrapper<LiveCategory> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(LiveCategory::getParentId, 0)
+        queryWrapper
+                .select(LiveCategory::getName, LiveCategory::getValue)
+                .eq(LiveCategory::getParentId, 0)
                 .orderByDesc(LiveCategory::getSortWeight)
                 .orderByAsc(LiveCategory::getId);
         

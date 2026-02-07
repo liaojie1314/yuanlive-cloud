@@ -23,6 +23,10 @@ public class LiveCategoryDTO {
     @NotBlank(message = "分类名称不能为空")
     private String name;
 
+    @Schema(description = "分类名对应的英文名")
+    @NotBlank(message = "分类名对应的英文名不能为空")
+    private String value;
+
     @Schema(description = "分类图标")
     private String iconUrl;
 

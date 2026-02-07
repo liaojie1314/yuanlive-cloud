@@ -88,7 +88,6 @@ public class MinioTemplate {
                         .contentType(getContentType(fileName))
                         .build()
         );
-
         return getFileUrl(objectName);
     }
 

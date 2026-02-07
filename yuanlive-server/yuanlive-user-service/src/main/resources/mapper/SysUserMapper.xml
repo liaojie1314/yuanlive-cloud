@@ -15,6 +15,7 @@
             <result property="delFlag" column="del_flag" />
             <result property="createTime" column="create_time" />
             <result property="updateTime" column="update_time" />
+            <result property="gender" column="gender" />
             <result property="role" column="role" />
     </resultMap>
     <resultMap id="getUserVOByID" type="blog.yuanyuan.yuanlive.user.domain.vo.UserVO" extends="BaseResultMap">

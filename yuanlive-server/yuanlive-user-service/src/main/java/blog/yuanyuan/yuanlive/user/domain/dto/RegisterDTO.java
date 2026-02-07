@@ -1,5 +1,6 @@
 package blog.yuanyuan.yuanlive.user.domain.dto;
 
+import blog.yuanyuan.yuanlive.entity.user.enums.GenderEnum;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -22,4 +23,6 @@ public class RegisterDTO {
     @Schema(description = "确认密码")
     @NotBlank(message = "确认密码不能为空")
     private String confirmPassword;
+    @Schema(description = "性别")
+    private GenderEnum gender;
 }

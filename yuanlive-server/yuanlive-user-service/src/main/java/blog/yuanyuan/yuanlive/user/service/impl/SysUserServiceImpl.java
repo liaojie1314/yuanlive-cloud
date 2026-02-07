@@ -96,6 +96,7 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
                 .like(StrUtil.isNotBlank(queryDTO.getEmail()), SysUser::getEmail, queryDTO.getEmail())
                 .like(StrUtil.isNotBlank(queryDTO.getPhone()), SysUser::getPhone, queryDTO.getPhone())
                 .eq(queryDTO.getStatus() != null, SysUser::getStatus, queryDTO.getStatus())
+                .eq(queryDTO.getGender() != null, SysUser::getGender, queryDTO.getGender())
                 .page(new Page<>(queryDTO.getPageNum(), queryDTO.getPageSize()));
         List<Long> userIds = page.getRecords()
                 .stream().map(SysUser::getUid).toList();
@@ -141,7 +142,9 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
     @Override
     public UserVO getUserInfo() {
         long uid = StpUtil.getLoginIdAsLong();
-        return getUserById(uid);
+        UserVO user = getUserById(uid);
+        user.setDevice(StpUtil.getLoginDeviceType());
+        return user;
     }
 
     @Override
