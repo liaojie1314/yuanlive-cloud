@@ -28,9 +28,10 @@ CREATE TABLE `live_category` (
   `name` varchar(32) NOT NULL COMMENT '分类名称',
   `icon_url` varchar(255) DEFAULT NULL COMMENT '分类图标',
   `sort_weight` int DEFAULT '0' COMMENT '排序权重 (越大越靠前)',
+  `value` varchar(32) NOT NULL COMMENT '分类名对应的英文名',
   PRIMARY KEY (`id`),
   KEY `idx_parent_id` (`parent_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='直播分类表';
+) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='直播分类表';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -44,14 +45,14 @@ CREATE TABLE `live_record` (
   `id` bigint NOT NULL AUTO_INCREMENT COMMENT '记录ID',
   `anchor_id` bigint NOT NULL COMMENT '主播ID',
   `room_id` bigint NOT NULL COMMENT '直播间ID',
-  `start_time` datetime NOT NULL COMMENT '开播时间',
+  `start_time` datetime NOT NULL DEFAULT (now()) COMMENT '开播时间',
   `end_time` datetime DEFAULT NULL COMMENT '关播时间',
   `peak_viewers` int DEFAULT '0' COMMENT '本场最高在线人数',
   `watch_count` int DEFAULT '0' COMMENT '本场累计观看人次',
   `video_url` varchar(512) DEFAULT NULL COMMENT '回放视频地址',
   PRIMARY KEY (`id`),
   KEY `idx_anchor_time` (`anchor_id`,`start_time`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='直播场次记录表';
+) ENGINE=InnoDB AUTO_INCREMENT=261002 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='直播场次记录表';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -75,7 +76,7 @@ CREATE TABLE `live_room` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `uk_anchor_id` (`anchor_id`),
   KEY `idx_status` (`room_status`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='直播间表';
+) ENGINE=InnoDB AUTO_INCREMENT=790546539380738 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='直播间表';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -106,4 +107,4 @@ CREATE TABLE `undo_log` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-02-04 11:33:00
+-- Dump completed on 2026-02-07 12:19:04

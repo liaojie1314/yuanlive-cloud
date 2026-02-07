@@ -95,10 +95,11 @@ CREATE TABLE `sys_user` (
   `create_time` datetime DEFAULT CURRENT_TIMESTAMP,
   `update_time` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `role` tinyint DEFAULT '0' COMMENT '0-用户, 1-主播, 2-管理员',
+  `gender` tinyint(1) DEFAULT '0' COMMENT '用户性别 0 -> 未知 1 -> 男性 2->女性',
   PRIMARY KEY (`uid`),
   UNIQUE KEY `uk_username` (`username`),
   UNIQUE KEY `uk_email` (`email`)
-) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='用户表';
+) ENGINE=InnoDB AUTO_INCREMENT=791474412748802 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='用户表';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -142,7 +143,7 @@ DROP TABLE IF EXISTS `user_follow`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `user_follow` (
-  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键ID',
+  `id` bigint NOT NULL COMMENT '主键ID',
   `user_id` bigint NOT NULL COMMENT '粉丝ID (发起关注的人)',
   `follow_user_id` bigint NOT NULL COMMENT '主播ID (被关注的人)',
   `status` tinyint NOT NULL DEFAULT '1' COMMENT '关注状态: 1-已关注, 0-已取消',
@@ -151,7 +152,7 @@ CREATE TABLE `user_follow` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `uk_user_follow` (`user_id`,`follow_user_id`),
   KEY `idx_follow_user` (`follow_user_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='用户关注关系表';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='用户关注关系表';
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
@@ -163,4 +164,4 @@ CREATE TABLE `user_follow` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-02-04 11:33:19
+-- Dump completed on 2026-02-07 12:19:17

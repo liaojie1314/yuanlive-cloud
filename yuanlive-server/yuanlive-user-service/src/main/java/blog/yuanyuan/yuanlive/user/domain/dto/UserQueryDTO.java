@@ -1,5 +1,6 @@
 package blog.yuanyuan.yuanlive.user.domain.dto;
 
+import blog.yuanyuan.yuanlive.entity.user.enums.GenderEnum;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
@@ -26,6 +27,9 @@ public class UserQueryDTO {
 
     @Schema(description = "手机号")
     private String phone;
+
+    @Schema(description = "性别")
+    private GenderEnum gender;
 
     @Schema(description = "状态:1-正常,0-停用")
     private Integer status;
