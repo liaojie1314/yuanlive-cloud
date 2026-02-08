@@ -6,7 +6,7 @@ import blog.yuanyuan.yuanlive.live.domain.dto.LiveRoomDTO;
 import blog.yuanyuan.yuanlive.live.domain.dto.LiveRoomQueryDTO;
 import blog.yuanyuan.yuanlive.live.domain.dto.SrsCallBackDTO;
 import blog.yuanyuan.yuanlive.live.domain.vo.LiveRoomDetailVO;
-import blog.yuanyuan.yuanlive.live.domain.vo.LiveRoomVO;
+import blog.yuanyuan.yuanlive.entity.live.vo.LiveRoomVO;
 import com.baomidou.mybatisplus.extension.service.IService;
 
 /**

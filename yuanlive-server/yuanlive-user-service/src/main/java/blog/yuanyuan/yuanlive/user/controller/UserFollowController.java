@@ -2,7 +2,8 @@ package blog.yuanyuan.yuanlive.user.controller;
 
 import blog.yuanyuan.yuanlive.common.result.Result;
 import blog.yuanyuan.yuanlive.user.domain.dto.UserFollowDTO;
-import blog.yuanyuan.yuanlive.entity.user.vo.UserFollowVO;
+import blog.yuanyuan.yuanlive.entity.user.vo.UserFollowLivingVO;
+import blog.yuanyuan.yuanlive.user.domain.vo.UserFollowUnseenVO;
 import blog.yuanyuan.yuanlive.user.service.UserFollowService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -38,22 +39,22 @@ public class UserFollowController {
 
     @GetMapping("/followers/{followUserId}")
     @Operation(summary = "获取某人的粉丝列表")
-    public Result<List<UserFollowVO>> getFollowers(@PathVariable("followUserId") Long followUserId) {
-        List<UserFollowVO> followers = userFollowService.getFollowers(followUserId);
+    public Result<List<UserFollowLivingVO>> getFollowers(@PathVariable("followUserId") Long followUserId) {
+        List<UserFollowLivingVO> followers = userFollowService.getFollowers(followUserId);
         return Result.success(followers);
     }
 
     @GetMapping("/following/{userId}")
     @Operation(summary = "获取某人的关注列表")
-    public Result<List<UserFollowVO>> getFollowing(@PathVariable("userId") Long userId) {
-        List<UserFollowVO> following = userFollowService.getFollowing(userId);
+    public Result<List<UserFollowUnseenVO>> getFollowing(@PathVariable("userId") Long userId) {
+        List<UserFollowUnseenVO> following = userFollowService.getFollowing(userId);
         return Result.success(following);
     }
 
-    @GetMapping("/following/live/{userId}")
-    @Operation(summary = "获取某人正在直播的关注列表")
-    public Result<List<UserFollowVO>> getFollowingLive(@PathVariable("userId") Long userId) {
-        List<UserFollowVO> followingLive = userFollowService.getFollowingLive(userId);
+    @GetMapping("/following/live")
+    @Operation(summary = "获取当前用户正在直播的关注列表")
+    public Result<List<UserFollowLivingVO>> getFollowingLive() {
+        List<UserFollowLivingVO> followingLive = userFollowService.getFollowingLive(StpUtil.getLoginIdAsLong());
         return Result.success(followingLive);
     }
 

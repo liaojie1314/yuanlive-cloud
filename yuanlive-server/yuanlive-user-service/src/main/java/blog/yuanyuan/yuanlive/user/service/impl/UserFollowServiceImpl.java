@@ -1,8 +1,11 @@
 package blog.yuanyuan.yuanlive.user.service.impl;
 
 import blog.yuanyuan.yuanlive.common.exception.ApiException;
+import blog.yuanyuan.yuanlive.common.result.Result;
+import blog.yuanyuan.yuanlive.entity.live.vo.UnseenVO;
 import blog.yuanyuan.yuanlive.entity.user.entity.UserStats;
-import blog.yuanyuan.yuanlive.user.domain.vo.UserVO;
+import blog.yuanyuan.yuanlive.feign.live.LiveFeignClient;
+import blog.yuanyuan.yuanlive.user.domain.vo.UserFollowUnseenVO;
 import blog.yuanyuan.yuanlive.user.service.UserStatsService;
 import cn.hutool.core.collection.CollUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -10,7 +13,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import blog.yuanyuan.yuanlive.entity.user.entity.SysUser;
 import blog.yuanyuan.yuanlive.entity.user.entity.UserFollow;
 import blog.yuanyuan.yuanlive.user.domain.dto.UserFollowDTO;
-import blog.yuanyuan.yuanlive.entity.user.vo.UserFollowVO;
+import blog.yuanyuan.yuanlive.entity.user.vo.UserFollowLivingVO;
 import blog.yuanyuan.yuanlive.user.service.UserFollowService;
 import blog.yuanyuan.yuanlive.user.service.SysUserService;
 import blog.yuanyuan.yuanlive.user.mapper.UserFollowMapper;
@@ -39,6 +42,8 @@ public class UserFollowServiceImpl extends ServiceImpl<UserFollowMapper, UserFol
     private StringRedisTemplate stringRedisTemplate;
     @Resource
     private IdGeneratorProvider idGeneratorProvider;
+    @Resource
+    private LiveFeignClient liveFeignClient;
 
     @Value("${redis-key.anchor-map.key}")
     private String anchorMap;
@@ -138,7 +143,7 @@ public class UserFollowServiceImpl extends ServiceImpl<UserFollowMapper, UserFol
     }
 
     @Override
-    public List<UserFollowVO> getFollowers(Long followUserId) {
+    public List<UserFollowLivingVO> getFollowers(Long followUserId) {
         LambdaQueryWrapper<UserFollow> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(UserFollow::getFollowUserId, followUserId)
                 .eq(UserFollow::getStatus, 1); // 只查询已关注的
@@ -152,7 +157,7 @@ public class UserFollowServiceImpl extends ServiceImpl<UserFollowMapper, UserFol
                 .in(SysUser::getUid, followersIds).list();
 
         return userFollows.stream().map(follow -> {
-            UserFollowVO vo = UserFollowVO.builder()
+            UserFollowLivingVO vo = UserFollowLivingVO.builder()
                     .id(follow.getId())
                     .userId(follow.getUserId())
                     .followUserId(follow.getFollowUserId())
@@ -172,37 +177,43 @@ public class UserFollowServiceImpl extends ServiceImpl<UserFollowMapper, UserFol
     }
 
     @Override
-    public List<UserFollowVO> getFollowing(Long userId) {
+    public List<UserFollowUnseenVO> getFollowing(Long userId) {
         LambdaQueryWrapper<UserFollow> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(UserFollow::getUserId, userId)
                 .eq(UserFollow::getStatus, 1); // 只查询已关注的
         List<UserFollow> userFollows = this.list(wrapper);
-
-        List<Long> followingIds = userFollows.stream().map(UserFollow::getFollowUserId).toList();
+        List<Long> followingIds = new ArrayList<>();
+        List<Long> lastReadVideoIds = new ArrayList<>();
+        for (UserFollow follow : userFollows) {
+            if (follow.getUserId() != null) {
+                followingIds.add(follow.getFollowUserId());
+                lastReadVideoIds.add(follow.getLastReadVideoId());
+            }
+        }
         if (CollUtil.isEmpty(followingIds)) {
             return Collections.emptyList();
         }
         List<SysUser> following = sysUserService.lambdaQuery()
                 .select(SysUser::getUid, SysUser::getAvatar, SysUser::getUsername)
                 .in(SysUser::getUid, followingIds).list();
+        Result<List<UnseenVO>> result = liveFeignClient.getUnseenCount(followingIds, lastReadVideoIds);
+        List<UnseenVO> unseenVOS = result.getData();
 
         return userFollows.stream().map(follow -> {
-            UserFollowVO vo = UserFollowVO.builder()
-                    .id(follow.getId())
-                    .userId(follow.getUserId())
-                    .followUserId(follow.getFollowUserId())
-                    .status(follow.getStatus())
-                    .createTime(follow.getCreateTime())
-                    .build();
             // 查询被关注用户的信息
             SysUser user = following.stream()
                     .filter(u -> u.getUid().equals(follow.getFollowUserId()))
                     .findFirst().orElse(null);
-            if (user != null) {
-                vo.setUsername(user.getUsername());
-                vo.setAvatar(user.getAvatar());
-            }
-            return vo;
+            UnseenVO unseenVO = unseenVOS.stream()
+                    .filter(vo -> vo.getUid().equals(follow.getFollowUserId()))
+                    .findFirst().orElse(new UnseenVO(follow.getUserId(), 0));
+            assert user != null;
+            return UserFollowUnseenVO.builder()
+                    .username(user.getUsername())
+                    .unseenCount(unseenVO.getCount())
+                    .avatar(user.getAvatar())
+                    .build();
+
         }).collect(Collectors.toList());
     }
 
@@ -216,7 +227,7 @@ public class UserFollowServiceImpl extends ServiceImpl<UserFollowMapper, UserFol
     }
 
     @Override
-    public List<UserFollowVO> getFollowingLive(Long userId) {
+    public List<UserFollowLivingVO> getFollowingLive(Long userId) {
         List<UserFollow> followList = lambdaQuery()
                 .eq(UserFollow::getUserId, userId)
                 .eq(UserFollow::getStatus, 1).list();
@@ -251,13 +262,13 @@ public class UserFollowServiceImpl extends ServiceImpl<UserFollowMapper, UserFol
                 .collect(Collectors.toMap(SysUser::getUid, user -> user));
         
         // 构建结果列表
-        List<UserFollowVO> result = new ArrayList<>();
+        List<UserFollowLivingVO> result = new ArrayList<>();
         for (int i = 0; i < followList.size(); i++) {
             if (values.get(i) != null) { // 此用户正在直播
                 Long anchorId = followList.get(i).getFollowUserId();
                 SysUser anchor = anchorMapById.get(anchorId);
                 if (anchor != null) {
-                    UserFollowVO vo = UserFollowVO.builder()
+                    UserFollowLivingVO vo = UserFollowLivingVO.builder()
                             .id(followList.get(i).getId())
                             .userId(followList.get(i).getUserId())
                             .followUserId(anchorId)
@@ -265,6 +276,7 @@ public class UserFollowServiceImpl extends ServiceImpl<UserFollowMapper, UserFol
                             .username(anchor.getUsername())
                             .avatar(anchor.getAvatar())
                             .status(1) // 表示正在直播
+                            .roomId((String) values.get(i))
                             .build();
                     result.add(vo);
                 }

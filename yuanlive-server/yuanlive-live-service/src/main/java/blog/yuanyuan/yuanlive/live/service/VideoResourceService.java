@@ -1,7 +1,10 @@
 package blog.yuanyuan.yuanlive.live.service;
 
 import blog.yuanyuan.yuanlive.entity.live.entity.VideoResource;
+import blog.yuanyuan.yuanlive.entity.live.vo.UnseenVO;
 import com.baomidou.mybatisplus.extension.service.IService;
+
+import java.util.List;
 
 /**
 * @author frodepu
@@ -10,4 +13,5 @@ import com.baomidou.mybatisplus.extension.service.IService;
 */
 public interface VideoResourceService extends IService<VideoResource> {
 
+    List<UnseenVO> getUnseenCount(List<Long> followingIds, List<Long> lastReadVideoIds);
 }

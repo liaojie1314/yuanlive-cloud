@@ -9,15 +9,18 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
 @Data
-@Schema(description = "用户关注信息VO")
+@Schema(description = "用户关注中正在直播的信息VO")
 @SuperBuilder
 @EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
 @JsonIgnoreProperties(value = {"updateTime"})
-public class UserFollowVO extends UserFollow {
+public class UserFollowLivingVO extends UserFollow {
     @Schema(description = "用户名")
     private String username;
 
     @Schema(description = "头像地址")
     private String avatar;
+
+    @Schema(description = "房间id")
+    private String roomId;
 }

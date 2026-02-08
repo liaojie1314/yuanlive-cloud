@@ -6,7 +6,7 @@ import blog.yuanyuan.yuanlive.live.domain.dto.LiveRoomDTO;
 import blog.yuanyuan.yuanlive.live.domain.dto.LiveRoomQueryDTO;
 import blog.yuanyuan.yuanlive.live.domain.dto.SrsCallBackDTO;
 import blog.yuanyuan.yuanlive.live.domain.vo.LiveRoomDetailVO;
-import blog.yuanyuan.yuanlive.live.domain.vo.LiveRoomVO;
+import blog.yuanyuan.yuanlive.entity.live.vo.LiveRoomVO;
 import blog.yuanyuan.yuanlive.live.service.LiveRoomService;
 import cn.dev33.satoken.annotation.SaCheckRole;
 import cn.dev33.satoken.stp.StpUtil;
@@ -16,8 +16,6 @@ import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.annotations.Update;
 import org.springdoc.core.annotations.ParameterObject;
-import org.springframework.amqp.rabbit.core.RabbitTemplate;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -103,6 +101,12 @@ public class LiveRoomController {
         Long anchorId = StpUtil.getLoginIdAsLong();
         LiveRoomVO room = liveRoomService.getAnchorRoom(anchorId);
         return Result.success(room);
+    }
+
+    @GetMapping("/getRoom/{uid}")
+    @Operation(summary = "根据主播id获取直播间")
+    public Result<LiveRoomVO> getRoomByUid(@PathVariable("uid") Long uid) {
+        return Result.success(liveRoomService.getAnchorRoom(uid));
     }
 
     @GetMapping("/list")

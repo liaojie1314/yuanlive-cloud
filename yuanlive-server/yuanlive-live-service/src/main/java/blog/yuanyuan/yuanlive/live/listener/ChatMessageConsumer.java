@@ -1,8 +1,7 @@
 package blog.yuanyuan.yuanlive.live.listener;
 
 import blog.yuanyuan.yuanlive.common.result.Result;
-import blog.yuanyuan.yuanlive.entity.user.entity.UserFollow;
-import blog.yuanyuan.yuanlive.entity.user.vo.UserFollowVO;
+import blog.yuanyuan.yuanlive.entity.user.vo.UserFollowLivingVO;
 import blog.yuanyuan.yuanlive.feign.user.UserFeignClient;
 import blog.yuanyuan.yuanlive.live.message.Message;
 import blog.yuanyuan.yuanlive.live.message.WsResult;
@@ -53,10 +52,10 @@ public class ChatMessageConsumer {
             if (message instanceof LiveStartMessage liveStart) {
                 // 为关注者发送开播消息
                 // 获取关注者
-                Result<List<UserFollowVO>> result = userFeignClient.getFollowers(liveStart.getUserId());
+                Result<List<UserFollowLivingVO>> result = userFeignClient.getFollowers(liveStart.getUserId());
                 if (result.getData() != null) {
-                    List<UserFollowVO> followers = result.getData();
-                    for (UserFollowVO follow : followers) {
+                    List<UserFollowLivingVO> followers = result.getData();
+                    for (UserFollowLivingVO follow : followers) {
                         Channel channel = sessionManager.getUserChannel(follow.getUserId());
                         if (channel != null && channel.isActive()) {
                             WsResult live = WsResult.of(liveStart);

@@ -1,5 +1,6 @@
 package blog.yuanyuan.yuanlive.live.domain.vo;
 
+import blog.yuanyuan.yuanlive.entity.live.entity.LiveRoom;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
@@ -11,7 +12,7 @@ import java.util.Date;
  */
 @Data
 @Schema(description = "直播间详情VO")
-public class LiveRoomDetailVO extends LiveRoomVO {
+public class LiveRoomDetailVO extends LiveRoom {
     @Schema(description = "主播名称")
     private String anchorName;
 

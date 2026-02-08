@@ -1,11 +1,8 @@
-package blog.yuanyuan.yuanlive.live.domain.vo;
+package blog.yuanyuan.yuanlive.entity.live.vo;
 
 import blog.yuanyuan.yuanlive.entity.live.entity.LiveRoom;
-import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
-
-import java.util.Date;
 
 /**
  * 直播间VO

@@ -149,6 +149,7 @@ CREATE TABLE `user_follow` (
   `status` tinyint NOT NULL DEFAULT '1' COMMENT '关注状态: 1-已关注, 0-已取消',
   `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '关注时间',
   `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+  `last_read_video_id` int NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `uk_user_follow` (`user_id`,`follow_user_id`),
   KEY `idx_follow_user` (`follow_user_id`)
@@ -182,4 +183,4 @@ CREATE TABLE `user_stats` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-02-07 22:02:59
+-- Dump completed on 2026-02-08 21:17:56

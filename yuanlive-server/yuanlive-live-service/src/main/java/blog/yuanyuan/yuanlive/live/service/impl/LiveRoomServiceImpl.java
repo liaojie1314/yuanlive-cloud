@@ -14,7 +14,7 @@ import blog.yuanyuan.yuanlive.live.domain.dto.LiveRoomDTO;
 import blog.yuanyuan.yuanlive.live.domain.dto.LiveRoomQueryDTO;
 import blog.yuanyuan.yuanlive.live.domain.dto.SrsCallBackDTO;
 import blog.yuanyuan.yuanlive.live.domain.vo.LiveRoomDetailVO;
-import blog.yuanyuan.yuanlive.live.domain.vo.LiveRoomVO;
+import blog.yuanyuan.yuanlive.entity.live.vo.LiveRoomVO;
 import blog.yuanyuan.yuanlive.live.mapper.LiveCategoryMapper;
 import blog.yuanyuan.yuanlive.live.mapper.LiveRoomMapper;
 import blog.yuanyuan.yuanlive.live.message.notification.LiveStartMessage;
@@ -191,6 +191,7 @@ public class LiveRoomServiceImpl extends ServiceImpl<LiveRoomMapper, LiveRoom>
             video.setId(idGeneratorProvider.getRequired("video").generate());
             video.setUserId(liveRoom.getAnchorId());
             video.setRoomId(roomId);
+            video.setType(0);
             // 直播标题(主播名-直播间title-日期-直播回放)
             String format = LocalDateTime.now()
                     .format(DateTimeFormatter.ofPattern("yyyy年MM月dd日HH:mm"));

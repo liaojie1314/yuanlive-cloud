@@ -2,7 +2,8 @@ package blog.yuanyuan.yuanlive.user.service;
 
 import blog.yuanyuan.yuanlive.entity.user.entity.UserFollow;
 import blog.yuanyuan.yuanlive.user.domain.dto.UserFollowDTO;
-import blog.yuanyuan.yuanlive.entity.user.vo.UserFollowVO;
+import blog.yuanyuan.yuanlive.entity.user.vo.UserFollowLivingVO;
+import blog.yuanyuan.yuanlive.user.domain.vo.UserFollowUnseenVO;
 import com.baomidou.mybatisplus.extension.service.IService;
 
 import java.util.List;
@@ -23,17 +24,17 @@ public interface UserFollowService extends IService<UserFollow> {
     /**
      * 获取用户的粉丝列表
      */
-    List<UserFollowVO> getFollowers(Long followUserId);
+    List<UserFollowLivingVO> getFollowers(Long followUserId);
 
     /**
      * 获取用户关注的列表
      */
-    List<UserFollowVO> getFollowing(Long userId);
+    List<UserFollowUnseenVO> getFollowing(Long userId);
 
     /**
      * 检查用户是否关注了目标用户
      */
     Boolean checkFollowing(Long userId, Long followUserId);
 
-    List<UserFollowVO> getFollowingLive(Long userId);
+    List<UserFollowLivingVO> getFollowingLive(Long userId);
 }

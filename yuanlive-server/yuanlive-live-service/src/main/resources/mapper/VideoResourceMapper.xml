@@ -21,9 +21,12 @@
             <result property="viewCount" column="view_count" />
     </resultMap>
 
-    <sql id="Base_Column_List">
-        id,user_id,room_id,duration,title,start_time,
-        end_time,peak_viewers,watch_count,video_url,like_count,
-        comment_count,view_count
-    </sql>
+    <select id="getUnseenCount" resultType="blog.yuanyuan.yuanlive.entity.live.vo.UnseenVO">
+        select user_id AS uid, count(*) AS count
+        from video_resource
+        where
+            <foreach collection="dtos" item="item" separator="OR">
+                (user_id = #{item.followingId} AND id > #{item.lastReadVideoId})
+            </foreach>
+    </select>
 </mapper>

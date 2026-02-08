@@ -28,4 +28,6 @@ public class UserFollow {
     private Date createTime;
     @Schema(description="更新时间")
     private Date updateTime;
+    @Schema(description = "上次观看该作者的最新视频ID")
+    private Long lastReadVideoId;
 }
