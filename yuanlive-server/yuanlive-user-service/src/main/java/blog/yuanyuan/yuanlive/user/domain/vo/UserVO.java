@@ -4,6 +4,7 @@ import blog.yuanyuan.yuanlive.entity.user.entity.SysRole;
 import blog.yuanyuan.yuanlive.entity.user.entity.SysUser;
 import blog.yuanyuan.yuanlive.entity.user.entity.UserStats;
 import blog.yuanyuan.yuanlive.entity.user.enums.GenderEnum;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
@@ -24,5 +25,6 @@ public class UserVO extends SysUser {
     @Schema(description = "设备信息")
     private String device;
     @Schema(description = "用户统计信息")
+    @JsonIgnoreProperties(value = {"videoCount"})
     private UserStats userStats;
 }

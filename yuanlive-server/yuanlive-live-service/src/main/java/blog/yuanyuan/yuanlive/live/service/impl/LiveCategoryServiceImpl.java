@@ -212,7 +212,6 @@ public class LiveCategoryServiceImpl extends ServiceImpl<LiveCategoryMapper, Liv
         
         LambdaQueryWrapper<LiveCategory> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper
-                .select(LiveCategory::getName, LiveCategory::getValue)
                 .eq(LiveCategory::getParentId, 0)
                 .orderByDesc(LiveCategory::getSortWeight)
                 .orderByAsc(LiveCategory::getId);
