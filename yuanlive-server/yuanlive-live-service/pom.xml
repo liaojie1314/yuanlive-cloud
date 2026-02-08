@@ -61,6 +61,11 @@
             <artifactId>minio</artifactId>
             <scope>compile</scope>
         </dependency>
+        <dependency>
+            <groupId>ws.schild</groupId>
+            <artifactId>jave-all-deps</artifactId>
+            <scope>compile</scope>
+        </dependency>
     </dependencies>
 
 </project>

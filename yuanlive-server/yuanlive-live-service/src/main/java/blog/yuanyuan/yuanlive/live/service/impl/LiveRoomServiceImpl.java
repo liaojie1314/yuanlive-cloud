@@ -22,6 +22,8 @@ import blog.yuanyuan.yuanlive.live.properties.LiveRoomProperties;
 import blog.yuanyuan.yuanlive.live.service.LiveCategoryService;
 import blog.yuanyuan.yuanlive.live.service.LiveRoomService;
 import blog.yuanyuan.yuanlive.live.service.VideoResourceService;
+import blog.yuanyuan.yuanlive.live.util.VideoProcessResult;
+import blog.yuanyuan.yuanlive.live.util.VideoProcessUtil;
 import cn.dev33.satoken.stp.StpUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.http.HttpUtil;
@@ -37,6 +39,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ws.schild.jave.EncoderException;
 
 import java.io.File;
 import java.nio.charset.Charset;
@@ -73,6 +76,8 @@ public class LiveRoomServiceImpl extends ServiceImpl<LiveRoomMapper, LiveRoom>
     private VideoResourceService videoResourceService;
     @Resource
     private MinioTemplate minioTemplate;
+    @Resource
+    private VideoProcessUtil videoProcessUtil;
 
     @Value("${redis-key.active-rooms.key}")
     private String active;
@@ -263,10 +268,7 @@ public class LiveRoomServiceImpl extends ServiceImpl<LiveRoomMapper, LiveRoom>
             video.setId(recordId);
             video.setWatchCount(total.intValue());
             video.setPeakViewers(peak);
-            Date now = new Date();
-            long duration = (now.getTime() - video.getStartTime().getTime()) / 1000;
-            video.setEndTime(now);
-            video.setDuration(duration);
+            video.setEndTime(new Date());
             videoResourceService.updateById(video);
             // 删除缓存
             stringRedisTemplate
@@ -294,9 +296,17 @@ public class LiveRoomServiceImpl extends ServiceImpl<LiveRoomMapper, LiveRoom>
     }
 
     private void migrateVideoToMinio(Long recordId, String localPath, String stream) {
+        // 获取视频封面
+        File file = new File(localPath);
+        VideoProcessResult processResult;
+        try {
+            processResult = videoProcessUtil.processVideo(file);
+        } catch (EncoderException e) {
+            throw new ApiException("视频处理失败");
+        }
+
         long roomId = Long.parseLong(stream);
         Long uid = getById(roomId).getAnchorId();
-        File file = new File(localPath);
         if (!file.exists()) {
             log.error("迁移失败 | 本地文件不存在: {}", localPath);
             return;
@@ -307,16 +317,22 @@ public class LiveRoomServiceImpl extends ServiceImpl<LiveRoomMapper, LiveRoom>
             String fileName = stream + "-" + System.currentTimeMillis() + ".mp4";
             // 2. 调用你之前写的 uploadLocalFile 方法 (业务设为 "records")
             String videoUrl = minioTemplate.uploadLocalFile("records", fileName, localPath);
+            String coverUrl = minioTemplate
+                    .uploadLocalFile("records/cover"
+                            , fileName.replace(".mp4", ".jpg")
+                            , processResult.getCoverFile().getAbsolutePath());
             // 3. 更新数据库
             VideoResource video = new VideoResource();
             video.setId(recordId);
             video.setVideoUrl(videoUrl);
+            video.setCoverUrl(coverUrl);
+            video.setDuration(processResult.getDuration());
             videoResourceService.updateById(video);
             log.info("迁移完成 | RecordID: {} | MinIO地址: {}", recordId, videoUrl);
             rabbitTemplate.convertAndSend(statsExchange, videoRoutingKey, Map
                     .of("userId", uid, "type", "add"));
             // 4. 清理本地临时文件
-            if (file.delete()) {
+            if (file.delete() && processResult.getCoverFile().delete()) {
                 log.info("清理本地文件成功: {}", localPath);
             }
         } catch (Exception e) {
@@ -324,6 +340,8 @@ public class LiveRoomServiceImpl extends ServiceImpl<LiveRoomMapper, LiveRoom>
             // 这里可以视情况决定是否将数据库状态标记为“上传失败”
         }
     }
+
+
 
     @Override
     public LiveRoomDetailVO getRoomDetail(Long roomId) {
