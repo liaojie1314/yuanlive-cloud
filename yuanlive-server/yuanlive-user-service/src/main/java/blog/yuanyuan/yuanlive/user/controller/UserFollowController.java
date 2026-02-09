@@ -44,9 +44,10 @@ public class UserFollowController {
         return Result.success(followers);
     }
 
-    @GetMapping("/following/{userId}")
+    @GetMapping("/following")
     @Operation(summary = "获取某人的关注列表")
-    public Result<List<UserFollowUnseenVO>> getFollowing(@PathVariable("userId") Long userId) {
+    public Result<List<UserFollowUnseenVO>> getFollowing() {
+        Long userId = StpUtil.getLoginIdAsLong();
         List<UserFollowUnseenVO> following = userFollowService.getFollowing(userId);
         return Result.success(following);
     }

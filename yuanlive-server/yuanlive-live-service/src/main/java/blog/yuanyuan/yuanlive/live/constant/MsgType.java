@@ -1,7 +1,7 @@
 package blog.yuanyuan.yuanlive.live.constant;
 
 public enum MsgType {
-    JOIN,  // 登录/认证
+    JOIN,  // 加入房间
     JOIN_RESP,
     PING,   // 心跳
     PONG,   // 心跳响应

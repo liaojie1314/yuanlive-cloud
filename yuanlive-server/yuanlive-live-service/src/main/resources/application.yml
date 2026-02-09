@@ -41,8 +41,17 @@ yuanlive:
   netty:
     port: 18081
     path: /ws
+
 file-prefix:
   host-prefix: "/home/frodepu/IdeaProjects/yuanlive-cloud/docker/SrsConfig"
+
+live:
+  weights:
+    view: 1.0 #基础观看(进入房间时)
+    like: 2.0 #点赞
+    chat: 5.0 #评论
+    gift: 10.0 #礼物
+
 redis-key:
   active-rooms:
     key: "yuanlive:live:active_rooms"
@@ -52,10 +61,9 @@ redis-key:
     key: "yuanlive:live:anchor_map"
   live-room: # 直播间相关信息
     session-prefix: "yuanlive:live:session:" # 直播间会话信息(最高人数、房间clientId、recordId)
-    current-prefix: "yuanlive:live:current:" # 直播间当前观众id集合
+    current-prefix: "yuanlive:live:current:" # 直播间当前观众id集合(set)
     total-prefix: "yuanlive:live:total:" # 直播间累计人数，使用hyperloglog
-
-
+    main-rank: "yuanlive:live:ranking" # 人气榜单(zset)
 
 cosid:
   namespace: ${spring.application.name}

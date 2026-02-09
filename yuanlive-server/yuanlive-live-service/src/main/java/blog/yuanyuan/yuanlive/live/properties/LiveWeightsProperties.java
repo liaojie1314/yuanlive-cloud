@@ -6,11 +6,11 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-@ConfigurationProperties(prefix = "redis-key.live-room")
+@ConfigurationProperties(prefix = "live.weights")
 @Data
-public class LiveRoomProperties {
-    private String sessionPrefix;
-    private String currentPrefix;
-    private String totalPrefix;
-    private String mainRank;
+public class LiveWeightsProperties {
+    private double view;
+    private double like;
+    private double chat;
+    private double gift;
 }

@@ -199,15 +199,22 @@ public class LiveRoomServiceImpl extends ServiceImpl<LiveRoomMapper, LiveRoom>
                     + liveRoom.getTitle() + "-" + format + "-直播回放";
             video.setTitle(title);
             videoResourceService.save(video);
-
+            // redis存储会话信息
             String sessionKey = liveRoomProperties.getSessionPrefix() + roomId;
             Map<String, String> session = new HashMap<>();
             session.put("recordId", String.valueOf(video.getId()));
             session.put("peak", "0");
             session.put("client", dto.getClient_id());
+            session.put("anchor", result.getData().getUsername());
+            session.put("roomTitle", liveRoom.getTitle());
             stringRedisTemplate.opsForHash().putAll(sessionKey, session);
             stringRedisTemplate.persist(sessionKey);
+            // redis存储直播间人数信息
 
+            // redis存储人气排行榜
+            String rankingKey = liveRoomProperties.getMainRank();
+            stringRedisTemplate.opsForZSet().add(rankingKey, String.valueOf(roomId), 0.0);
+            // redis存储当前直播的房间ID
             stringRedisTemplate.opsForSet().add(active, String.valueOf(roomId));
             stringRedisTemplate.opsForHash().put(anchorMap, String.valueOf(uid), String.valueOf(roomId));
             log.info("开始直播 | 房间ID: {} | 主播ID: {}", roomId, uid);
@@ -276,6 +283,8 @@ public class LiveRoomServiceImpl extends ServiceImpl<LiveRoomMapper, LiveRoom>
                     .delete(Arrays.asList(totalKey, liveRoomProperties.getCurrentPrefix() + roomId));
             stringRedisTemplate.opsForSet().remove(active, String.valueOf(roomId));
             stringRedisTemplate.opsForHash().delete(anchorMap, String.valueOf(anchorId));
+            stringRedisTemplate.opsForZSet()
+                    .remove(liveRoomProperties.getMainRank(), String.valueOf(roomId));
         }
         return updated;
     }

@@ -1,6 +1,8 @@
 package blog.yuanyuan.yuanlive.live.server;
 
+import blog.yuanyuan.yuanlive.entity.live.entity.LiveRoom;
 import blog.yuanyuan.yuanlive.live.constant.MsgType;
+import blog.yuanyuan.yuanlive.live.domain.vo.LiveRoomDetailVO;
 import blog.yuanyuan.yuanlive.live.message.*;
 import blog.yuanyuan.yuanlive.live.message.notification.GroupChatNotification;
 import blog.yuanyuan.yuanlive.live.message.request.GroupChatRequest;
@@ -9,6 +11,9 @@ import blog.yuanyuan.yuanlive.live.message.request.PingMessage;
 import blog.yuanyuan.yuanlive.live.message.response.AckMessage;
 import blog.yuanyuan.yuanlive.live.message.response.JoinResponse;
 import blog.yuanyuan.yuanlive.live.message.response.PongMessage;
+import blog.yuanyuan.yuanlive.live.properties.LiveRoomProperties;
+import blog.yuanyuan.yuanlive.live.properties.LiveWeightsProperties;
+import blog.yuanyuan.yuanlive.live.service.LiveRoomService;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -24,7 +29,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.data.redis.core.script.DefaultRedisScript;
 import org.springframework.stereotype.Component;
+
+import java.util.Arrays;
+import java.util.Objects;
 
 @ChannelHandler.Sharable
 @Component
@@ -36,6 +46,17 @@ public class NettyServerHandler extends SimpleChannelInboundHandler<TextWebSocke
     private RabbitTemplate rabbitTemplate;
     @Resource
     private ObjectMapper objectMapper;
+    @Resource
+    private StringRedisTemplate stringRedisTemplate;
+    @Resource
+    private LiveRoomService liveRoomService;
+    @Resource
+    private LiveWeightsProperties liveWeightsProperties;
+    @Resource
+    private LiveRoomProperties liveRoomProperties;
+    @Resource(name = "joinRoomScript")
+    private DefaultRedisScript<Long> joinRoomScript;
+
     @Value("${live.mq.chat.exchange}")
     private String exchangeName;
 
@@ -84,13 +105,40 @@ public class NettyServerHandler extends SimpleChannelInboundHandler<TextWebSocke
 
     private void handleJoinRoom(ChannelHandlerContext ctx, JoinRequest join) {
         String roomId = join.getRoomId();
-        if (StrUtil.isNotBlank(roomId)) {
-            // 将当前连接加入到 Room Group
+        Long userId = ctx.channel().attr(SessionManager.KEY_USER_ID).get();
+
+        if (StrUtil.isNotBlank(roomId) && userId != null) {
+            // 1. 本地连接管理
             sessionManager.joinRoom(roomId, ctx.channel());
+            // 2. 准备 Redis Keys
+            String currentKey = liveRoomProperties.getCurrentPrefix() + roomId;
+            String sessionKey = liveRoomProperties.getSessionPrefix() + roomId;
+            String totalKey = liveRoomProperties.getTotalPrefix() + roomId;
+
+            // 3. 执行原子脚本：一气呵成完成 SADD, PFADD, SCARD, Peak Check
+            Long currentCount = stringRedisTemplate.execute(
+                    joinRoomScript,
+                    Arrays.asList(currentKey, sessionKey, totalKey),
+                    userId.toString()
+            );
+
+            // 4. 增加人气权重 (这步可以独立，因为它是增量操作，顺序不敏感)
+            stringRedisTemplate.opsForZSet().incrementScore(
+                    liveRoomProperties.getMainRank(),
+                    roomId,
+                    liveWeightsProperties.getView()
+            );
+            String anchorName = (String) stringRedisTemplate.opsForHash()
+                    .get(sessionKey, "anchor");
+            String roomTitle = (String) stringRedisTemplate.opsForHash()
+                    .get(sessionKey, "roomTitle");
             JoinResponse response = JoinResponse.builder()
                     .msgId(join.getMsgId())
                     .code(200)
-                    .type(MsgType.JOIN_RESP)
+                    .roomTitle(roomTitle)
+                    .roomId(roomId)
+                    .anchorName(anchorName)
+                    .onlineCount(currentCount.intValue())
                     .success(true)
                     .onlineCount(1)
                     .build();
@@ -112,6 +160,11 @@ public class NettyServerHandler extends SimpleChannelInboundHandler<TextWebSocke
         String username = ctx.channel().attr(SessionManager.KEY_USER_NAME).get();
 
         if (roomId != null) {
+            stringRedisTemplate.opsForZSet().incrementScore(
+                    liveRoomProperties.getMainRank(),
+                    roomId,
+                    liveWeightsProperties.getChat()
+            );
             GroupChatNotification notification = GroupChatNotification.builder()
                     .type(MsgType.CHAT_NOTIFY) // 使用专用的通知类型
                     .roomId(roomId)
