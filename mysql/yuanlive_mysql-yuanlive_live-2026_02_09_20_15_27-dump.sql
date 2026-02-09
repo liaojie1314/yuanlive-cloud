@@ -91,21 +91,21 @@ CREATE TABLE `video_resource` (
   `duration` bigint DEFAULT NULL COMMENT '视频时长',
   `title` varchar(255) DEFAULT NULL COMMENT '视频标题（录播可默认为“直播回放+日期”',
   `start_time` datetime NOT NULL DEFAULT (now()) COMMENT '开播时间',
-  `end_time` datetime DEFAULT NULL COMMENT '关播时间(录播)',
-  `peak_viewers` int DEFAULT '0' COMMENT '本场最高在线人数',
-  `watch_count` int DEFAULT '0' COMMENT '本场累计观看人次',
+  `end_time` datetime DEFAULT NULL COMMENT '关播时间(直播记录)',
+  `peak_viewers` int DEFAULT '0' COMMENT '本场最高在线人数(直播记录)',
+  `watch_count` int DEFAULT '0' COMMENT '本场累计观看人次(直播记录)',
   `video_url` varchar(512) DEFAULT NULL COMMENT '回放视频地址',
   `cover_url` varchar(512) DEFAULT NULL COMMENT '视频封面',
-  `like_count` int NOT NULL DEFAULT '0' COMMENT '点赞总数',
-  `comment_count` int NOT NULL DEFAULT '0' COMMENT '评论总数',
-  `view_count` int NOT NULL DEFAULT '0' COMMENT '播放次数',
-  `share_count` int NOT NULL DEFAULT '0' COMMENT '分享数',
-  `collect_count` int NOT NULL DEFAULT '0' COMMENT '收藏数',
+  `like_count` int NOT NULL DEFAULT '0' COMMENT '点赞总数(视频)',
+  `comment_count` int NOT NULL DEFAULT '0' COMMENT '评论总数(视频)',
+  `view_count` int NOT NULL DEFAULT '0' COMMENT '播放次数(视频)',
+  `share_count` int NOT NULL DEFAULT '0' COMMENT '分享数(视频)',
+  `collect_count` int NOT NULL DEFAULT '0' COMMENT '收藏数(视频)',
   `type` tinyint(1) NOT NULL DEFAULT '0' COMMENT '视频类型 0 -> 录播 1-> 上传视频',
   PRIMARY KEY (`id`),
   KEY `idx_anchor_time` (`user_id`,`start_time`),
   KEY `video_resource_id_user_id_index` (`id`,`user_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=261002 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='直播或视频记录表';
+) ENGINE=InnoDB AUTO_INCREMENT=341002 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='直播或视频记录表';
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
@@ -117,4 +117,4 @@ CREATE TABLE `video_resource` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-02-08 21:56:31
+-- Dump completed on 2026-02-09 20:15:27

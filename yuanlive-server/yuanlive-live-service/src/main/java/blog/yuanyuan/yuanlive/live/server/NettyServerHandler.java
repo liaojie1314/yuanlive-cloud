@@ -108,12 +108,25 @@ public class NettyServerHandler extends SimpleChannelInboundHandler<TextWebSocke
         Long userId = ctx.channel().attr(SessionManager.KEY_USER_ID).get();
 
         if (StrUtil.isNotBlank(roomId) && userId != null) {
+            // 判断直播间是否存在
+            boolean exists = checkRoom(roomId);
+            if (!exists) {
+                log.warn("直播间[{}] 不存在", roomId);
+                JoinResponse response = JoinResponse.builder()
+                        .msgId(join.getMsgId())
+                        .code(404)
+                        .message("直播间未开播")
+                        .success(false)
+                        .build();
+                sendMsg(ctx, response);
+                return;
+            }
             // 1. 本地连接管理
             sessionManager.joinRoom(roomId, ctx.channel());
             // 2. 准备 Redis Keys
             String currentKey = liveRoomProperties.getCurrentPrefix() + roomId;
-            String sessionKey = liveRoomProperties.getSessionPrefix() + roomId;
             String totalKey = liveRoomProperties.getTotalPrefix() + roomId;
+            String sessionKey = liveRoomProperties.getSessionPrefix() + roomId;
 
             // 3. 执行原子脚本：一气呵成完成 SADD, PFADD, SCARD, Peak Check
             Long currentCount = stringRedisTemplate.execute(
@@ -151,7 +164,16 @@ public class NettyServerHandler extends SimpleChannelInboundHandler<TextWebSocke
     private void handleChat(ChannelHandlerContext ctx, GroupChatRequest chat) {
         AckMessage ack = AckMessage.builder()
                 .msgId(chat.getMsgId())
+                .code(200)
                 .build();
+        boolean exists = checkRoom(chat.getRoomId());
+        if (!exists) {
+            ack.setSuccess(false);
+            ack.setMessage("直播间未开播");
+            sendMsg(ctx, ack);
+            return;
+        }
+        ack.setSuccess(true);
         sendMsg(ctx, ack);
 
         // 构造广播通知 (Notification)，补全发送者信息
@@ -222,5 +244,10 @@ public class NettyServerHandler extends SimpleChannelInboundHandler<TextWebSocke
         } finally {
             MDC.remove("traceId");
         }
+    }
+
+    // 判断直播间是否存在
+    private boolean checkRoom(String roomId) {
+        return stringRedisTemplate.hasKey(liveRoomProperties.getSessionPrefix() + roomId);
     }
 }

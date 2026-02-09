@@ -22,7 +22,7 @@ public class LiveRecordController {
 
     @Operation(summary = "根据id查询视频信息")
     @GetMapping("/getRecordByUid/{uid}")
-    public Result<List<VideoResource>> getRecordById(@PathVariable("uid") Long id) {
+    public Result<List<VideoResource>> getRecordByUid(@PathVariable("uid") Long id) {
         List<VideoResource> videos = videoResourceService.lambdaQuery()
                 .eq(VideoResource::getUserId, id).list();
         return Result.success(videos);

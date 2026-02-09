@@ -12,7 +12,7 @@ import lombok.experimental.SuperBuilder;
 @Data
 @SuperBuilder
 @EqualsAndHashCode(callSuper = true)
-public class AckMessage extends Message {
+public class AckMessage extends BaseResponse {
 
     public AckMessage() {
         super(MsgType.ACK);

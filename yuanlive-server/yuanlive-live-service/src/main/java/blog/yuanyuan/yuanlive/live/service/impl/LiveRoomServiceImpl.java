@@ -267,7 +267,7 @@ public class LiveRoomServiceImpl extends ServiceImpl<LiveRoomMapper, LiveRoom>
         if (updated) {
             // 更新直播记录
             Long anchorId = liveRoom.getAnchorId();
-            String totalKey = liveRoomProperties.getTotalPrefix() + anchorId;
+            String totalKey = liveRoomProperties.getTotalPrefix() + roomId;
             Long total = stringRedisTemplate.opsForHyperLogLog().size(totalKey);
             VideoResource video = videoResourceService.lambdaQuery()
                     .select(VideoResource::getStartTime)
