@@ -21,8 +21,8 @@ public class LiveRecordController {
     private VideoResourceService videoResourceService;
 
     @Operation(summary = "根据id查询视频信息")
-    @GetMapping("/getRecordById/{id}")
-    public Result<List<VideoResource>> getRecordById(@PathVariable("id") Long id) {
+    @GetMapping("/getRecordByUid/{uid}")
+    public Result<List<VideoResource>> getRecordById(@PathVariable("uid") Long id) {
         List<VideoResource> videos = videoResourceService.lambdaQuery()
                 .eq(VideoResource::getUserId, id).list();
         return Result.success(videos);

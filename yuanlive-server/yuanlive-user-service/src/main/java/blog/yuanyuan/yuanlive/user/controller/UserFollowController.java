@@ -45,7 +45,7 @@ public class UserFollowController {
     }
 
     @GetMapping("/following")
-    @Operation(summary = "获取某人的关注列表")
+    @Operation(summary = "获取当前用户的关注列表")
     public Result<List<UserFollowUnseenVO>> getFollowing() {
         Long userId = StpUtil.getLoginIdAsLong();
         List<UserFollowUnseenVO> following = userFollowService.getFollowing(userId);
