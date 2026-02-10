@@ -22,6 +22,7 @@ import blog.yuanyuan.yuanlive.live.properties.LiveRoomProperties;
 import blog.yuanyuan.yuanlive.live.service.LiveCategoryService;
 import blog.yuanyuan.yuanlive.live.service.LiveRoomService;
 import blog.yuanyuan.yuanlive.live.service.VideoResourceService;
+import blog.yuanyuan.yuanlive.live.util.PopularityUtil;
 import blog.yuanyuan.yuanlive.live.util.VideoProcessResult;
 import blog.yuanyuan.yuanlive.live.util.VideoProcessUtil;
 import cn.dev33.satoken.stp.StpUtil;
@@ -35,6 +36,7 @@ import lombok.extern.slf4j.Slf4j;
 import me.ahoo.cosid.provider.IdGeneratorProvider;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
@@ -95,6 +97,8 @@ public class LiveRoomServiceImpl extends ServiceImpl<LiveRoomMapper, LiveRoom>
     private String videoRoutingKey;
     @Resource
     private LiveRoomProperties liveRoomProperties;
+    @Resource
+    private PopularityUtil popularityUtil;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -210,8 +214,9 @@ public class LiveRoomServiceImpl extends ServiceImpl<LiveRoomMapper, LiveRoom>
             session.put("categoryId", liveRoom.getCategoryId().toString());
             stringRedisTemplate.opsForHash().putAll(sessionKey, session);
             stringRedisTemplate.persist(sessionKey);
-            // redis存储直播间人数信息
-
+            // redis存储每个类别的房间
+            String categoryKey = liveRoomProperties.getCategoryRoomsPrefix() + liveRoom.getCategoryId();
+            stringRedisTemplate.opsForSet().add(categoryKey, String.valueOf(roomId));
             // redis存储人气排行榜
             String rankingKey = liveRoomProperties.getMainRank();
             stringRedisTemplate.opsForZSet().add(rankingKey, String.valueOf(roomId), 0.0);
@@ -278,6 +283,8 @@ public class LiveRoomServiceImpl extends ServiceImpl<LiveRoomMapper, LiveRoom>
             video.setWatchCount(total.intValue());
             video.setPeakViewers(peak);
             video.setEndTime(new Date());
+            // 直播分类榜中减去当前直播间的人气热度值
+            popularityUtil.endLive(String.valueOf(roomId));
             videoResourceService.updateById(video);
             // 删除缓存
             stringRedisTemplate
@@ -286,6 +293,8 @@ public class LiveRoomServiceImpl extends ServiceImpl<LiveRoomMapper, LiveRoom>
             stringRedisTemplate.opsForHash().delete(anchorMap, String.valueOf(anchorId));
             stringRedisTemplate.opsForZSet()
                     .remove(liveRoomProperties.getMainRank(), String.valueOf(roomId));
+            String categoryKey = liveRoomProperties.getCategoryRoomsPrefix() + liveRoom.getCategoryId();
+            stringRedisTemplate.opsForSet().remove(categoryKey, String.valueOf(roomId));
         }
         return updated;
     }

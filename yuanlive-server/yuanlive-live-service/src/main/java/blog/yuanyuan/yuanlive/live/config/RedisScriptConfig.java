@@ -16,9 +16,9 @@ public class RedisScriptConfig {
     }
 
     @Bean
-    public DefaultRedisScript<Long> leaveRoomScript() {
+    public DefaultRedisScript<Long> endLiveScript() {
         DefaultRedisScript<Long> script = new DefaultRedisScript<>();
-        script.setLocation(new ClassPathResource("lua/leave_room.lua"));
+        script.setLocation(new ClassPathResource("lua/end_live.lua"));
         script.setResultType(Long.class);
         return script;
     }

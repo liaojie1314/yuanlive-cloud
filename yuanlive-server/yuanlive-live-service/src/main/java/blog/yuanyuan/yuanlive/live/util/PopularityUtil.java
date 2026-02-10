@@ -17,8 +17,8 @@ public class PopularityUtil {
     private StringRedisTemplate stringRedisTemplate;
     @Resource
     private LiveRoomProperties liveRoomProperties;
-    @Resource
-    private LiveWeightsProperties liveWeightsProperties;
+    @Resource(name = "endLiveScript")
+    private DefaultRedisScript<Long> endLiveScript;
     @Resource(name = "updatePopularityScript")
     private DefaultRedisScript<Long> updatePopularityScript;
 
@@ -31,6 +31,17 @@ public class PopularityUtil {
                         sessionKey),
                 roomId,
                 String.valueOf(increment)
+        );
+    }
+
+    public void endLive(String roomId) {
+        String sessionKey = liveRoomProperties.getSessionPrefix() + roomId;
+        stringRedisTemplate.execute(
+                endLiveScript,
+                Arrays.asList(liveRoomProperties.getMainRank(),
+                        liveRoomProperties.getCategoryRank(),
+                        sessionKey),
+                roomId
         );
     }
 }

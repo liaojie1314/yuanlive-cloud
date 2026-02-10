@@ -14,4 +14,5 @@ public class LiveRoomProperties {
     private String totalPrefix;
     private String mainRank;
     private String categoryRank;
+    private String categoryRoomsPrefix;
 }

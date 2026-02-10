@@ -6,6 +6,7 @@ import blog.yuanyuan.yuanlive.live.message.notification.LiveEndMessage;
 import blog.yuanyuan.yuanlive.live.message.notification.LiveStartMessage;
 import blog.yuanyuan.yuanlive.live.message.request.*;
 import blog.yuanyuan.yuanlive.live.message.response.AckMessage;
+import blog.yuanyuan.yuanlive.live.message.response.JoinResponse;
 import blog.yuanyuan.yuanlive.live.message.response.PongMessage;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
@@ -25,6 +26,8 @@ import lombok.experimental.SuperBuilder;
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
 @JsonSubTypes({
         @JsonSubTypes.Type(value = JoinRequest.class, name = "JOIN"),
+        @JsonSubTypes.Type(value = JoinResponse.class, name = "JOIN_RESP"),
+        @JsonSubTypes.Type(value = LeaveRequest.class, name = "LEAVE"),
         @JsonSubTypes.Type(value = PingMessage.class, name = "PING"),
         @JsonSubTypes.Type(value = PongMessage.class, name = "PONG"),
         @JsonSubTypes.Type(value = GroupChatRequest.class, name = "CHAT"),

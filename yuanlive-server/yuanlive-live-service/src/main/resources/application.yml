@@ -65,6 +65,7 @@ redis-key:
     total-prefix: "yuanlive:live:total:" # 直播间累计人数，使用hyperloglog
     main-rank: "yuanlive:live:room_ranking" # 直播间人气榜单(zset)
     category-rank: "yuanlive:live:category_ranking" # 直播间类别人气榜单(zset)
+    category-rooms-prefix: "yuanlive:live:category_rooms:" # 每个类别的房间id集合
 
 cosid:
   namespace: ${spring.application.name}

@@ -7,6 +7,7 @@ import blog.yuanyuan.yuanlive.live.message.*;
 import blog.yuanyuan.yuanlive.live.message.notification.GroupChatNotification;
 import blog.yuanyuan.yuanlive.live.message.request.GroupChatRequest;
 import blog.yuanyuan.yuanlive.live.message.request.JoinRequest;
+import blog.yuanyuan.yuanlive.live.message.request.LeaveRequest;
 import blog.yuanyuan.yuanlive.live.message.request.PingMessage;
 import blog.yuanyuan.yuanlive.live.message.response.AckMessage;
 import blog.yuanyuan.yuanlive.live.message.response.JoinResponse;
@@ -86,36 +87,45 @@ public class NettyServerHandler extends SimpleChannelInboundHandler<TextWebSocke
         if (message == null) return;
 
         // 根据具体消息类型进行处理
-        if (message instanceof PingMessage ping) {
-            log.info("收到心跳包");
-            handlePing(ctx, ping);
-        } else if (message instanceof JoinRequest join) {
-            // 👉 重点：在这里处理加入房间
-            handleJoinRoom(ctx, join);
-        } else if (message instanceof GroupChatRequest chat) {
-            // 发送聊天
-            handleChat(ctx, chat);
-        } else {
-            // 处理其他通用消息类型
-            handleGenericMessage(ctx, message);
+        switch (message.getType()) {
+            case PING -> {
+                log.info("收到心跳包");
+                handlePing(ctx, (PingMessage) message);
+            }
+            case JOIN -> handleJoinRoom(ctx, (JoinRequest) message);
+            case CHAT -> handleChat(ctx, (GroupChatRequest) message);
+            case LEAVE -> handleLeaveRoom(ctx, (LeaveRequest) message);
+            default -> handleGenericMessage(ctx, message);
         }
     }
 
     // 1. 处理心跳
+
     private void handlePing(ChannelHandlerContext ctx, PingMessage ping) {
         PongMessage pong = PongMessage.builder()
                 .msgId(ping.getMsgId())
                 .build();
         sendMsg(ctx, pong);
     }
-
     private void handleJoinRoom(ChannelHandlerContext ctx, JoinRequest join) {
         String roomId = join.getRoomId();
-        Long userId = ctx.channel().attr(SessionManager.KEY_USER_ID).get();
-
-
+        Long userId = ctx.channel().attr(SessionManager.KEY_USER_ID).get();// 判断直播间是否存在
+        boolean exists = checkRoom(roomId);
+        if (!exists) {
+            log.warn("直播间[{}] 不存在", roomId);
+            JoinResponse response = JoinResponse.builder()
+                    .msgId(join.getMsgId())
+                    .code(404)
+                    .message("直播间未开播")
+                    .success(false)
+                    .build();
+            sendMsg(ctx, response);
+            return;
+        }
         if (StrUtil.isNotBlank(roomId) && userId != null) {
-            if (roomId.equals(ctx.channel().attr(SessionManager.KEY_ROOM_ID).get())) {
+            // 如果用户已经加入过该房间，不允许重复加入
+            String currentRoomId = ctx.channel().attr(SessionManager.KEY_ROOM_ID).get();
+            if (roomId.equals(currentRoomId)) {
                 JoinResponse response = JoinResponse.builder()
                         .msgId(join.getMsgId())
                         .code(400)
@@ -125,19 +135,11 @@ public class NettyServerHandler extends SimpleChannelInboundHandler<TextWebSocke
                 sendMsg(ctx, response);
                 return;
             }
-            // 判断直播间是否存在
-            boolean exists = checkRoom(roomId);
-            if (!exists) {
-                log.warn("直播间[{}] 不存在", roomId);
-                JoinResponse response = JoinResponse.builder()
-                        .msgId(join.getMsgId())
-                        .code(404)
-                        .message("直播间未开播")
-                        .success(false)
-                        .build();
-                sendMsg(ctx, response);
-                return;
+            // 如果用户已经加入过其他房间，先执行退出逻辑
+            if (currentRoomId != null) {
+                leaveRoom(ctx);
             }
+
             // 1. 本地连接管理
             sessionManager.joinRoom(roomId, ctx.channel());
             // 2. 准备 Redis Keys
@@ -174,6 +176,7 @@ public class NettyServerHandler extends SimpleChannelInboundHandler<TextWebSocke
     }
 
     // 2. 处理聊天
+
     private void handleChat(ChannelHandlerContext ctx, GroupChatRequest chat) {
         AckMessage ack = AckMessage.builder()
                 .msgId(chat.getMsgId())
@@ -206,6 +209,38 @@ public class NettyServerHandler extends SimpleChannelInboundHandler<TextWebSocke
                 .build();
         rabbitTemplate.convertAndSend(exchangeName, "", JSONUtil.toJsonStr(notification));
 
+    }
+
+    // 3. 处理离开房间
+    private void handleLeaveRoom(ChannelHandlerContext ctx, LeaveRequest message) {
+        String roomId = ctx.channel().attr(SessionManager.KEY_ROOM_ID).get();
+        Long userId = ctx.channel().attr(SessionManager.KEY_USER_ID).get();
+        AckMessage ack = AckMessage.builder()
+                .msgId(message.getMsgId())
+                .build();
+        if (StrUtil.isBlank(roomId) || userId == null) {
+            log.warn("用户未加入任何房间，无需处理退出请求");
+            ack.setSuccess(false);
+            ack.setMessage("用户未加入任何房间，无需处理退出请求");
+            ack.setCode(400);
+            sendMsg(ctx, ack);
+            return;
+        }
+        log.info("用户[{}] 退出房间[{}]", userId, roomId);
+        // 执行离场
+        leaveRoom(ctx);
+        ack.setSuccess(true);
+        sendMsg(ctx, ack);
+    }
+
+    private void leaveRoom(ChannelHandlerContext ctx) {
+        Long userId = ctx.channel().attr(SessionManager.KEY_USER_ID).get();
+        String roomId = ctx.channel().attr(SessionManager.KEY_ROOM_ID).get();
+        log.info("用户[{}] 退出房间[{}]", userId, roomId);
+        ctx.channel().attr(SessionManager.KEY_ROOM_ID).set(null);
+        String currentKey = liveRoomProperties.getCurrentPrefix() + roomId;
+        stringRedisTemplate.opsForSet().remove(currentKey, userId.toString());
+        popularityUtil.updatePopularity(roomId, -liveWeightsProperties.getView());
     }
 
     // 处理通用消息

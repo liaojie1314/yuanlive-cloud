@@ -51,7 +51,8 @@ public class SaTokenConfig {
             "/live/room/end",
             "/live/room/dvr",
             "/user/follow/followers/*",
-            "/user/follow/following/*"
+            "/user/follow/following/*",
+            "/live/category/listByCategory/*"
 
     };
 
