@@ -2,6 +2,8 @@ package blog.yuanyuan.yuanlive.live.server;
 
 import blog.yuanyuan.yuanlive.live.properties.LiveRoomProperties;
 import blog.yuanyuan.yuanlive.live.properties.LiveWeightsProperties;
+import blog.yuanyuan.yuanlive.live.util.PopularityUtil;
+import cn.hutool.core.util.StrUtil;
 import io.netty.channel.Channel;
 import io.netty.channel.group.ChannelGroup;
 import io.netty.channel.group.DefaultChannelGroup;
@@ -34,14 +36,14 @@ public class SessionManager {
     public static final AttributeKey<String> KEY_TOKEN = AttributeKey.valueOf("token");
     public static final AttributeKey<String> KEY_TRACE_ID = AttributeKey.valueOf("traceId");
 
-    @Resource(name = "leaveRoomScript")
-    private DefaultRedisScript<Long> leaveRoomScript;
     @Resource
     private LiveRoomProperties liveRoomProperties;
     @Resource
     private LiveWeightsProperties liveWeightsProperties;
     @Resource
     private StringRedisTemplate stringRedisTemplate;
+    @Resource
+    private PopularityUtil popularityUtil;
     /**
      * 1. 用户上线 (连接建立时调用)
      * 仅保存连接引用，不加入房间
@@ -79,13 +81,12 @@ public class SessionManager {
                 log.info("用户[{}] 断开连接", userId);
                 // 执行离场 Lua 脚本
                 String roomId = channel.attr(KEY_ROOM_ID).get();
-                String currentKey = liveRoomProperties.getCurrentPrefix() + roomId;
-                String rankingKey = liveRoomProperties.getMainRank();
-                double viewWeight = liveWeightsProperties.getView();Long remaining = stringRedisTemplate.execute(
-                        leaveRoomScript, // 之前定义的 DefaultRedisScript
-                        Arrays.asList(currentKey, rankingKey),
-                        userId.toString(), roomId, String.valueOf(viewWeight)
-                );
+                // 如果 roomId 不为空
+                if (StrUtil.isNotBlank(roomId)) {
+                    String currentKey = liveRoomProperties.getCurrentPrefix() + roomId;
+                    stringRedisTemplate.opsForSet().remove(currentKey, userId.toString());
+                    popularityUtil.updatePopularity(roomId, -liveWeightsProperties.getView());
+                }
             }
             // Netty 的 ChannelGroup 会自动移除断开的 Channel，不需要手动操作 ROOM_MAP
         } finally {

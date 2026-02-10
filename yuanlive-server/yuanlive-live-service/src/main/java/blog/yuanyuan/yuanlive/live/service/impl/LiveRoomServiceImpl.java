@@ -207,6 +207,7 @@ public class LiveRoomServiceImpl extends ServiceImpl<LiveRoomMapper, LiveRoom>
             session.put("client", dto.getClient_id());
             session.put("anchor", result.getData().getUsername());
             session.put("roomTitle", liveRoom.getTitle());
+            session.put("categoryId", liveRoom.getCategoryId().toString());
             stringRedisTemplate.opsForHash().putAll(sessionKey, session);
             stringRedisTemplate.persist(sessionKey);
             // redis存储直播间人数信息

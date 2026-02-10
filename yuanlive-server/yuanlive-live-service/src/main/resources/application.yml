@@ -63,7 +63,8 @@ redis-key:
     session-prefix: "yuanlive:live:session:" # 直播间会话信息(最高人数、房间clientId、recordId)
     current-prefix: "yuanlive:live:current:" # 直播间当前观众id集合(set)
     total-prefix: "yuanlive:live:total:" # 直播间累计人数，使用hyperloglog
-    main-rank: "yuanlive:live:ranking" # 人气榜单(zset)
+    main-rank: "yuanlive:live:room_ranking" # 直播间人气榜单(zset)
+    category-rank: "yuanlive:live:category_ranking" # 直播间类别人气榜单(zset)
 
 cosid:
   namespace: ${spring.application.name}

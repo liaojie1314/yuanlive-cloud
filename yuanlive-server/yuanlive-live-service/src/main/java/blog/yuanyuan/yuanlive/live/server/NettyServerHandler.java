@@ -14,6 +14,7 @@ import blog.yuanyuan.yuanlive.live.message.response.PongMessage;
 import blog.yuanyuan.yuanlive.live.properties.LiveRoomProperties;
 import blog.yuanyuan.yuanlive.live.properties.LiveWeightsProperties;
 import blog.yuanyuan.yuanlive.live.service.LiveRoomService;
+import blog.yuanyuan.yuanlive.live.util.PopularityUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -56,6 +57,11 @@ public class NettyServerHandler extends SimpleChannelInboundHandler<TextWebSocke
     private LiveRoomProperties liveRoomProperties;
     @Resource(name = "joinRoomScript")
     private DefaultRedisScript<Long> joinRoomScript;
+    @Resource(name = "updatePopularityScript")
+    private DefaultRedisScript<Long> updatePopularityScript;
+
+    @Resource
+    private PopularityUtil popularityUtil;
 
     @Value("${live.mq.chat.exchange}")
     private String exchangeName;
@@ -107,7 +113,18 @@ public class NettyServerHandler extends SimpleChannelInboundHandler<TextWebSocke
         String roomId = join.getRoomId();
         Long userId = ctx.channel().attr(SessionManager.KEY_USER_ID).get();
 
+
         if (StrUtil.isNotBlank(roomId) && userId != null) {
+            if (roomId.equals(ctx.channel().attr(SessionManager.KEY_ROOM_ID).get())) {
+                JoinResponse response = JoinResponse.builder()
+                        .msgId(join.getMsgId())
+                        .code(400)
+                        .message("已加入过该房间")
+                        .success(false)
+                        .build();
+                sendMsg(ctx, response);
+                return;
+            }
             // 判断直播间是否存在
             boolean exists = checkRoom(roomId);
             if (!exists) {
@@ -135,12 +152,8 @@ public class NettyServerHandler extends SimpleChannelInboundHandler<TextWebSocke
                     userId.toString()
             );
 
-            // 4. 增加人气权重 (这步可以独立，因为它是增量操作，顺序不敏感)
-            stringRedisTemplate.opsForZSet().incrementScore(
-                    liveRoomProperties.getMainRank(),
-                    roomId,
-                    liveWeightsProperties.getView()
-            );
+            // 4. 增加人气权重
+            popularityUtil.updatePopularity(roomId, liveWeightsProperties.getView());
             String anchorName = (String) stringRedisTemplate.opsForHash()
                     .get(sessionKey, "anchor");
             String roomTitle = (String) stringRedisTemplate.opsForHash()
@@ -166,10 +179,11 @@ public class NettyServerHandler extends SimpleChannelInboundHandler<TextWebSocke
                 .msgId(chat.getMsgId())
                 .code(200)
                 .build();
-        boolean exists = checkRoom(chat.getRoomId());
-        if (!exists) {
+        String roomId = ctx.channel().attr(SessionManager.KEY_ROOM_ID).get();
+        boolean exists = checkRoom(roomId);
+        if (roomId == null || !exists) {
             ack.setSuccess(false);
-            ack.setMessage("直播间未开播");
+            ack.setMessage("直播间未开播\n或用户未加入房间");
             sendMsg(ctx, ack);
             return;
         }
@@ -178,25 +192,20 @@ public class NettyServerHandler extends SimpleChannelInboundHandler<TextWebSocke
 
         // 构造广播通知 (Notification)，补全发送者信息
         Long userId = ctx.channel().attr(SessionManager.KEY_USER_ID).get();
-        String roomId = ctx.channel().attr(SessionManager.KEY_ROOM_ID).get();
         String username = ctx.channel().attr(SessionManager.KEY_USER_NAME).get();
 
-        if (roomId != null) {
-            stringRedisTemplate.opsForZSet().incrementScore(
-                    liveRoomProperties.getMainRank(),
-                    roomId,
-                    liveWeightsProperties.getChat()
-            );
-            GroupChatNotification notification = GroupChatNotification.builder()
-                    .type(MsgType.CHAT_NOTIFY) // 使用专用的通知类型
-                    .roomId(roomId)
-                    .userId(userId)
-                    .username(username)
-                    .content(chat.getContent())
-                    .timestamp(System.currentTimeMillis())
-                    .build();
-            rabbitTemplate.convertAndSend(exchangeName, "", JSONUtil.toJsonStr(notification));
-        }
+
+        popularityUtil.updatePopularity(roomId, liveWeightsProperties.getChat());
+        GroupChatNotification notification = GroupChatNotification.builder()
+                .type(MsgType.CHAT_NOTIFY) // 使用专用的通知类型
+                .roomId(roomId)
+                .userId(userId)
+                .username(username)
+                .content(chat.getContent())
+                .timestamp(System.currentTimeMillis())
+                .build();
+        rabbitTemplate.convertAndSend(exchangeName, "", JSONUtil.toJsonStr(notification));
+
     }
 
     // 处理通用消息
