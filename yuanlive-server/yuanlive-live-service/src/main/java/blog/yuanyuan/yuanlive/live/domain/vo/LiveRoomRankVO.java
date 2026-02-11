@@ -13,7 +13,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class LiveRoomVO {
+public class LiveRoomRankVO {
     @JsonSerialize(using = ToStringSerializer.class)
     @Schema(description = "房间ID")
     private Long id;

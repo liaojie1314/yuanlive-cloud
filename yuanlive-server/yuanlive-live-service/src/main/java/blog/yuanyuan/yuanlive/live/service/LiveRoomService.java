@@ -7,7 +7,10 @@ import blog.yuanyuan.yuanlive.live.domain.dto.LiveRoomQueryDTO;
 import blog.yuanyuan.yuanlive.live.domain.dto.SrsCallBackDTO;
 import blog.yuanyuan.yuanlive.live.domain.vo.LiveRoomDetailVO;
 import blog.yuanyuan.yuanlive.entity.live.vo.LiveRoomVO;
+import blog.yuanyuan.yuanlive.live.domain.vo.LiveRoomRankVO;
 import com.baomidou.mybatisplus.extension.service.IService;
+
+import java.util.List;
 
 /**
 * @author frodepu
@@ -68,4 +71,6 @@ public interface LiveRoomService extends IService<LiveRoom> {
     ResultPage<LiveRoomVO> pageRooms(LiveRoomQueryDTO queryDTO);
 
     boolean dvr(SrsCallBackDTO dto);
+
+    List<LiveRoomRankVO> getPopularRooms();
 }

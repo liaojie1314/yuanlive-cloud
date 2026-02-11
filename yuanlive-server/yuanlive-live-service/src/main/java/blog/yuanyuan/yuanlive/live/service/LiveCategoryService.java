@@ -5,7 +5,7 @@ import blog.yuanyuan.yuanlive.entity.live.entity.LiveCategory;
 import blog.yuanyuan.yuanlive.live.domain.dto.LiveCategoryDTO;
 import blog.yuanyuan.yuanlive.live.domain.dto.LiveCategoryQueryDTO;
 import blog.yuanyuan.yuanlive.live.domain.vo.LiveCategoryVO;
-import blog.yuanyuan.yuanlive.live.domain.vo.LiveRoomVO;
+import blog.yuanyuan.yuanlive.live.domain.vo.LiveRoomRankVO;
 import com.baomidou.mybatisplus.extension.service.IService;
 
 import java.util.List;
@@ -64,5 +64,5 @@ public interface LiveCategoryService extends IService<LiveCategory> {
      */
     List<LiveCategoryVO> getFirstLevelCategories();
 
-    List<LiveRoomVO> getLiveRoomsByCategoryID(Integer categoryId);
+    List<LiveRoomRankVO> getLiveRoomsByCategoryID(Integer categoryId);
 }

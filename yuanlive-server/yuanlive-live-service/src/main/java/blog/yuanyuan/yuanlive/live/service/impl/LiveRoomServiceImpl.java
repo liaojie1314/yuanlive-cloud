@@ -15,6 +15,7 @@ import blog.yuanyuan.yuanlive.live.domain.dto.LiveRoomQueryDTO;
 import blog.yuanyuan.yuanlive.live.domain.dto.SrsCallBackDTO;
 import blog.yuanyuan.yuanlive.live.domain.vo.LiveRoomDetailVO;
 import blog.yuanyuan.yuanlive.entity.live.vo.LiveRoomVO;
+import blog.yuanyuan.yuanlive.live.domain.vo.LiveRoomRankVO;
 import blog.yuanyuan.yuanlive.live.mapper.LiveCategoryMapper;
 import blog.yuanyuan.yuanlive.live.mapper.LiveRoomMapper;
 import blog.yuanyuan.yuanlive.live.message.notification.LiveStartMessage;
@@ -26,6 +27,7 @@ import blog.yuanyuan.yuanlive.live.util.PopularityUtil;
 import blog.yuanyuan.yuanlive.live.util.VideoProcessResult;
 import blog.yuanyuan.yuanlive.live.util.VideoProcessUtil;
 import cn.dev33.satoken.stp.StpUtil;
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.http.HttpUtil;
 import cn.hutool.json.JSONUtil;
@@ -313,6 +315,17 @@ public class LiveRoomServiceImpl extends ServiceImpl<LiveRoomMapper, LiveRoom>
         // 设置会话缓存2秒后过期
         stringRedisTemplate.expire(sessionKey, 2, TimeUnit.SECONDS);
         return true;
+    }
+
+    @Override
+    public List<LiveRoomRankVO> getPopularRooms() {
+        String rankKey = liveRoomProperties.getMainRank();
+        Set<String> roomIds = stringRedisTemplate
+                .opsForZSet().reverseRange(rankKey, 0, 5);
+        if (CollUtil.isEmpty(roomIds)) return List.of();
+        List<String> roomIdList = roomIds.stream().filter(Objects::nonNull).toList();
+        return popularityUtil.getPopularRoomVOS(roomIdList);
+
     }
 
     private void migrateVideoToMinio(Long recordId, String localPath, String stream) {

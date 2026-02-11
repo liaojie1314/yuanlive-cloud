@@ -5,9 +5,8 @@ import blog.yuanyuan.yuanlive.common.result.ResultPage;
 import blog.yuanyuan.yuanlive.live.domain.dto.LiveCategoryDTO;
 import blog.yuanyuan.yuanlive.live.domain.dto.LiveCategoryQueryDTO;
 import blog.yuanyuan.yuanlive.live.domain.vo.LiveCategoryVO;
-import blog.yuanyuan.yuanlive.live.domain.vo.LiveRoomVO;
+import blog.yuanyuan.yuanlive.live.domain.vo.LiveRoomRankVO;
 import blog.yuanyuan.yuanlive.live.service.LiveCategoryService;
-import cn.dev33.satoken.annotation.SaCheckRole;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
@@ -80,7 +79,7 @@ public class LiveCategoryController {
 
     @GetMapping("/listByCategory/{categoryId}")
     @Operation(summary = "获取当前直播分类类别的所有直播")
-    public Result<List<LiveRoomVO>> listByCategory(@PathVariable("categoryId") Integer categoryId) {
+    public Result<List<LiveRoomRankVO>> listByCategory(@PathVariable("categoryId") Integer categoryId) {
         return Result.success(categoryService.getLiveRoomsByCategoryID(categoryId));
     }
 }

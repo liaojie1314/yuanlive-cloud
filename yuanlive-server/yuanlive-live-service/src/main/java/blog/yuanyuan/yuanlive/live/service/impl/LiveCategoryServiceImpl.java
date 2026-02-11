@@ -2,8 +2,9 @@ package blog.yuanyuan.yuanlive.live.service.impl;
 
 import blog.yuanyuan.yuanlive.common.exception.ApiException;
 import blog.yuanyuan.yuanlive.common.result.ResultPage;
-import blog.yuanyuan.yuanlive.live.domain.vo.LiveRoomVO;
+import blog.yuanyuan.yuanlive.live.domain.vo.LiveRoomRankVO;
 import blog.yuanyuan.yuanlive.live.properties.LiveRoomProperties;
+import blog.yuanyuan.yuanlive.live.util.PopularityUtil;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
@@ -18,13 +19,7 @@ import blog.yuanyuan.yuanlive.live.service.LiveCategoryService;
 import blog.yuanyuan.yuanlive.live.mapper.LiveCategoryMapper;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
-import org.jetbrains.annotations.NotNull;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.RedisCallback;
-import org.springframework.data.redis.core.RedisOperations;
-import org.springframework.data.redis.core.SessionCallback;
 import org.springframework.data.redis.core.StringRedisTemplate;
-import org.springframework.data.redis.serializer.RedisSerializer;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -42,8 +37,10 @@ public class LiveCategoryServiceImpl extends ServiceImpl<LiveCategoryMapper, Liv
     implements LiveCategoryService{
     @Resource
     private LiveRoomProperties liveRoomProperties;
-    @Autowired
+    @Resource
     private StringRedisTemplate stringRedisTemplate;
+    @Resource
+    private PopularityUtil popularityUtil;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -236,7 +233,7 @@ public class LiveCategoryServiceImpl extends ServiceImpl<LiveCategoryMapper, Liv
     }
 
     @Override
-    public List<LiveRoomVO> getLiveRoomsByCategoryID(Integer categoryId) {
+    public List<LiveRoomRankVO> getLiveRoomsByCategoryID(Integer categoryId) {
         String categoryKey = liveRoomProperties.getCategoryRoomsPrefix() + categoryId;
         String mainRankKey = liveRoomProperties.getMainRank();
 
@@ -245,52 +242,10 @@ public class LiveCategoryServiceImpl extends ServiceImpl<LiveCategoryMapper, Liv
         if (CollUtil.isEmpty(roomIds)) return List.of();
 
         List<String> roomIdList = new ArrayList<>(roomIds);
-        int n = roomIdList.size();
-
-        // 2. 使用 SessionCallback 执行管道，无需手动处理序列化
-        List<Object> rawResults = stringRedisTemplate.executePipelined(new SessionCallback<Object>() {
-            @Override
-            public <K, V> Object execute(@NotNull RedisOperations<K, V> operations) {
-                // 第一部分：批量获取 Hash (Session)
-                for (String roomId : roomIdList) {
-                    String sessionKey = liveRoomProperties.getSessionPrefix() + roomId;
-                    operations.opsForHash().entries((K) sessionKey);
-                }
-                // 第二部分：批量获取 Score (人气)
-                for (String roomId : roomIdList) {
-                    operations.opsForZSet().score((K) mainRankKey, roomId);
-                }
-                return null; // 必须返回 null
-            }
-        });
-
-        // 3. 解析结果 (此时 rawResults 里的对象直接就是 Map 和 Double)
-        List<LiveRoomVO> roomVOList = new ArrayList<>();
-        for (int i = 0; i < n; i++) {
-            // 获取详情 Map
-            Map<String, String> sessionMap = (Map<String, String>) rawResults.get(i);
-            if (CollUtil.isEmpty(sessionMap)) continue;
-
-            // 获取人气分数
-            Object scoreObj = rawResults.get(i + n);
-            // 注意：zSet.score 可能返回 null 或 Double
-            double popularity = (scoreObj instanceof Double) ? (Double) scoreObj : 0.0;
-
-            // 4. 组装 VO
-            LiveRoomVO vo = LiveRoomVO.builder()
-                    .id(Long.valueOf(roomIdList.get(i)))
-                    .title(sessionMap.get("roomTitle"))
-                    .anchorName(sessionMap.get("anchor"))
-                    .hotScore(popularity)
-                    .build();
-
-            roomVOList.add(vo);
-        }
-
-        // 按人气降序
-        roomVOList.sort(Comparator.comparing(LiveRoomVO::getHotScore).reversed());
-        return roomVOList;
+        return popularityUtil.getPopularRoomVOS(roomIdList);
     }
+
+
 
     /**
      * 构建树形结构

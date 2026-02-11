@@ -7,6 +7,7 @@ import blog.yuanyuan.yuanlive.live.domain.dto.LiveRoomQueryDTO;
 import blog.yuanyuan.yuanlive.live.domain.dto.SrsCallBackDTO;
 import blog.yuanyuan.yuanlive.live.domain.vo.LiveRoomDetailVO;
 import blog.yuanyuan.yuanlive.entity.live.vo.LiveRoomVO;
+import blog.yuanyuan.yuanlive.live.domain.vo.LiveRoomRankVO;
 import blog.yuanyuan.yuanlive.live.service.LiveRoomService;
 import cn.dev33.satoken.annotation.SaCheckRole;
 import cn.dev33.satoken.stp.StpUtil;
@@ -18,6 +19,8 @@ import org.apache.ibatis.annotations.Update;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @Tag(name = "直播间管理")
@@ -121,5 +124,12 @@ public class LiveRoomController {
     public Result<LiveRoomVO> getAnchorRoom(@PathVariable("anchorId") Long anchorId) {
         LiveRoomVO room = liveRoomService.getAnchorRoom(anchorId);
         return Result.success(room);
+    }
+
+    @GetMapping("/popularRooms")
+    @Operation(summary = "获取人气前5的直播列表")
+    public Result<List<LiveRoomRankVO>> getPopularRooms() {
+        List<LiveRoomRankVO> rooms = liveRoomService.getPopularRooms();
+        return Result.success(rooms);
     }
 }
