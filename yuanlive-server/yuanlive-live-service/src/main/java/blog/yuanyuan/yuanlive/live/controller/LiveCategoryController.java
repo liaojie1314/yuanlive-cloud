@@ -77,9 +77,9 @@ public class LiveCategoryController {
         return Result.success(categoryService.getFirstLevelCategories());
     }
 
-    @GetMapping("/listByCategory/{categoryId}")
+    @GetMapping("/listByCategory")
     @Operation(summary = "获取当前直播分类类别的所有直播")
-    public Result<List<LiveRoomRankVO>> listByCategory(@PathVariable("categoryId") Integer categoryId) {
-        return Result.success(categoryService.getLiveRoomsByCategoryID(categoryId));
+    public Result<List<LiveRoomRankVO>> listByCategory(@RequestParam(value = "categoryValue", required = false) String categoryValue) {
+        return Result.success(categoryService.getLiveRoomsByCategoryValue(categoryValue));
     }
 }

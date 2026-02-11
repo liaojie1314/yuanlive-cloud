@@ -2,6 +2,8 @@ package blog.yuanyuan.yuanlive.entity.user.vo;
 
 import blog.yuanyuan.yuanlive.entity.user.entity.UserFollow;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.EqualsAndHashCode;

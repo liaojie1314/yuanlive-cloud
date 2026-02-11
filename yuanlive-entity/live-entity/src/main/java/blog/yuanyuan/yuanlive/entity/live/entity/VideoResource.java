@@ -41,4 +41,6 @@ public class VideoResource {
     private Integer collectCount;
     @Schema(description="视频类型 0 -> 录播 1-> 上传视频")
     private Integer type;
+    @Schema(description="上传时间")
+    private Date createTime;
 }

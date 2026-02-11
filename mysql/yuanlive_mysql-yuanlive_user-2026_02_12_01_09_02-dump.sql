@@ -43,6 +43,16 @@ CREATE TABLE `sys_menu` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
+-- Dumping data for table `sys_menu`
+--
+
+LOCK TABLES `sys_menu` WRITE;
+/*!40000 ALTER TABLE `sys_menu` DISABLE KEYS */;
+INSERT INTO `sys_menu` VALUES (4,'',0,4,'/system','','M','','ri:settings-3-line','2026-01-18 14:46:30','2026-01-18 14:46:30','menus.sysManagement',1,0),(5,'SystemUser',4,1,'/system/user/index','','C','','ri:admin-line','2026-01-18 14:49:17','2026-01-18 14:49:17','menus.user',1,0),(7,'SystemRole',4,2,'/system/role/index','','C','','ri:admin-fill','2026-01-18 14:51:16','2026-01-18 15:07:19','menus.role',1,0),(8,'SystemMenu',4,3,'/system/menu/index','','C','','ep:menu','2026-01-18 14:52:22','2026-01-18 15:07:19','menus.systemMenu',1,0),(9,'',0,5,'/monitor','','M','','ep:monitor','2026-01-18 14:53:45','2026-01-18 14:53:45','menus.sysMonitor',1,0),(10,'OnlineUser',9,1,'/monitor/online-user','monitor/online/index','C','','ri:user-voice-line','2026-01-18 14:55:21','2026-01-18 15:08:40','menus.onlineUser',1,0),(11,'LoginLog',9,2,'/monitor/login-logs','monitor/logs/login/index','C','','ri:window-line','2026-01-18 14:57:17','2026-01-18 14:57:17','menus.loginLog',1,0),(12,'OperationLog',9,3,'/monitor/operation-logs','monitor/logs/operation/index','C','','ri:history-fill','2026-01-18 14:58:51','2026-01-18 14:58:51','menus.operationLog',1,0),(13,'',10,1,'','','F','user:add','ri:history-fill','2026-01-19 08:21:03','2026-01-19 08:21:03','menus.addUser',1,0);
+/*!40000 ALTER TABLE `sys_menu` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Table structure for table `sys_role`
 --
 
@@ -63,6 +73,16 @@ CREATE TABLE `sys_role` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
+-- Dumping data for table `sys_role`
+--
+
+LOCK TABLES `sys_role` WRITE;
+/*!40000 ALTER TABLE `sys_role` DISABLE KEYS */;
+INSERT INTO `sys_role` VALUES (1,'超级管理员','super-admin',1,'2026-01-17 10:47:01','2026-01-17 10:47:01');
+/*!40000 ALTER TABLE `sys_role` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Table structure for table `sys_role_menu`
 --
 
@@ -75,6 +95,16 @@ CREATE TABLE `sys_role_menu` (
   PRIMARY KEY (`role_id`,`menu_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='角色和菜单关联表';
 /*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `sys_role_menu`
+--
+
+LOCK TABLES `sys_role_menu` WRITE;
+/*!40000 ALTER TABLE `sys_role_menu` DISABLE KEYS */;
+INSERT INTO `sys_role_menu` VALUES (1,4),(1,5),(1,7),(1,8),(1,9),(1,10),(1,11),(1,12),(1,13);
+/*!40000 ALTER TABLE `sys_role_menu` ENABLE KEYS */;
+UNLOCK TABLES;
 
 --
 -- Table structure for table `sys_user`
@@ -103,6 +133,16 @@ CREATE TABLE `sys_user` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
+-- Dumping data for table `sys_user`
+--
+
+LOCK TABLES `sys_user` WRITE;
+/*!40000 ALTER TABLE `sys_user` DISABLE KEYS */;
+INSERT INTO `sys_user` VALUES (6,'fordepu','$2a$10$4s6MYwnX5YHzQhfZ6XEzDO10lTNsVndzfUbqi0cP4vaSVmFCgMDPC',NULL,NULL,'j1425127495@127.com',1,0,'2025-12-30 08:04:20','2026-02-07 11:13:49',2,0),(7,'jjw','$2a$10$Yx7FktSN5oIJ8rGNM3VTzunuyF91MC7Ys9X/yir03YZhBETzNhSRy',NULL,NULL,'2121789489@qq.com',1,0,'2026-01-19 09:04:04','2026-01-27 09:00:54',1,0),(790541515841537,'test1','$2a$10$JA5p7JPSBJlnunRxAkkheuITOw8OBOamL4jok66nhzyhPCi8i/Leq',NULL,NULL,'1425127495@qq.com',1,0,'2026-02-04 20:01:39','2026-02-05 10:41:13',0,0),(791474412748801,'test2','$2a$10$0VyDa2LFkSnMHaYC9pqih.i176Ue50QpQxILQD62.6po/4euxz6A2',NULL,NULL,'j1425127495@126.com',1,0,'2026-02-07 11:17:37','2026-02-07 11:17:37',0,1);
+/*!40000 ALTER TABLE `sys_user` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Table structure for table `sys_user_role`
 --
 
@@ -115,6 +155,16 @@ CREATE TABLE `sys_user_role` (
   PRIMARY KEY (`user_id`,`role_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='用户和角色关联表';
 /*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `sys_user_role`
+--
+
+LOCK TABLES `sys_user_role` WRITE;
+/*!40000 ALTER TABLE `sys_user_role` DISABLE KEYS */;
+INSERT INTO `sys_user_role` VALUES (6,1);
+/*!40000 ALTER TABLE `sys_user_role` ENABLE KEYS */;
+UNLOCK TABLES;
 
 --
 -- Table structure for table `undo_log`
@@ -134,6 +184,15 @@ CREATE TABLE `undo_log` (
   UNIQUE KEY `ux_undo_log` (`xid`,`branch_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='AT回滚表';
 /*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `undo_log`
+--
+
+LOCK TABLES `undo_log` WRITE;
+/*!40000 ALTER TABLE `undo_log` DISABLE KEYS */;
+/*!40000 ALTER TABLE `undo_log` ENABLE KEYS */;
+UNLOCK TABLES;
 
 --
 -- Table structure for table `user_follow`
@@ -157,6 +216,16 @@ CREATE TABLE `user_follow` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
+-- Dumping data for table `user_follow`
+--
+
+LOCK TABLES `user_follow` WRITE;
+/*!40000 ALTER TABLE `user_follow` DISABLE KEYS */;
+INSERT INTO `user_follow` VALUES (626001,6,7,1,'2026-02-11 18:32:28','2026-02-12 00:46:15',296001),(626002,7,6,1,'2026-02-11 18:32:28','2026-02-11 18:32:27',0);
+/*!40000 ALTER TABLE `user_follow` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Table structure for table `user_stats`
 --
 
@@ -173,6 +242,16 @@ CREATE TABLE `user_stats` (
   PRIMARY KEY (`user_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='用户统计表';
 /*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `user_stats`
+--
+
+LOCK TABLES `user_stats` WRITE;
+/*!40000 ALTER TABLE `user_stats` DISABLE KEYS */;
+INSERT INTO `user_stats` VALUES (6,2,1,0,0,'2026-02-11 18:32:27'),(7,1,2,0,38,'2026-02-12 00:49:06'),(790541515841537,0,0,0,0,'2026-02-07 18:16:52'),(791474412748801,0,0,0,0,'2026-02-07 18:16:52');
+/*!40000 ALTER TABLE `user_stats` ENABLE KEYS */;
+UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
@@ -183,4 +262,4 @@ CREATE TABLE `user_stats` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-02-09 20:15:33
+-- Dump completed on 2026-02-12  1:09:02

@@ -233,16 +233,69 @@ public class LiveCategoryServiceImpl extends ServiceImpl<LiveCategoryMapper, Liv
     }
 
     @Override
-    public List<LiveRoomRankVO> getLiveRoomsByCategoryID(Integer categoryId) {
-        String categoryKey = liveRoomProperties.getCategoryRoomsPrefix() + categoryId;
-        String mainRankKey = liveRoomProperties.getMainRank();
-
-        // 1. 获取 ID 列表
-        Set<String> roomIds = stringRedisTemplate.opsForSet().members(categoryKey);
-        if (CollUtil.isEmpty(roomIds)) return List.of();
-
-        List<String> roomIdList = new ArrayList<>(roomIds);
+    public List<LiveRoomRankVO> getLiveRoomsByCategoryValue(String value) {
+        List<Integer> categoryIds;
+        
+        // 如果 value 为空，则查询所有类别的直播间
+        if (StrUtil.isBlank(value)) {
+            // 获取所有分类ID
+            List<LiveCategory> allCategories = this.list();
+            categoryIds = allCategories.stream()
+                    .map(LiveCategory::getId)
+                    .collect(Collectors.toList());
+        } else {
+            // 根据 value 获取对应的分类
+            LambdaQueryWrapper<LiveCategory> queryWrapper = new LambdaQueryWrapper<>();
+            queryWrapper.eq(LiveCategory::getValue, value);
+            LiveCategory category = this.getOne(queryWrapper);
+            
+            if (category == null) {
+                return List.of(); // 如果没找到对应的分类，返回空列表
+            }
+            
+            // 检查是否是父类ID，如果是则获取所有子类别ID
+            categoryIds = getCategoryIdsWithChildren(category.getId());
+        }
+        
+        // 收集所有相关的直播间ID
+        Set<String> allRoomIds = new HashSet<>();
+        for (Integer categoryId : categoryIds) {
+            String categoryKey = liveRoomProperties.getCategoryRoomsPrefix() + categoryId;
+            Set<String> roomIds = stringRedisTemplate.opsForSet().members(categoryKey);
+            if (!CollUtil.isEmpty(roomIds)) {
+                allRoomIds.addAll(roomIds);
+            }
+        }
+        
+        if (CollUtil.isEmpty(allRoomIds)) {
+            return List.of();
+        }
+        
+        List<String> roomIdList = new ArrayList<>(allRoomIds);
         return popularityUtil.getPopularRoomVOS(roomIdList);
+    }
+    
+    /**
+     * 获取指定分类ID及其所有子分类ID
+     * @param categoryId 分类ID
+     * @return 包含分类ID及其所有子分类ID的列表
+     */
+    private List<Integer> getCategoryIdsWithChildren(Integer categoryId) {
+        List<Integer> categoryIds = new ArrayList<>();
+        categoryIds.add(categoryId);
+        
+        // 获取所有子分类
+        List<LiveCategory> children = this.list(
+            new LambdaQueryWrapper<LiveCategory>()
+                .eq(LiveCategory::getParentId, categoryId)
+        );
+        
+        // 递归获取更深层级的子分类
+        for (LiveCategory child : children) {
+            categoryIds.addAll(getCategoryIdsWithChildren(child.getId()));
+        }
+        
+        return categoryIds;
     }
 
 

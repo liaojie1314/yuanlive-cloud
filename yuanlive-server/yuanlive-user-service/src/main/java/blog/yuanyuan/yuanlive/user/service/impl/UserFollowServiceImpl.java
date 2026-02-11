@@ -178,43 +178,59 @@ public class UserFollowServiceImpl extends ServiceImpl<UserFollowMapper, UserFol
 
     @Override
     public List<UserFollowUnseenVO> getFollowing(Long userId) {
-        LambdaQueryWrapper<UserFollow> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(UserFollow::getUserId, userId)
-                .eq(UserFollow::getStatus, 1); // 只查询已关注的
-        List<UserFollow> userFollows = this.list(wrapper);
-        List<Long> followingIds = new ArrayList<>();
-        List<Long> lastReadVideoIds = new ArrayList<>();
-        for (UserFollow follow : userFollows) {
-            if (follow.getUserId() != null) {
-                followingIds.add(follow.getFollowUserId());
-                lastReadVideoIds.add(follow.getLastReadVideoId());
-            }
-        }
-        if (CollUtil.isEmpty(followingIds)) {
-            return Collections.emptyList();
-        }
-        List<SysUser> following = sysUserService.lambdaQuery()
+        // 1. 获取基础关注列表
+        List<UserFollow> userFollows = this.lambdaQuery()
+                .eq(UserFollow::getUserId, userId)
+                .eq(UserFollow::getStatus, 1)
+                .list();
+        if (CollUtil.isEmpty(userFollows)) return Collections.emptyList();
+        // 2. 提取并清洗 ID 列表（去重、去空）
+        List<Long> followingIds = userFollows.stream()
+                .map(UserFollow::getFollowUserId)
+                .filter(Objects::nonNull)
+                .distinct().toList();
+
+        List<Long> lastReadVideoIds = userFollows.stream()
+                .map(UserFollow::getLastReadVideoId)
+                .toList();
+
+        if (followingIds.isEmpty()) return Collections.emptyList();
+
+        // 3. 批量查询用户信息
+        Map<Long, SysUser> userMap = sysUserService.lambdaQuery()
                 .select(SysUser::getUid, SysUser::getAvatar, SysUser::getUsername)
-                .in(SysUser::getUid, followingIds).list();
+                .in(SysUser::getUid, followingIds)
+                .list()
+                .stream()
+                .collect(Collectors.toMap(SysUser::getUid, u -> u, (v1, v2) -> v1));
+
+        // 4. 批量查询未读数并转为 Map
         Result<List<UnseenVO>> result = liveFeignClient.getUnseenCount(followingIds, lastReadVideoIds);
-        List<UnseenVO> unseenVOS = result.getData();
+        List<UnseenVO> unseenList = (result != null) ? result.getData() : null;
+        Map<Long, Integer> unseenMap = Optional.ofNullable(unseenList)
+                .orElse(Collections.emptyList())
+                .stream()
+                .filter(Objects::nonNull)
+                .collect(Collectors.toMap(UnseenVO::getUid, UnseenVO::getCount, (v1, v2) -> v1));
 
+        // 5. 组装结果 (带判空保护)
         return userFollows.stream().map(follow -> {
-            // 查询被关注用户的信息
-            SysUser user = following.stream()
-                    .filter(u -> u.getUid().equals(follow.getFollowUserId()))
-                    .findFirst().orElse(null);
-            UnseenVO unseenVO = unseenVOS.stream()
-                    .filter(vo -> vo.getUid().equals(follow.getFollowUserId()))
-                    .findFirst().orElse(new UnseenVO(follow.getUserId(), 0));
-            assert user != null;
-            return UserFollowUnseenVO.builder()
-                    .username(user.getUsername())
-                    .unseenCount(unseenVO.getCount())
-                    .avatar(user.getAvatar())
-                    .build();
+                    SysUser user = userMap.get(follow.getFollowUserId());
 
-        }).collect(Collectors.toList());
+                    // 如果用户信息缺失，不生成 VO
+                    if (user == null) {
+                        log.warn("关注记录异常：用户ID {} 对应的被关注人 {} 不存在", userId, follow.getFollowUserId());
+                        return null;
+                    }
+                    return UserFollowUnseenVO.builder()
+                            .followUserId(follow.getFollowUserId())
+                            .username(user.getUsername())
+                            .unseenCount(unseenMap.getOrDefault(follow.getFollowUserId(), 0))
+                            .avatar(user.getAvatar())
+                            .build();
+                })
+                .filter(Objects::nonNull) // 过滤掉前面返回的 null
+                .collect(Collectors.toList());
     }
 
     @Override
@@ -269,9 +285,6 @@ public class UserFollowServiceImpl extends ServiceImpl<UserFollowMapper, UserFol
                 SysUser anchor = anchorMapById.get(anchorId);
                 if (anchor != null) {
                     UserFollowLivingVO vo = UserFollowLivingVO.builder()
-                            .id(followList.get(i).getId())
-                            .userId(followList.get(i).getUserId())
-                            .followUserId(anchorId)
                             .createTime(followList.get(i).getCreateTime())
                             .username(anchor.getUsername())
                             .avatar(anchor.getAvatar())

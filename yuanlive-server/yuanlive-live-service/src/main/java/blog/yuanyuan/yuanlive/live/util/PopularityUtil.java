@@ -86,6 +86,7 @@ public class PopularityUtil {
                     .id(Long.valueOf(roomIdList.get(i)))
                     .title(sessionMap.get("roomTitle"))
                     .anchorName(sessionMap.get("anchor"))
+                    .coverImg(sessionMap.get("coverImg"))
                     .hotScore(popularity)
                     .build();
 

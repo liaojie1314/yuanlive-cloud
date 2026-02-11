@@ -3,7 +3,9 @@ package blog.yuanyuan.yuanlive.live.controller;
 import blog.yuanyuan.yuanlive.common.result.Result;
 import blog.yuanyuan.yuanlive.entity.live.entity.VideoResource;
 import blog.yuanyuan.yuanlive.entity.live.vo.UnseenVO;
+import blog.yuanyuan.yuanlive.live.domain.vo.VideoVO;
 import blog.yuanyuan.yuanlive.live.service.VideoResourceService;
+import cn.dev33.satoken.SaManager;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
@@ -22,9 +24,8 @@ public class LiveRecordController {
 
     @Operation(summary = "根据id查询视频信息")
     @GetMapping("/getRecordByUid/{uid}")
-    public Result<List<VideoResource>> getRecordByUid(@PathVariable("uid") Long id) {
-        List<VideoResource> videos = videoResourceService.lambdaQuery()
-                .eq(VideoResource::getUserId, id).list();
+    public Result<List<VideoVO>> getVideoByUid(@PathVariable("uid") Long uid) {
+        List<VideoVO> videos = videoResourceService.getVideoByUid(uid);
         return Result.success(videos);
     }
 

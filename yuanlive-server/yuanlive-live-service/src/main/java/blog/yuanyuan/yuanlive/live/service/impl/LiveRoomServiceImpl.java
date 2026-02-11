@@ -198,6 +198,7 @@ public class LiveRoomServiceImpl extends ServiceImpl<LiveRoomMapper, LiveRoom>
             video.setUserId(liveRoom.getAnchorId());
             video.setRoomId(roomId);
             video.setType(0);
+            video.setStartTime(new Date());
             // 直播标题(主播名-直播间title-日期-直播回放)
             String format = LocalDateTime.now()
                     .format(DateTimeFormatter.ofPattern("yyyy年MM月dd日HH:mm"));
@@ -214,6 +215,7 @@ public class LiveRoomServiceImpl extends ServiceImpl<LiveRoomMapper, LiveRoom>
             session.put("anchor", result.getData().getUsername());
             session.put("roomTitle", liveRoom.getTitle());
             session.put("categoryId", liveRoom.getCategoryId().toString());
+            session.put("coverImg", liveRoom.getCoverImg());
             stringRedisTemplate.opsForHash().putAll(sessionKey, session);
             stringRedisTemplate.persist(sessionKey);
             // redis存储每个类别的房间
@@ -359,6 +361,7 @@ public class LiveRoomServiceImpl extends ServiceImpl<LiveRoomMapper, LiveRoom>
             video.setId(recordId);
             video.setVideoUrl(videoUrl);
             video.setCoverUrl(coverUrl);
+            video.setCreateTime(new Date());
             video.setDuration(processResult.getDuration());
             videoResourceService.updateById(video);
             log.info("迁移完成 | RecordID: {} | MinIO地址: {}", recordId, videoUrl);

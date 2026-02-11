@@ -1,10 +1,12 @@
 package blog.yuanyuan.yuanlive.user.controller;
 
 import blog.yuanyuan.yuanlive.common.result.Result;
+import blog.yuanyuan.yuanlive.entity.user.entity.UserFollow;
 import blog.yuanyuan.yuanlive.user.domain.dto.UserFollowDTO;
 import blog.yuanyuan.yuanlive.entity.user.vo.UserFollowLivingVO;
 import blog.yuanyuan.yuanlive.user.domain.vo.UserFollowUnseenVO;
 import blog.yuanyuan.yuanlive.user.service.UserFollowService;
+import cn.hutool.core.collection.CollUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -65,5 +67,19 @@ public class UserFollowController {
         Long userId = StpUtil.getLoginIdAsLong();
         Boolean isFollowing = userFollowService.checkFollowing(userId, followUserId);
         return Result.success(isFollowing);
+    }
+
+    @GetMapping("/getLastReadVideoId/{followUserId}")
+    @Operation(summary = "获取当前用户最后阅读的视频ID")
+    public Result<Long> getLastReadVideoId(@PathVariable("followUserId") Long followUserId) {
+        Long userId = StpUtil.getLoginIdAsLong();
+        List<UserFollow> userFollows = userFollowService.lambdaQuery()
+                .eq(UserFollow::getUserId, userId)
+                .eq(UserFollow::getFollowUserId, followUserId).list();
+        if (CollUtil.isEmpty(userFollows)) {
+            return Result.success(0L);
+        }
+        Long lastReadVideoId = userFollows.get(0).getLastReadVideoId();
+        return Result.success(lastReadVideoId);
     }
 }

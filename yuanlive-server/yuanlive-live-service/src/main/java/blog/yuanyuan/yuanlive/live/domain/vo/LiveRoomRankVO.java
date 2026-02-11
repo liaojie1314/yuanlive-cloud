@@ -21,6 +21,8 @@ public class LiveRoomRankVO {
     private String title;
     @Schema(description = "主播名")
     private String anchorName;
+    @Schema(description = "房间封面")
+    private String coverImg;
     @Schema(description = "人气指数")
     private double hotScore;
 }

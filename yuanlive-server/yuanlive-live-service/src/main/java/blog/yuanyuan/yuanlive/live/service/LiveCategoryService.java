@@ -64,5 +64,5 @@ public interface LiveCategoryService extends IService<LiveCategory> {
      */
     List<LiveCategoryVO> getFirstLevelCategories();
 
-    List<LiveRoomRankVO> getLiveRoomsByCategoryID(Integer categoryId);
+    List<LiveRoomRankVO> getLiveRoomsByCategoryValue(String value);
 }
