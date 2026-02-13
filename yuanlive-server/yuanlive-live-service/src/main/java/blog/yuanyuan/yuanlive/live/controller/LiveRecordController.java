@@ -17,7 +17,7 @@ import java.util.List;
 @RestController
 @Slf4j
 @RequestMapping("/record")
-@Tag(name = "录播接口")
+@Tag(name = "视频接口")
 public class LiveRecordController {
     @Resource
     private VideoResourceService videoResourceService;

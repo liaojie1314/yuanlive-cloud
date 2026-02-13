@@ -33,6 +33,7 @@ public class UserDTO {
     private GenderEnum gender;
     @Schema(description="用户类型")
     private UserRoleEnum role;
+    private Integer status;
 
     private List<Long> roleIds;
 }

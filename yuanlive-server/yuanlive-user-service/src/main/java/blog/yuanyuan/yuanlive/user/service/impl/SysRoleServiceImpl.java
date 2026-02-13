@@ -8,7 +8,9 @@ import blog.yuanyuan.yuanlive.entity.user.entity.SysRoleMenu;
 import blog.yuanyuan.yuanlive.user.domain.dto.RoleDTO;
 import blog.yuanyuan.yuanlive.user.domain.dto.RoleQueryDTO;
 import blog.yuanyuan.yuanlive.user.domain.vo.RoleVO;
+import blog.yuanyuan.yuanlive.user.domain.vo.UserVO;
 import blog.yuanyuan.yuanlive.user.mapper.SysRoleMapper;
+import blog.yuanyuan.yuanlive.user.mapper.SysUserMapper;
 import blog.yuanyuan.yuanlive.user.service.SysMenuService;
 import blog.yuanyuan.yuanlive.user.service.SysRoleMenuService;
 import blog.yuanyuan.yuanlive.user.service.SysRoleService;
@@ -44,6 +46,8 @@ public class SysRoleServiceImpl extends ServiceImpl<SysRoleMapper, SysRole>
     SysRoleMapper sysRoleMapper;
     @Resource
     SysMenuService menuService;
+    @Resource
+    SysUserMapper userMapper;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -141,6 +145,13 @@ public class SysRoleServiceImpl extends ServiceImpl<SysRoleMapper, SysRole>
             return Collections.emptyList();
         }
         return sysRoleMapper.getRolesMenus(roleIds);
+    }
+
+    @Override
+    public List<Long> getRoleIdsByUserId(Long uid) {
+        UserVO userVO = userMapper.getUserVOByID(uid);
+        List<SysRole> roles = userVO.getRoles();
+        return roles.stream().map(SysRole::getRoleId).toList();
     }
 
     private void insertRoleMenu(Long roleId, List<Long> menuIds) {

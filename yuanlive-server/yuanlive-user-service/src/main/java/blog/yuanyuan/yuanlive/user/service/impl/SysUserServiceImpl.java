@@ -80,10 +80,10 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public boolean deleteUsers(List<Long> userIds) {
-        // 逻辑删除用户
+    public boolean deleteOrRestoreUsers(List<Long> userIds) {
+        // 逻辑删除或恢复用户
         return lambdaUpdate()
-                .set(SysUser::getDelFlag, 1)
+                .setSql("del_flag = 1 - del_flag")
                 .in(SysUser::getUid, userIds)
                 .update();
     }
@@ -97,7 +97,8 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
     public ResultPage<UserVO> pageUsers(UserQueryDTO queryDTO) {
         // 先查询Users
         Page<SysUser> page = lambdaQuery()
-                .eq(queryDTO.getDelFlag() != null, SysUser::getDelFlag, queryDTO.getDelFlag())
+                .eq(queryDTO.getDelFlag() != null && queryDTO.getDelFlag() >= 0,
+                        SysUser::getDelFlag, queryDTO.getDelFlag())
                 .like(StrUtil.isNotBlank(queryDTO.getUsername()), SysUser::getUsername, queryDTO.getUsername())
                 .like(StrUtil.isNotBlank(queryDTO.getEmail()), SysUser::getEmail, queryDTO.getEmail())
                 .like(StrUtil.isNotBlank(queryDTO.getPhone()), SysUser::getPhone, queryDTO.getPhone())
@@ -106,6 +107,9 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
                 .page(new Page<>(queryDTO.getPageNum(), queryDTO.getPageSize()));
         List<Long> userIds = page.getRecords()
                 .stream().map(SysUser::getUid).toList();
+        if (CollUtil.isEmpty(userIds)) {
+            return ResultPage.empty();
+        }
         List<UserVO> vos = userMapper.getUserVOByIDs(userIds);
         Page<UserVO> voPage = new Page<>(queryDTO.getPageNum(), queryDTO.getPageSize(), page.getTotal());
         voPage.setRecords(vos);
@@ -189,9 +193,10 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
 
     @Override
     public Boolean updateStatus(Long uid) {
-        SysUser user = getById(uid);
-        user.setStatus(user.getStatus() == 1 ? 0 : 1);
-        return updateById(user);
+        return lambdaUpdate()
+                .setSql("status = 1 - status")
+                .eq(SysUser::getUid, uid)
+                .update();
     }
 
     @Override
@@ -286,7 +291,7 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
         return RouterVO.MetaVO.builder()
                 .title(menu.getTitle())
                 .icon(menu.getIcon())
-                .rank(menu.getSort())
+                .rank("M".equals(menu.getMenuType()) ? menu.getSort() : null)
                 .auths(auths.isEmpty() ? null : auths)
                 .showLink(menu.getIsVisible() != null && menu.getIsVisible() == 1)
                 .keepAlive(menu.getIsCache() != null && menu.getIsCache() == 1)

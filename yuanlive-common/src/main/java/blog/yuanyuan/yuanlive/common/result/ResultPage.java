@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.Collections;
 import java.util.List;
 
 @Data
@@ -29,4 +30,10 @@ public class ResultPage <T>{
         return resultPage;
     }
 
+    public static <T> ResultPage<T> empty() {
+        Page<T> page = new Page<>(0, 0);
+        page.setRecords(Collections.emptyList());
+        page.setTotal(0);
+        return of(page);
+    }
 }

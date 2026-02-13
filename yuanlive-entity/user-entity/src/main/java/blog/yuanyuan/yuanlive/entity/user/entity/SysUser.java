@@ -6,6 +6,7 @@ import java.util.Date;
 import blog.yuanyuan.yuanlive.entity.user.enums.GenderEnum;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -23,6 +24,7 @@ public class SysUser {
     @Schema(description="用户名")
     private String username;
     @Schema(description="密码(BCrypt加密)")
+    @JsonIgnore
     private String password;
     @Schema(description="头像")
     private String avatar;

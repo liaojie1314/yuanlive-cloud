@@ -2,6 +2,7 @@ package blog.yuanyuan.yuanlive.user.controller;
 
 import blog.yuanyuan.yuanlive.common.result.Result;
 import blog.yuanyuan.yuanlive.common.result.ResultPage;
+import blog.yuanyuan.yuanlive.entity.user.entity.SysRole;
 import blog.yuanyuan.yuanlive.user.domain.dto.RoleDTO;
 import blog.yuanyuan.yuanlive.user.domain.dto.RoleQueryDTO;
 import blog.yuanyuan.yuanlive.user.domain.vo.RoleVO;
@@ -10,7 +11,6 @@ import cn.dev33.satoken.annotation.SaCheckRole;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
-import lombok.RequiredArgsConstructor;
 import org.apache.ibatis.annotations.Update;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.validation.annotation.Validated;
@@ -72,5 +72,17 @@ public class RoleController {
             return Result.success(null, "分配成功");
         }
         return Result.failed("分配失败,权限菜单为空");
+    }
+
+    @GetMapping("/getRoles")
+    @Operation(summary = "获取所有角色")
+    public Result<List<SysRole>> getRoles() {
+        return Result.success(roleService.list());
+    }
+
+    @GetMapping("/getRoleIdsByUserId/{uid}")
+    @Operation(summary = "根据userId，获取对应角色id列表")
+    public Result<List<Long>> getRoleIdsByUserId(@PathVariable("uid") Long uid) {
+        return Result.success(roleService.getRoleIdsByUserId(uid));
     }
 }

@@ -88,6 +88,7 @@ public class SaTokenConfig {
                     SaRouter.match("/**",  r -> StpUtil.checkLogin());
                     SaRouter.match("/user/menu/**", r -> StpUtil.checkRole(UserRoleEnum.ADMIN.name()));
                     SaRouter.match("/user/admin/**", r -> StpUtil.checkRole(UserRoleEnum.ADMIN.name()));
+                    SaRouter.match("/user/role/**", r -> StpUtil.checkRole(UserRoleEnum.ADMIN.name()));
                     SaRouter.match("/live/category/**", r -> StpUtil.checkRole(UserRoleEnum.ADMIN.name()));
                 })
                 // 异常处理方法：每次setAuth函数出现异常时进入

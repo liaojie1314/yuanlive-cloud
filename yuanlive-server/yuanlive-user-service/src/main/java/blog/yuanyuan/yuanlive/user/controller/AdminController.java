@@ -43,7 +43,7 @@ public class AdminController {
     @DeleteMapping("/{userIds}")
     @Operation(summary = "批量删除用户")
     public Result<Boolean> remove(@PathVariable("userIds") List<Long> userIds) {
-        return Result.success(userService.deleteUsers(userIds));
+        return Result.success(userService.deleteOrRestoreUsers(userIds));
     }
 
     @GetMapping("/getInfo/{userId}")
@@ -52,9 +52,9 @@ public class AdminController {
         return Result.success(userService.getUserById(userId));
     }
 
-    @GetMapping("/list")
+    @PostMapping("/list")
     @Operation(summary = "分页查询用户列表")
-    public Result<ResultPage<UserVO>> list(@ParameterObject UserQueryDTO queryDTO) {
+    public Result<ResultPage<UserVO>> list(@RequestBody UserQueryDTO queryDTO) {
         return Result.success(userService.pageUsers(queryDTO));
     }
 

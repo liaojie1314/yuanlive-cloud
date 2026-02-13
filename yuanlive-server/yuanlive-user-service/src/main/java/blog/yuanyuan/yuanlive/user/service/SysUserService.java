@@ -31,7 +31,7 @@ public interface SysUserService extends IService<SysUser> {
      * @param userIds 用户ID集合
      * @return 结果
      */
-    boolean deleteUsers(List<Long> userIds);
+    boolean deleteOrRestoreUsers(List<Long> userIds);
 
     /**
      * 根据ID获取用户详情

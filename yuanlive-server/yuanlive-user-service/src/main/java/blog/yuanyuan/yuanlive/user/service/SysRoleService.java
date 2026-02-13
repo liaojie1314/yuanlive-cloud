@@ -55,4 +55,6 @@ public interface SysRoleService extends IService<SysRole> {
     Boolean grantAll(String roleKey);
 
     List<SysMenu> getRolesMenus(List<Long> roleIds);
+
+    List<Long> getRoleIdsByUserId(Long uid);
 }

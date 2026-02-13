@@ -22,6 +22,5 @@ public class UserRoleDTO {
     private Long userId;
 
     @Schema(description = "角色ID列表")
-    @NotEmpty(message = "角色ID列表不能为空")
     private List<Long> roleIds;
 }
