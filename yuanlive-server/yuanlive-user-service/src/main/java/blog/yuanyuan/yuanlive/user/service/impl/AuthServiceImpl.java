@@ -359,7 +359,7 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public Result logout() {
+    public Result<String> logout() {
         // 清除refreshToken
         clearOldRefreshToken(StpUtil.getLoginIdAsLong(), StpUtil.getLoginDeviceType());
         StpUtil.logout();

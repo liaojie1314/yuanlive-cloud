@@ -34,6 +34,7 @@
         from sys_role ro
                  left join sys_role_menu on ro.role_id = sys_role_menu.role_id
                  left join sys_menu me on sys_role_menu.menu_id = me.menu_id
+        where ro.role_id = #{roleId}
     </select>
 
     <select id="getRolesMenus" resultType="SysMenu">

@@ -52,7 +52,7 @@ public class AuthController {
 
     @PostMapping("/logout")
     @Operation(summary = "登出")
-    public Result logout() {
+    public Result<String> logout() {
         return authService.logout();
     }
 

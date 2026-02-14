@@ -12,7 +12,6 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
 import org.apache.ibatis.annotations.Update;
-import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -43,10 +42,18 @@ public class RoleController {
         return Result.failed("修改失败");
     }
 
-    @DeleteMapping("/delete/{roleIds}")
-    @Operation(summary = "批量删除角色")
-    public Result<String> remove(@PathVariable("roleIds") List<Long> roleIds) {
-        if (roleService.deleteRoles(roleIds)) {
+    @PostMapping("/assignRoleMenus")
+    @Operation(summary = "分配角色权限")
+    public Result<String> assignRoleMenus(@RequestBody @Validated(Update.class) RoleDTO roleDTO) {
+        if (roleService.assignRoleMenus(roleDTO)) {
+            return Result.success(null, "分配成功");
+        }
+        return Result.failed("分配失败");
+    }
+    @DeleteMapping("/delete/{roleId}")
+    @Operation(summary = "删除角色")
+    public Result<String> remove(@PathVariable("roleId") Long roleId) {
+        if (roleService.deleteRole(roleId)) {
             return Result.success(null, "删除成功");
         }
         return Result.failed("删除失败");
@@ -58,9 +65,9 @@ public class RoleController {
         return Result.success(roleService.getRoleById(roleId));
     }
 
-    @GetMapping("/list")
+    @PostMapping("/page")
     @Operation(summary = "分页查询角色列表")
-    public Result<ResultPage<RoleVO>> list(@ParameterObject RoleQueryDTO queryDTO) {
+    public Result<ResultPage<RoleVO>> list(@RequestBody RoleQueryDTO queryDTO) {
         return Result.success(roleService.pageRoles(queryDTO));
     }
 
@@ -84,5 +91,14 @@ public class RoleController {
     @Operation(summary = "根据userId，获取对应角色id列表")
     public Result<List<Long>> getRoleIdsByUserId(@PathVariable("uid") Long uid) {
         return Result.success(roleService.getRoleIdsByUserId(uid));
+    }
+
+    @PutMapping("/switchStatus/{roleId}")
+    @Operation(summary = "切换角色状态")
+    public Result<String> switchStatus(@PathVariable("roleId") Long roleId) {
+        if (roleService.switchStatus(roleId)) {
+            return Result.success(null, "切换成功");
+        }
+        return Result.failed("切换失败");
     }
 }

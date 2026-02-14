@@ -33,10 +33,11 @@ public interface SysRoleService extends IService<SysRole> {
 
     /**
      * 批量删除角色
-     * @param roleIds 角色ID集合
+     *
+     * @param roleId 角色ID集合
      * @return 结果
      */
-    boolean deleteRoles(List<Long> roleIds);
+    boolean deleteRole(Long roleId);
 
     /**
      * 根据ID获取角色详情
@@ -57,4 +58,8 @@ public interface SysRoleService extends IService<SysRole> {
     List<SysMenu> getRolesMenus(List<Long> roleIds);
 
     List<Long> getRoleIdsByUserId(Long uid);
+
+    boolean switchStatus(Long roleId);
+
+    boolean assignRoleMenus(RoleDTO roleDTO);
 }

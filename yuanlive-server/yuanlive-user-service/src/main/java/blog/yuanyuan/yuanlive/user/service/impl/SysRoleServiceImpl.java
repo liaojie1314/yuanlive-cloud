@@ -5,6 +5,7 @@ import blog.yuanyuan.yuanlive.common.result.ResultPage;
 import blog.yuanyuan.yuanlive.entity.user.entity.SysMenu;
 import blog.yuanyuan.yuanlive.entity.user.entity.SysRole;
 import blog.yuanyuan.yuanlive.entity.user.entity.SysRoleMenu;
+import blog.yuanyuan.yuanlive.entity.user.entity.SysUserRole;
 import blog.yuanyuan.yuanlive.user.domain.dto.RoleDTO;
 import blog.yuanyuan.yuanlive.user.domain.dto.RoleQueryDTO;
 import blog.yuanyuan.yuanlive.user.domain.vo.RoleVO;
@@ -14,6 +15,7 @@ import blog.yuanyuan.yuanlive.user.mapper.SysUserMapper;
 import blog.yuanyuan.yuanlive.user.service.SysMenuService;
 import blog.yuanyuan.yuanlive.user.service.SysRoleMenuService;
 import blog.yuanyuan.yuanlive.user.service.SysRoleService;
+import blog.yuanyuan.yuanlive.user.service.SysUserRoleService;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
@@ -21,11 +23,9 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import jakarta.annotation.Resource;
-import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.StringUtils;
 
 import java.util.Collections;
 import java.util.List;
@@ -42,6 +42,8 @@ public class SysRoleServiceImpl extends ServiceImpl<SysRoleMapper, SysRole>
 
     @Resource
     SysRoleMenuService roleMenuService;
+    @Resource
+    SysUserRoleService userRoleService;
     @Resource
     SysRoleMapper sysRoleMapper;
     @Resource
@@ -66,28 +68,23 @@ public class SysRoleServiceImpl extends ServiceImpl<SysRoleMapper, SysRole>
     public boolean updateRole(RoleDTO roleDTO) {
         SysRole sysRole = new SysRole();
         BeanUtils.copyProperties(roleDTO, sysRole);
-        boolean updated = updateById(sysRole);
-        if (updated) {
-            // 删除原有关联
-            roleMenuService.remove(new LambdaQueryWrapper<SysRoleMenu>()
-                    .eq(SysRoleMenu::getRoleId, sysRole.getRoleId()));
-            // 插入新关联
-            if (roleDTO.getMenuIds() != null && !roleDTO.getMenuIds().isEmpty()) {
-                insertRoleMenu(sysRole.getRoleId(), roleDTO.getMenuIds());
-            }
-        }
-        return updated;
+        return updateById(sysRole);
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public boolean deleteRoles(List<Long> roleIds) {
+    public boolean deleteRole(Long roleId) {
+        // 判断角色是否被分配
+        if (userRoleService.lambdaQuery()
+                .eq(SysUserRole::getRoleId, roleId).exists()) {
+            throw new ApiException("角色已分配，请先取消分配");
+        }
         // 删除角色
-        boolean removed = removeByIds(roleIds);
+        boolean removed = removeById(roleId);
         if (removed) {
             // 删除角色菜单关联
             roleMenuService.remove(new LambdaQueryWrapper<SysRoleMenu>()
-                    .in(SysRoleMenu::getRoleId, roleIds));
+                    .in(SysRoleMenu::getRoleId, roleId));
         }
         return removed;
     }
@@ -152,6 +149,29 @@ public class SysRoleServiceImpl extends ServiceImpl<SysRoleMapper, SysRole>
         UserVO userVO = userMapper.getUserVOByID(uid);
         List<SysRole> roles = userVO.getRoles();
         return roles.stream().map(SysRole::getRoleId).toList();
+    }
+
+    @Override
+    public boolean switchStatus(Long roleId) {
+        return lambdaUpdate()
+                .eq(SysRole::getRoleId, roleId)
+                .setSql("status = 1 - status").update();
+    }
+
+    @Override
+    public boolean assignRoleMenus(RoleDTO roleDTO) {
+        try {
+            // 删除原有关联
+            roleMenuService.remove(new LambdaQueryWrapper<SysRoleMenu>()
+                    .eq(SysRoleMenu::getRoleId, roleDTO.getRoleId()));
+            // 插入新关联
+            if (roleDTO.getMenuIds() != null && !roleDTO.getMenuIds().isEmpty()) {
+                insertRoleMenu(roleDTO.getRoleId(), roleDTO.getMenuIds());
+            }
+            return true;
+        } catch (Exception e) {
+            throw new ApiException("分配角色菜单失败");
+        }
     }
 
     private void insertRoleMenu(Long roleId, List<Long> menuIds) {

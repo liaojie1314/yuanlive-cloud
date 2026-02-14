@@ -27,7 +27,7 @@ public interface AuthService {
 
     Result<String> confirmLogin(String uuid);
 
-    Result logout();
+    Result<String> logout();
 
     Result<String> forgetPassword(ForgetPassDTO forgetPassDTO);
 }

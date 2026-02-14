@@ -29,6 +29,6 @@ public class RoleDTO {
     @Schema(description = "状态:1-正常,0-停用")
     private Integer status;
 
-    @Schema(description = "菜单组")
+    @Schema(description = "分配的菜单权限")
     private List<Long> menuIds;
 }
