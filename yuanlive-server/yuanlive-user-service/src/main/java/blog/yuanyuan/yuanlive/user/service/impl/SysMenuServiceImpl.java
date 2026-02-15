@@ -2,14 +2,18 @@ package blog.yuanyuan.yuanlive.user.service.impl;
 
 import blog.yuanyuan.yuanlive.common.exception.ApiException;
 import blog.yuanyuan.yuanlive.entity.user.entity.SysMenu;
+import blog.yuanyuan.yuanlive.entity.user.entity.SysRoleMenu;
 import blog.yuanyuan.yuanlive.user.domain.dto.MenuDTO;
 import blog.yuanyuan.yuanlive.user.domain.vo.MenuVO;
 import blog.yuanyuan.yuanlive.user.mapper.SysMenuMapper;
 import blog.yuanyuan.yuanlive.user.service.SysMenuService;
+import blog.yuanyuan.yuanlive.user.service.SysRoleMenuService;
 import cn.hutool.core.bean.BeanUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import jakarta.annotation.Resource;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Comparator;
 import java.util.List;
@@ -23,6 +27,9 @@ import java.util.stream.Collectors;
 @Service
 public class SysMenuServiceImpl extends ServiceImpl<SysMenuMapper, SysMenu>
     implements SysMenuService{
+
+    @Resource
+    private SysRoleMenuService sysRoleMenuService;
 
     @Override
     public List<MenuVO> treeList() {
@@ -55,15 +62,24 @@ public class SysMenuServiceImpl extends ServiceImpl<SysMenuMapper, SysMenu>
         if (menuDTO.getMenuId() == null) {
             throw new ApiException("菜单ID不能为空");
         }
+        if (menuDTO.getMenuId().equals(menuDTO.getParentId())) {
+            throw new ApiException("父菜单ID不能等于菜单ID");
+        }
         SysMenu menu = BeanUtil.copyProperties(menuDTO, SysMenu.class);
         return updateById(menu);
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public boolean removeMenuById(Long menuId) {
         boolean exists = lambdaQuery().eq(SysMenu::getParentId, menuId).exists();
         if (exists) {
             throw new ApiException("存在子菜单，不允许删除");
+        }
+        // 判断是否被分配
+        if (sysRoleMenuService.lambdaQuery()
+                .eq(SysRoleMenu::getMenuId, menuId).exists()) {
+            throw new ApiException("菜单已分配，请先取消分配");
         }
         return removeById(menuId);
     }
