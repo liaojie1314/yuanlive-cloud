@@ -1,0 +1,48 @@
+server:
+  port: 8084
+spring:
+  application:
+    name: ai-service
+  ai:
+    openai:
+      api-key: ${NVIDIA_API_KEY}
+      base-url: https://integrate.api.nvidia.com # 注意此处路径不能带/v1
+      chat:
+        options:
+          model: qwen/qwen3-next-80b-a3b-instruct
+
+
+  cloud:
+    nacos:
+      server-addr: 127.0.0.1:8848
+      discovery:
+        metadata:
+          netty-port: ${yuanlive.netty.port}
+        server-addr: ${spring.cloud.nacos.server-addr}
+      config:
+        namespace: public
+  config:
+    import:
+      - nacos:sa-token.yaml?group=SA_TOKEN_GROUP&refresh-enabled=true
+      - nacos:redis.yaml?group=REDIS_GROUP&refresh-enabled=true
+#      - nacos:jackson.yaml?group=DEFAULT_GROUP&refresh-enabled=true
+#      - nacos:rabbitmq.yaml?group=DEFAULT_GROUP&refresh-enabled=true
+#      - nacos:minio.yaml?group=DEFAULT_GROUP&refresh-enabled=true
+
+  datasource:
+    url: jdbc:mysql://localhost:3307/yuanlive_live?useSSL=false&serverTimezone=Asia/Shanghai&useUnicode=true&characterEncoding=utf-8
+    username: root
+    password: yuanlive
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+mybatis-plus:
+  mapper-locations: classpath*:mapper/*.xml
+  type-aliases-package: blog.yuanyuan.yuanlive.entity.live.entity
+  global-config:
+    db-config:
+      id-type: auto
+
+logging:
+  level:
+    org.springframework.web.client.RestClient: DEBUG
+    org.springframework.ai.openai: DEBUG

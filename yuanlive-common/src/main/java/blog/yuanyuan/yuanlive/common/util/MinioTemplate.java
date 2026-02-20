@@ -7,6 +7,7 @@ import cn.hutool.json.JSONUtil;
 import io.minio.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
 import java.io.InputStream;
@@ -16,6 +17,7 @@ import java.time.format.DateTimeFormatter;
 @Slf4j
 @Component
 @RequiredArgsConstructor
+@ConditionalOnProperty(name = "minio.endpoint")
 public class MinioTemplate {
     private final MinioClient minioClient;
     private final MinioProperties properties;

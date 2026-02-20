@@ -3,6 +3,7 @@ package blog.yuanyuan.yuanlive.common.util;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONUtil;
 import jakarta.annotation.Resource;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
 
@@ -11,6 +12,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 
 @Component
+@ConditionalOnProperty(name = "spring.data.redis.host")
 public class CacheUtil {
     @Resource
     private StringRedisTemplate stringRedisTemplate;
