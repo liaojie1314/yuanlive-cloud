@@ -11,5 +11,6 @@ public enum MsgType {
     SINGLE_CHAT,   // 私聊消息
     ACK,     // 消息确认
     LIVE_START, // 开始直播
-    LIVE_END   // 结束直播
+    LIVE_END,   // 结束直播
+    SYSTEM_NOTIFY
 }

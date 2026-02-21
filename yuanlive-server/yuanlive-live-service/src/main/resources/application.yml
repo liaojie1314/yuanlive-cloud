@@ -3,6 +3,21 @@ server:
 spring:
   application:
     name: live-service
+  ai:
+    mcp:
+      server:
+        name: live-service-mcp
+        version: 1.0.0
+        instructions: "提供直播间管理相关MCP"
+    alibaba:
+      mcp:
+        nacos:
+          server-addr: ${spring.cloud.nacos.server-addr}
+          username: nacos
+          password: nacos
+          namespace: public
+          register:
+            enabled: true
 
   cloud:
     nacos:
@@ -10,6 +25,8 @@ spring:
       discovery:
         metadata:
           netty-port: ${yuanlive.netty.port}
+          mcp.server.path: "/mcp/sse"
+          mcp.enabled: "true"
         server-addr: ${spring.cloud.nacos.server-addr}
       config:
         namespace: public

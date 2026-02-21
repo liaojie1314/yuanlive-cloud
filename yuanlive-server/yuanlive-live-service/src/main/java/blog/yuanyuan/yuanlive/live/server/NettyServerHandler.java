@@ -51,8 +51,6 @@ public class NettyServerHandler extends SimpleChannelInboundHandler<TextWebSocke
     @Resource
     private StringRedisTemplate stringRedisTemplate;
     @Resource
-    private LiveRoomService liveRoomService;
-    @Resource
     private LiveWeightsProperties liveWeightsProperties;
     @Resource
     private LiveRoomProperties liveRoomProperties;
@@ -176,7 +174,6 @@ public class NettyServerHandler extends SimpleChannelInboundHandler<TextWebSocke
     }
 
     // 2. 处理聊天
-
     private void handleChat(ChannelHandlerContext ctx, GroupChatRequest chat) {
         AckMessage ack = AckMessage.builder()
                 .msgId(chat.getMsgId())
@@ -200,7 +197,6 @@ public class NettyServerHandler extends SimpleChannelInboundHandler<TextWebSocke
 
         popularityUtil.updatePopularity(roomId, liveWeightsProperties.getChat());
         GroupChatNotification notification = GroupChatNotification.builder()
-                .type(MsgType.CHAT_NOTIFY) // 使用专用的通知类型
                 .roomId(roomId)
                 .userId(userId)
                 .username(username)
@@ -208,7 +204,6 @@ public class NettyServerHandler extends SimpleChannelInboundHandler<TextWebSocke
                 .timestamp(System.currentTimeMillis())
                 .build();
         rabbitTemplate.convertAndSend(exchangeName, "", JSONUtil.toJsonStr(notification));
-
     }
 
     // 3. 处理离开房间

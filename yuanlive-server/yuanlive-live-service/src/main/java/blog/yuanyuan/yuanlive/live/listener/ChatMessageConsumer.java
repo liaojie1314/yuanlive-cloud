@@ -6,6 +6,7 @@ import blog.yuanyuan.yuanlive.feign.user.UserFeignClient;
 import blog.yuanyuan.yuanlive.live.message.Message;
 import blog.yuanyuan.yuanlive.live.message.WsResult;
 import blog.yuanyuan.yuanlive.live.message.notification.LiveStartMessage;
+import blog.yuanyuan.yuanlive.live.message.notification.SystemNotification;
 import blog.yuanyuan.yuanlive.live.message.request.SingleChatRequest;
 import blog.yuanyuan.yuanlive.live.server.SessionManager;
 import cn.hutool.core.util.StrUtil;
@@ -65,6 +66,7 @@ public class ChatMessageConsumer {
                     }
                 }
             }
+            // 广播消息
             if (StrUtil.isNotBlank(message.getRoomId())) {
                 ChannelGroup group = sessionManager.getRoomChannels(message.getRoomId());
                 if (group != null && !group.isEmpty()) {
@@ -72,7 +74,17 @@ public class ChatMessageConsumer {
                     group.writeAndFlush(new TextWebSocketFrame(JSONUtil.toJsonStr(broadcast)));
                     log.info("房间[{}]广播成功: {}", message.getRoomId(), message.getType());
                 }
-            } else if (message instanceof SingleChatRequest singleMsg) {
+            } else if (message instanceof SystemNotification notification
+                    && notification.getToUserId() != null) {
+                Channel channel = sessionManager.getUserChannel(notification.getToUserId());
+                if (channel != null && channel.isActive()) {
+                    WsResult single = WsResult.of(notification);
+                    channel.writeAndFlush(new TextWebSocketFrame(JSONUtil.toJsonStr(single)));
+                    log.info("警告[{}]发送成功: {}", notification.getToUserId(), message.getType());
+                }
+            }
+            // 私聊消息
+            else if (message instanceof SingleChatRequest singleMsg) {
                 Channel channel = sessionManager.getUserChannel(singleMsg.getToUserId());
                 if (channel != null && channel.isActive()) {
                     WsResult single = WsResult.of(singleMsg);

@@ -79,6 +79,22 @@ services:
     extra_hosts:
       - "host.docker.internal:host-gateway"
     restart: unless-stopped
+  # Nacos MCP Router：中心化 AI 工具网关
+  nacos-mcp-router:
+    image: nacos/nacos-mcp-router:0.2.2
+    container_name: yuanlive-nacos-mcp-router
+    depends_on:
+      - nacos
+    environment:
+      - NACOS_ADDR=nacos:8848
+      - NACOS_USERNAME=nacos
+      - NACOS_PASSWORD=nacos
+      - TRANSPORT_TYPE=sse
+      - MODE=router
+    ports:
+      - "8001:8000"
+    networks:
+      - live-net
   # 分布式事务
   seata:
     image: apache/seata-server:2.3.0

@@ -213,6 +213,7 @@ public class LiveRoomServiceImpl extends ServiceImpl<LiveRoomMapper, LiveRoom>
             session.put("peak", "0");
             session.put("client", dto.getClient_id());
             session.put("anchor", result.getData().getUsername());
+            session.put("anchorId", liveRoom.getAnchorId().toString());
             session.put("roomTitle", liveRoom.getTitle());
             session.put("categoryId", liveRoom.getCategoryId().toString());
             session.put("coverImg", liveRoom.getCoverImg());

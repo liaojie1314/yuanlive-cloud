@@ -1,0 +1,873 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="2c950775-72d2-474b-801f-8670ad3e3905" name="更改" comment=":sparkles: 初步添加直播间违规消息检测、封禁、警告工作流">
+      <change beforePath="$PROJECT_DIR$/.idea/.gitignore" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/codeStyles/codeStyleConfig.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/dataSources.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/dictionaries/liaojie1314.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/encodings.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/mybatisx/templates.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/sqldialects.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docker/docker-compose.yml" beforeDir="false" afterPath="$PROJECT_DIR$/docker/docker-compose.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/yuanlive-server/yuanlive-ai-service/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/yuanlive-server/yuanlive-ai-service/pom.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/yuanlive-server/yuanlive-ai-service/src/main/java/blog/yuanyuan/yuanlive/ai/test/RiskWorkflowTester.java" beforeDir="false" afterPath="$PROJECT_DIR$/yuanlive-server/yuanlive-ai-service/src/main/java/blog/yuanyuan/yuanlive/ai/test/RiskWorkflowTester.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/yuanlive-server/yuanlive-ai-service/src/main/resources/application.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/yuanlive-server/yuanlive-ai-service/src/main/resources/application.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/yuanlive-server/yuanlive-live-service/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/yuanlive-server/yuanlive-live-service/pom.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/yuanlive-server/yuanlive-live-service/src/main/java/blog/yuanyuan/yuanlive/live/constant/MsgType.java" beforeDir="false" afterPath="$PROJECT_DIR$/yuanlive-server/yuanlive-live-service/src/main/java/blog/yuanyuan/yuanlive/live/constant/MsgType.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/yuanlive-server/yuanlive-live-service/src/main/java/blog/yuanyuan/yuanlive/live/listener/ChatMessageConsumer.java" beforeDir="false" afterPath="$PROJECT_DIR$/yuanlive-server/yuanlive-live-service/src/main/java/blog/yuanyuan/yuanlive/live/listener/ChatMessageConsumer.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/yuanlive-server/yuanlive-live-service/src/main/java/blog/yuanyuan/yuanlive/live/message/Message.java" beforeDir="false" afterPath="$PROJECT_DIR$/yuanlive-server/yuanlive-live-service/src/main/java/blog/yuanyuan/yuanlive/live/message/Message.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/yuanlive-server/yuanlive-live-service/src/main/java/blog/yuanyuan/yuanlive/live/server/NettyServerHandler.java" beforeDir="false" afterPath="$PROJECT_DIR$/yuanlive-server/yuanlive-live-service/src/main/java/blog/yuanyuan/yuanlive/live/server/NettyServerHandler.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/yuanlive-server/yuanlive-live-service/src/main/java/blog/yuanyuan/yuanlive/live/service/impl/LiveRoomServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/yuanlive-server/yuanlive-live-service/src/main/java/blog/yuanyuan/yuanlive/live/service/impl/LiveRoomServiceImpl.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/yuanlive-server/yuanlive-live-service/src/main/resources/application.yml" beforeDir="false" afterPath="$PROJECT_DIR$/yuanlive-server/yuanlive-live-service/src/main/resources/application.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/yuanlive-server/yuanlive-user-service/src/test/java/blog/yuanyuan/yuanlive/user/service/impl/AuthServiceImplTest.java" beforeDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Mybatis Mapper" />
+        <option value="Enum" />
+        <option value="JUnit5 Test Class" />
+        <option value="Interface" />
+        <option value="Class" />
+      </list>
+    </option>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="MavenImportPreferences">
+    <option name="generalSettings">
+      <MavenGeneralSettings>
+        <option name="localRepository" value="$USER_HOME$/Repository" />
+        <option name="useMavenConfig" value="false" />
+        <option name="userSettingsFile" value="$USER_HOME$/.sdkman/candidates/maven/current/conf/settings.xml" />
+      </MavenGeneralSettings>
+    </option>
+    <option name="importingSettings">
+      <MavenImportingSettings>
+        <option name="jdkForImporter" value="17" />
+      </MavenImportingSettings>
+    </option>
+  </component>
+  <component name="ProblemsViewState">
+    <option name="selectedTabId" value="CurrentFile" />
+  </component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 5
+}</component>
+  <component name="ProjectId" id="36q8JC0GPF6I3IW3kJ8mDxSjK3x" />
+  <component name="ProjectLevelVcsManager">
+    <ConfirmationsSetting value="1" id="Add" />
+  </component>
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "JUnit.AuthServiceImplTest.testCosID.executor": "Run",
+    "JUnit.LoginLimitPropertiesTest.test.executor": "Run",
+    "Maven.yuanlive-cloud [clean].executor": "Run",
+    "Maven.yuanlive-cloud [install].executor": "Run",
+    "Maven.yuanlive-common [clean].executor": "Run",
+    "Maven.yuanlive-common [install].executor": "Run",
+    "Maven.yuanlive-live-service [clean].executor": "Run",
+    "Maven.yuanlive-live-service [compile].executor": "Run",
+    "Maven.yuanlive-live-service [install].executor": "Run",
+    "Maven.yuanlive-live-service [verify].executor": "Run",
+    "Maven.yuanlive-user-service [clean].executor": "Run",
+    "Maven.yuanlive-user-service [install].executor": "Run",
+    "RequestMappingsPanelOrder0": "0",
+    "RequestMappingsPanelOrder1": "1",
+    "RequestMappingsPanelWidth0": "75",
+    "RequestMappingsPanelWidth1": "75",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "Spring Boot.AiApplication.executor": "Run",
+    "Spring Boot.AuthApplication.executor": "Run",
+    "Spring Boot.GatewayApplication.executor": "Run",
+    "Spring Boot.LiveApplication.executor": "Run",
+    "Spring Boot.LiveApplication2.executor": "Run",
+    "Spring Boot.UserApplication.executor": "Run",
+    "Spring Boot.WalletApplication.executor": "Run",
+    "com.intellij.testIntegration.createTest.CreateTestDialog.defaultLibrary": "JUnit5",
+    "com.intellij.testIntegration.createTest.CreateTestDialog.defaultLibrarySuperClass.JUnit5": "",
+    "git-widget-placeholder": "dev",
+    "kotlin-language-version-configured": "true",
+    "last_directory_selection": "/home/frodepu/IdeaProjects/yuanlive-cloud/yuanlive-entity/user-entity/src/main/java/blog/yuanyuan/yuanlive",
+    "last_opened_file_path": "/home/frodepu/IdeaProjects/LeetCode",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "project.structure.last.edited": "模块",
+    "project.structure.proportion": "0.15",
+    "project.structure.side.proportion": "0.2",
+    "run.configurations.included.in.services": "true",
+    "settings.editor.selected.configurable": "MavenSettings",
+    "vue.rearranger.settings.migration": "true"
+  },
+  "keyToStringList": {
+    "DatabaseDriversLRU": [
+      "mysql",
+      "redis",
+      "elasticsearch"
+    ]
+  }
+}]]></component>
+  <component name="ReactorSettings">
+    <option name="notificationShown" value="true" />
+  </component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/yuanlive-common/src/main/java/blog/yuanyuan/yuanlive/common" />
+    </key>
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/yuanlive-server/yuanlive-live-service/src/main/resources/lua" />
+      <recent name="$PROJECT_DIR$/yuanlive-server/yuanlive-user-service/src/main/resources/mapper" />
+      <recent name="$PROJECT_DIR$/yuanlive-server/yuanlive-live-service/src/main/resources/mapper" />
+      <recent name="$PROJECT_DIR$/yuanlive-server/yuanlive-user-service/src/main/resources" />
+      <recent name="$PROJECT_DIR$/yuanlive-common/src/main/java/blog/yuanyuan/yuanlive/common" />
+    </key>
+    <key name="CreateTestDialog.Recents.Supers">
+      <recent name="" />
+    </key>
+    <key name="MoveClassesOrPackagesDialog.RECENTS_KEY">
+      <recent name="blog.yuanyuan.yuanlive.entity.user.vo" />
+    </key>
+    <key name="CreateTestDialog.RecentsKey">
+      <recent name="blog.yuanyuan.yuanlive.user.properties" />
+      <recent name="blog.yuanyuan.yuanlive.user.service.impl" />
+      <recent name="blog.yuanyuan.yuanlive.user.controller" />
+    </key>
+    <key name="CopyClassDialog.RECENTS_KEY">
+      <recent name="blog.yuanyuan.yuanlive.common.properties" />
+    </key>
+  </component>
+  <component name="RunDashboard">
+    <option name="configurationTypes">
+      <set>
+        <option value="KtorApplicationConfigurationType" />
+        <option value="MicronautRunConfigurationType" />
+        <option value="QuarkusRunConfigurationType" />
+        <option value="SpringBootApplicationConfigurationType" />
+      </set>
+    </option>
+  </component>
+  <component name="RunManager" selected="Spring Boot.LiveApplication2">
+    <configuration name="AiApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" temporary="true" nameIsGenerated="true">
+      <envs>
+        <env name="NVIDIA_API_KEY" value="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" />
+      </envs>
+      <module name="yuanlive-ai-service" />
+      <option name="SPRING_BOOT_MAIN_CLASS" value="blog.yuanyuan.yuanlive.ai.AiApplication" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="blog.yuanyuan.yuanlive.ai.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="GatewayApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" temporary="true" nameIsGenerated="true">
+      <module name="yuanlive-gateway" />
+      <option name="SPRING_BOOT_MAIN_CLASS" value="blog.yuanyuan.yuanlive.gateway.GatewayApplication" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="blog.yuanyuan.yuanlive.gateway.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="LiveApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" temporary="true" nameIsGenerated="true">
+      <module name="yuanlive-live-service" />
+      <option name="SPRING_BOOT_MAIN_CLASS" value="blog.yuanyuan.yuanlive.live.LiveApplication" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="blog.yuanyuan.yuanlive.live.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="LiveApplication2" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" temporary="true">
+      <module name="yuanlive-live-service" />
+      <option name="SPRING_BOOT_MAIN_CLASS" value="blog.yuanyuan.yuanlive.live.LiveApplication" />
+      <option name="VM_PARAMETERS" value="-Dserver.port=8083 -Dyuanlive.netty.port=18082" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="blog.yuanyuan.yuanlive.live.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="UserApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" temporary="true" nameIsGenerated="true">
+      <envs>
+        <env name="YUANLIVE_MAIL_PASSWORD" value="WYbwW6GVzkcMRK3y" />
+        <env name="YUANLIVE_MAIL_USER" value="j1425127495@126.com" />
+      </envs>
+      <module name="yuanlive-user-service" />
+      <option name="SPRING_BOOT_MAIN_CLASS" value="blog.yuanyuan.yuanlive.user.UserApplication" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="blog.yuanyuan.yuanlive.user.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="docker: Compose 部署" type="docker-deploy" factoryName="docker-compose.yml">
+      <deployment type="docker-compose.yml">
+        <settings>
+          <option name="sourceFilePath" value="docker/docker-compose.yml" />
+        </settings>
+      </deployment>
+      <method v="2" />
+    </configuration>
+    <configuration default="true" type="lua.app" factoryName="Lua Application">
+      <option name="program" value="lua" />
+      <option name="file" value="" />
+      <option name="workingDir" value="$PROJECT_DIR$/yuanlive-server-client/yuanlive-wallet-client/src/main/java" />
+      <option name="debuggerType" value="2" />
+      <option name="params" value="" />
+      <option name="charset" value="UTF-8" />
+      <option name="showConsole" value="true" />
+      <method v="2" />
+    </configuration>
+    <list>
+      <item itemvalue="Docker.docker: Compose 部署" />
+      <item itemvalue="Spring Boot.AiApplication" />
+      <item itemvalue="Spring Boot.GatewayApplication" />
+      <item itemvalue="Spring Boot.LiveApplication2" />
+      <item itemvalue="Spring Boot.LiveApplication" />
+      <item itemvalue="Spring Boot.UserApplication" />
+    </list>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Spring Boot.LiveApplication" />
+        <item itemvalue="Spring Boot.LiveApplication2" />
+        <item itemvalue="Spring Boot.UserApplication" />
+        <item itemvalue="Spring Boot.AiApplication" />
+        <item itemvalue="Spring Boot.GatewayApplication" />
+      </list>
+    </recent_temporary>
+  </component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="bundled-jdk-9823dce3aa75-fdfe4dae3a2d-intellij.indexing.shared.core-IU-243.21565.193" />
+        <option value="bundled-js-predefined-d6986cc7102b-e768b9ed790e-JavaScript-IU-243.21565.193" />
+      </set>
+    </attachedChunks>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="应用程序级" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="默认任务">
+      <changelist id="2c950775-72d2-474b-801f-8670ad3e3905" name="更改" comment="" />
+      <created>1765722666780</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1765722666780</updated>
+      <workItem from="1765722667823" duration="4661000" />
+      <workItem from="1765877411318" duration="8909000" />
+      <workItem from="1765950475511" duration="10469000" />
+      <workItem from="1765982955226" duration="9006000" />
+      <workItem from="1766034913798" duration="5236000" />
+      <workItem from="1766306164074" duration="1210000" />
+      <workItem from="1766639834678" duration="10378000" />
+      <workItem from="1766651873153" duration="9248000" />
+      <workItem from="1766722416407" duration="17382000" />
+      <workItem from="1766820644848" duration="324000" />
+      <workItem from="1766820974820" duration="5600000" />
+      <workItem from="1766845859178" duration="6893000" />
+      <workItem from="1766935921861" duration="5221000" />
+      <workItem from="1766971027315" duration="863000" />
+      <workItem from="1766971900436" duration="191000" />
+      <workItem from="1766972099699" duration="5411000" />
+      <workItem from="1766977689390" duration="16286000" />
+      <workItem from="1767074044502" duration="19780000" />
+      <workItem from="1767098171723" duration="3960000" />
+      <workItem from="1767156414255" duration="6678000" />
+      <workItem from="1767164694669" duration="304000" />
+      <workItem from="1767165019798" duration="16784000" />
+      <workItem from="1767256307992" duration="2935000" />
+      <workItem from="1767344926330" duration="2522000" />
+      <workItem from="1767579250232" duration="10254000" />
+      <workItem from="1767611207613" duration="2242000" />
+      <workItem from="1767677143229" duration="7769000" />
+      <workItem from="1767761046171" duration="2015000" />
+      <workItem from="1767838237771" duration="1777000" />
+      <workItem from="1768548717538" duration="16047000" />
+      <workItem from="1768637857192" duration="18827000" />
+      <workItem from="1768666035802" duration="648000" />
+      <workItem from="1768715205708" duration="10161000" />
+      <workItem from="1768746456742" duration="3457000" />
+      <workItem from="1768809495204" duration="21268000" />
+      <workItem from="1768835442878" duration="5100000" />
+      <workItem from="1768840711167" duration="471000" />
+      <workItem from="1768893061248" duration="15850000" />
+      <workItem from="1769096951335" duration="624000" />
+      <workItem from="1769322819860" duration="19243000" />
+      <workItem from="1769412996744" duration="16463000" />
+      <workItem from="1769478924103" duration="20229000" />
+      <workItem from="1769825383267" duration="11282000" />
+      <workItem from="1769909601171" duration="22073000" />
+      <workItem from="1769996253569" duration="7768000" />
+      <workItem from="1770004467669" duration="35000" />
+      <workItem from="1770004508190" duration="14350000" />
+      <workItem from="1770082231901" duration="7274000" />
+      <workItem from="1770102414424" duration="10915000" />
+      <workItem from="1770169345101" duration="1676000" />
+      <workItem from="1770175546353" duration="1271000" />
+      <workItem from="1770188834039" duration="11637000" />
+      <workItem from="1770201833627" duration="404000" />
+      <workItem from="1770204070282" duration="36000" />
+      <workItem from="1770204135333" duration="5268000" />
+      <workItem from="1770216922936" duration="612000" />
+      <workItem from="1770254747920" duration="6639000" />
+      <workItem from="1770274603605" duration="22377000" />
+      <workItem from="1770341968970" duration="5082000" />
+      <workItem from="1770349510698" duration="1664000" />
+      <workItem from="1770351192784" duration="683000" />
+      <workItem from="1770360266917" duration="12835000" />
+      <workItem from="1770428995743" duration="7313000" />
+      <workItem from="1770447132005" duration="22818000" />
+      <workItem from="1770480921462" duration="332000" />
+      <workItem from="1770515429843" duration="6046000" />
+      <workItem from="1770534083999" duration="18175000" />
+      <workItem from="1770563527199" duration="618000" />
+      <workItem from="1770600331657" duration="5965000" />
+      <workItem from="1770620735398" duration="15397000" />
+      <workItem from="1770640063635" duration="878000" />
+      <workItem from="1770686391106" duration="7012000" />
+      <workItem from="1770694791983" duration="2032000" />
+      <workItem from="1770706623501" duration="11949000" />
+      <workItem from="1770723633106" duration="297000" />
+      <workItem from="1770793773985" duration="10446000" />
+      <workItem from="1770809924336" duration="6277000" />
+      <workItem from="1770826933233" duration="4195000" />
+      <workItem from="1770880255032" duration="10607000" />
+      <workItem from="1770897904787" duration="1969000" />
+      <workItem from="1770911347851" duration="4425000" />
+      <workItem from="1770945554007" duration="24107000" />
+      <workItem from="1770987504384" duration="642000" />
+      <workItem from="1771032943936" duration="1637000" />
+      <workItem from="1771049270294" duration="7005000" />
+      <workItem from="1771065733088" duration="8244000" />
+      <workItem from="1771082094257" duration="816000" />
+      <workItem from="1771118313412" duration="1543000" />
+      <workItem from="1771148172439" duration="9936000" />
+      <workItem from="1771172341130" duration="3691000" />
+      <workItem from="1771204211602" duration="3266000" />
+      <workItem from="1771397550397" duration="2048000" />
+      <workItem from="1771463544548" duration="677000" />
+      <workItem from="1771464529175" duration="2622000" />
+      <workItem from="1771551820504" duration="12005000" />
+      <workItem from="1771574391247" duration="15097000" />
+      <workItem from="1771600859374" duration="1573000" />
+      <workItem from="1771637188392" duration="31099000" />
+      <workItem from="1771687061894" duration="383000" />
+      <workItem from="1771687457048" duration="24000" />
+      <workItem from="1771687492394" duration="1127000" />
+      <workItem from="1771688934381" duration="1805000" />
+      <workItem from="1771690750557" duration="93000" />
+      <workItem from="1771690850354" duration="36000" />
+      <workItem from="1771690894142" duration="68000" />
+      <workItem from="1771690979134" duration="2803000" />
+    </task>
+    <task id="LOCAL-00016" summary=":bug: 网关层解决跨域问题、并修改mysql建表文件">
+      <option name="closed" value="true" />
+      <created>1768569681327</created>
+      <option name="number" value="00016" />
+      <option name="presentableId" value="LOCAL-00016" />
+      <option name="project" value="LOCAL" />
+      <updated>1768569681327</updated>
+    </task>
+    <task id="LOCAL-00017" summary=":sparkles: 实现RBAC相关功能、并且设置super-admin拥有所有权限">
+      <option name="closed" value="true" />
+      <created>1768658660920</created>
+      <option name="number" value="00017" />
+      <option name="presentableId" value="LOCAL-00017" />
+      <option name="project" value="LOCAL" />
+      <updated>1768658660920</updated>
+    </task>
+    <task id="LOCAL-00018" summary=":sparkles: 实现管理端路由返回功能">
+      <option name="closed" value="true" />
+      <created>1768749817418</created>
+      <option name="number" value="00018" />
+      <option name="presentableId" value="LOCAL-00018" />
+      <option name="project" value="LOCAL" />
+      <updated>1768749817418</updated>
+    </task>
+    <task id="LOCAL-00019" summary=":sparkles: 实现登陆时存放用户权限等信息">
+      <option name="closed" value="true" />
+      <created>1768814592563</created>
+      <option name="number" value="00019" />
+      <option name="presentableId" value="LOCAL-00019" />
+      <option name="project" value="LOCAL" />
+      <updated>1768814592563</updated>
+    </task>
+    <task id="LOCAL-00020" summary=":tada: 添加rabbitmq容器">
+      <option name="closed" value="true" />
+      <created>1768818122313</created>
+      <option name="number" value="00020" />
+      <option name="presentableId" value="LOCAL-00020" />
+      <option name="project" value="LOCAL" />
+      <updated>1768818122313</updated>
+    </task>
+    <task id="LOCAL-00021" summary=":tada: 更新sql文件">
+      <option name="closed" value="true" />
+      <created>1768824738830</created>
+      <option name="number" value="00021" />
+      <option name="presentableId" value="LOCAL-00021" />
+      <option name="project" value="LOCAL" />
+      <updated>1768824738830</updated>
+    </task>
+    <task id="LOCAL-00022" summary=":sparkles: 搭建websocket框架、SRS添加webrtc功能">
+      <option name="closed" value="true" />
+      <created>1768901336217</created>
+      <option name="number" value="00022" />
+      <option name="presentableId" value="LOCAL-00022" />
+      <option name="project" value="LOCAL" />
+      <updated>1768901336217</updated>
+    </task>
+    <task id="LOCAL-00023" summary=":sparkles: 实现websocket水平扩展并通过gateway同意访问&#10;（访问地址：ws://localhost:8080/ws）">
+      <option name="closed" value="true" />
+      <created>1768918314846</created>
+      <option name="number" value="00023" />
+      <option name="presentableId" value="LOCAL-00023" />
+      <option name="project" value="LOCAL" />
+      <updated>1768918314846</updated>
+    </task>
+    <task id="LOCAL-00024" summary=":sparkles: 实现ELK日志收集管理">
+      <option name="closed" value="true" />
+      <created>1769420941767</created>
+      <option name="number" value="00024" />
+      <option name="presentableId" value="LOCAL-00024" />
+      <option name="project" value="LOCAL" />
+      <updated>1769420941767</updated>
+    </task>
+    <task id="LOCAL-00025" summary=":bug: 创建es索引模版，删除冗余字段">
+      <option name="closed" value="true" />
+      <created>1769433349731</created>
+      <option name="number" value="00025" />
+      <option name="presentableId" value="LOCAL-00025" />
+      <option name="project" value="LOCAL" />
+      <updated>1769433349731</updated>
+    </task>
+    <task id="LOCAL-00026" summary=":sparkles: 获取当前用户信息">
+      <option name="closed" value="true" />
+      <created>1769484235032</created>
+      <option name="number" value="00026" />
+      <option name="presentableId" value="LOCAL-00026" />
+      <option name="project" value="LOCAL" />
+      <updated>1769484235032</updated>
+    </task>
+    <task id="LOCAL-00027" summary=":sparkles: 实现直播分类相关接口、并设置相应权限校验">
+      <option name="closed" value="true" />
+      <created>1769502857654</created>
+      <option name="number" value="00027" />
+      <option name="presentableId" value="LOCAL-00027" />
+      <option name="project" value="LOCAL" />
+      <updated>1769502857654</updated>
+    </task>
+    <task id="LOCAL-00028" summary=":tada: 添加直播表结构&#10;房间表、分类表、记录表">
+      <option name="closed" value="true" />
+      <created>1769503138458</created>
+      <option name="number" value="00028" />
+      <option name="presentableId" value="LOCAL-00028" />
+      <option name="project" value="LOCAL" />
+      <updated>1769503138458</updated>
+    </task>
+    <task id="LOCAL-00029" summary=":sparkles: 实现srs开播下播回调接口以及直播间相关功能接口">
+      <option name="closed" value="true" />
+      <created>1769912021739</created>
+      <option name="number" value="00029" />
+      <option name="presentableId" value="LOCAL-00029" />
+      <option name="project" value="LOCAL" />
+      <updated>1769912021739</updated>
+    </task>
+    <task id="LOCAL-00030" summary=":recycle: 重构接发消息类">
+      <option name="closed" value="true" />
+      <created>1770001482896</created>
+      <option name="number" value="00030" />
+      <option name="presentableId" value="LOCAL-00030" />
+      <option name="project" value="LOCAL" />
+      <updated>1770001482896</updated>
+    </task>
+    <task id="LOCAL-00031" summary=":sparkles: 通过lua实现登陆次数限制锁定">
+      <option name="closed" value="true" />
+      <created>1770020425669</created>
+      <option name="number" value="00031" />
+      <option name="presentableId" value="LOCAL-00031" />
+      <option name="project" value="LOCAL" />
+      <updated>1770020425669</updated>
+    </task>
+    <task id="LOCAL-00032" summary=":sparkles: 实现关注功能相关接口">
+      <option name="closed" value="true" />
+      <created>1770027820537</created>
+      <option name="number" value="00032" />
+      <option name="presentableId" value="LOCAL-00032" />
+      <option name="project" value="LOCAL" />
+      <updated>1770027820537</updated>
+    </task>
+    <task id="LOCAL-00033" summary=":bug: 修复关注功能接口">
+      <option name="closed" value="true" />
+      <created>1770085668222</created>
+      <option name="number" value="00033" />
+      <option name="presentableId" value="LOCAL-00033" />
+      <option name="project" value="LOCAL" />
+      <updated>1770085668225</updated>
+    </task>
+    <task id="LOCAL-00034" summary=":sparkles: 实现主播开播时通知所有在线关注者">
+      <option name="closed" value="true" />
+      <created>1770088850235</created>
+      <option name="number" value="00034" />
+      <option name="presentableId" value="LOCAL-00034" />
+      <option name="project" value="LOCAL" />
+      <updated>1770088850245</updated>
+    </task>
+    <task id="LOCAL-00035" summary=":sparkles: 获取用户正在直播的关注列表、对netty返回信息进行统一包装">
+      <option name="closed" value="true" />
+      <created>1770115416024</created>
+      <option name="number" value="00035" />
+      <option name="presentableId" value="LOCAL-00035" />
+      <option name="project" value="LOCAL" />
+      <updated>1770115416026</updated>
+    </task>
+    <task id="LOCAL-00036" summary=":tada: 更新数据库表">
+      <option name="closed" value="true" />
+      <created>1770176077580</created>
+      <option name="number" value="00036" />
+      <option name="presentableId" value="LOCAL-00036" />
+      <option name="project" value="LOCAL" />
+      <updated>1770176077580</updated>
+    </task>
+    <task id="LOCAL-00037" summary=":recycle: 部分id生成策略使用cosid生成">
+      <option name="closed" value="true" />
+      <created>1770209579416</created>
+      <option name="number" value="00037" />
+      <option name="presentableId" value="LOCAL-00037" />
+      <option name="project" value="LOCAL" />
+      <updated>1770209579416</updated>
+    </task>
+    <task id="LOCAL-00038" summary=":sparkles: 完善后台用户管理接口">
+      <option name="closed" value="true" />
+      <created>1770259631262</created>
+      <option name="number" value="00038" />
+      <option name="presentableId" value="LOCAL-00038" />
+      <option name="project" value="LOCAL" />
+      <updated>1770259631262</updated>
+    </task>
+    <task id="LOCAL-00039" summary=":recycle: 将重复配置项迁移至nacos中&#10;根据start.md中的配置在nacos中新建配置">
+      <option name="closed" value="true" />
+      <created>1770262127030</created>
+      <option name="number" value="00039" />
+      <option name="presentableId" value="LOCAL-00039" />
+      <option name="project" value="LOCAL" />
+      <updated>1770262127030</updated>
+    </task>
+    <task id="LOCAL-00040" summary=":sparkles: 关播时添加直播记录内容&#10;(视频存放路径、最多观众数、总人数...)">
+      <option name="closed" value="true" />
+      <created>1770303155708</created>
+      <option name="number" value="00040" />
+      <option name="presentableId" value="LOCAL-00040" />
+      <option name="project" value="LOCAL" />
+      <updated>1770303155708</updated>
+    </task>
+    <task id="LOCAL-00041" summary=":sparkles: 添加minio工具方法，将录播视频转存至minio存放">
+      <option name="closed" value="true" />
+      <created>1770371564124</created>
+      <option name="number" value="00041" />
+      <option name="presentableId" value="LOCAL-00041" />
+      <option name="project" value="LOCAL" />
+      <updated>1770371564124</updated>
+    </task>
+    <task id="LOCAL-00042" summary=":bug: 添加性别，category类别value">
+      <option name="closed" value="true" />
+      <created>1770437850078</created>
+      <option name="number" value="00042" />
+      <option name="presentableId" value="LOCAL-00042" />
+      <option name="project" value="LOCAL" />
+      <updated>1770437850078</updated>
+    </task>
+    <task id="LOCAL-00043" summary=":tada: 数据库更新">
+      <option name="closed" value="true" />
+      <created>1770438045025</created>
+      <option name="number" value="00043" />
+      <option name="presentableId" value="LOCAL-00043" />
+      <option name="project" value="LOCAL" />
+      <updated>1770438045025</updated>
+    </task>
+    <task id="LOCAL-00044" summary=":recycle: 重构liverecord表为video表存放所有类型视频">
+      <option name="closed" value="true" />
+      <created>1770454586014</created>
+      <option name="number" value="00044" />
+      <option name="presentableId" value="LOCAL-00044" />
+      <option name="project" value="LOCAL" />
+      <updated>1770454586014</updated>
+    </task>
+    <task id="LOCAL-00045" summary=":sparkles: 添加用户统计信息表">
+      <option name="closed" value="true" />
+      <created>1770473054495</created>
+      <option name="number" value="00045" />
+      <option name="presentableId" value="LOCAL-00045" />
+      <option name="project" value="LOCAL" />
+      <updated>1770473054495</updated>
+    </task>
+    <task id="LOCAL-00046" summary=":sparkles: 完善用户信息返回内容">
+      <option name="closed" value="true" />
+      <created>1770475739021</created>
+      <option name="number" value="00046" />
+      <option name="presentableId" value="LOCAL-00046" />
+      <option name="project" value="LOCAL" />
+      <updated>1770475739021</updated>
+    </task>
+    <task id="LOCAL-00047" summary=":memo: 更新start.md">
+      <option name="closed" value="true" />
+      <created>1770476237106</created>
+      <option name="number" value="00047" />
+      <option name="presentableId" value="LOCAL-00047" />
+      <option name="project" value="LOCAL" />
+      <updated>1770476237106</updated>
+    </task>
+    <task id="LOCAL-00048" summary=":memo: 更新start.md">
+      <option name="closed" value="true" />
+      <created>1770476274882</created>
+      <option name="number" value="00048" />
+      <option name="presentableId" value="LOCAL-00048" />
+      <option name="project" value="LOCAL" />
+      <updated>1770476274882</updated>
+    </task>
+    <task id="LOCAL-00049" summary=":bug: 修改sql文件">
+      <option name="closed" value="true" />
+      <created>1770478593839</created>
+      <option name="number" value="00049" />
+      <option name="presentableId" value="LOCAL-00049" />
+      <option name="project" value="LOCAL" />
+      <updated>1770478593839</updated>
+    </task>
+    <task id="LOCAL-00050" summary=":sparkles: 使用ffmpeg自动截取图片作为录播视频封面">
+      <option name="closed" value="true" />
+      <created>1770522710914</created>
+      <option name="number" value="00050" />
+      <option name="presentableId" value="LOCAL-00050" />
+      <option name="project" value="LOCAL" />
+      <updated>1770522710915</updated>
+    </task>
+    <task id="LOCAL-00051" summary=":sparkles: 完善接口文档中用户信息获取功能">
+      <option name="closed" value="true" />
+      <created>1770557012663</created>
+      <option name="number" value="00051" />
+      <option name="presentableId" value="LOCAL-00051" />
+      <option name="project" value="LOCAL" />
+      <updated>1770557012664</updated>
+    </task>
+    <task id="LOCAL-00052" summary=":bug: 按文档修改接口">
+      <option name="closed" value="true" />
+      <created>1770558758387</created>
+      <option name="number" value="00052" />
+      <option name="presentableId" value="LOCAL-00052" />
+      <option name="project" value="LOCAL" />
+      <updated>1770558758387</updated>
+    </task>
+    <task id="LOCAL-00053" summary=":memo: 更新sql">
+      <option name="closed" value="true" />
+      <created>1770559026829</created>
+      <option name="number" value="00053" />
+      <option name="presentableId" value="LOCAL-00053" />
+      <option name="project" value="LOCAL" />
+      <updated>1770559026829</updated>
+    </task>
+    <task id="LOCAL-00054" summary=":sparkles: 使用zset记录人气指数">
+      <option name="closed" value="true" />
+      <created>1770630024333</created>
+      <option name="number" value="00054" />
+      <option name="presentableId" value="LOCAL-00054" />
+      <option name="project" value="LOCAL" />
+      <updated>1770630024333</updated>
+    </task>
+    <task id="LOCAL-00055" summary=":bug: 修改接口">
+      <option name="closed" value="true" />
+      <created>1770632093088</created>
+      <option name="number" value="00055" />
+      <option name="presentableId" value="LOCAL-00055" />
+      <option name="project" value="LOCAL" />
+      <updated>1770632093088</updated>
+    </task>
+    <task id="LOCAL-00056" summary=":sparkles: 用户进入直播间与聊天时增加人气指数(发送礼物、点赞待实现)">
+      <option name="closed" value="true" />
+      <created>1770639374038</created>
+      <option name="number" value="00056" />
+      <option name="presentableId" value="LOCAL-00056" />
+      <option name="project" value="LOCAL" />
+      <updated>1770639374038</updated>
+    </task>
+    <task id="LOCAL-00057" summary=":sparkles: 增加直播分类人气榜">
+      <option name="closed" value="true" />
+      <created>1770695443702</created>
+      <option name="number" value="00057" />
+      <option name="presentableId" value="LOCAL-00057" />
+      <option name="project" value="LOCAL" />
+      <updated>1770695443702</updated>
+    </task>
+    <task id="LOCAL-00058" summary=":sparkles: 完善人气指数功能">
+      <option name="closed" value="true" />
+      <created>1770722299775</created>
+      <option name="number" value="00058" />
+      <option name="presentableId" value="LOCAL-00058" />
+      <option name="project" value="LOCAL" />
+      <updated>1770722299776</updated>
+    </task>
+    <task id="LOCAL-00059" summary=":sparkles: 获取人气前五的直播间信息">
+      <option name="closed" value="true" />
+      <created>1770802404781</created>
+      <option name="number" value="00059" />
+      <option name="presentableId" value="LOCAL-00059" />
+      <option name="project" value="LOCAL" />
+      <updated>1770802404781</updated>
+    </task>
+    <task id="LOCAL-00060" summary=":bug: 接口修改">
+      <option name="closed" value="true" />
+      <created>1770830959715</created>
+      <option name="number" value="00060" />
+      <option name="presentableId" value="LOCAL-00060" />
+      <option name="project" value="LOCAL" />
+      <updated>1770830959716</updated>
+    </task>
+    <task id="LOCAL-00061" summary=":sparkles: 对接前端后台用户管理页面">
+      <option name="closed" value="true" />
+      <created>1770984876445</created>
+      <option name="number" value="00061" />
+      <option name="presentableId" value="LOCAL-00061" />
+      <option name="project" value="LOCAL" />
+      <updated>1770984876445</updated>
+    </task>
+    <task id="LOCAL-00062" summary=":sparkles: 对接前端后台角色管理页面">
+      <option name="closed" value="true" />
+      <created>1771073407779</created>
+      <option name="number" value="00062" />
+      <option name="presentableId" value="LOCAL-00062" />
+      <option name="project" value="LOCAL" />
+      <updated>1771073407779</updated>
+    </task>
+    <task id="LOCAL-00063" summary=":sparkles: 对接前端后台菜单管理页面">
+      <option name="closed" value="true" />
+      <created>1771176007062</created>
+      <option name="number" value="00063" />
+      <option name="presentableId" value="LOCAL-00063" />
+      <option name="project" value="LOCAL" />
+      <updated>1771176007069</updated>
+    </task>
+    <task id="LOCAL-00064" summary=":sparkles: 初步添加直播间违规消息检测、封禁、警告工作流">
+      <option name="closed" value="true" />
+      <created>1771590815270</created>
+      <option name="number" value="00064" />
+      <option name="presentableId" value="LOCAL-00064" />
+      <option name="project" value="LOCAL" />
+      <updated>1771590815270</updated>
+    </task>
+    <option name="localTasksCounter" value="65" />
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="UnknownFeatures">
+    <option featureType="com.intellij.fileTypeFactory" implementationName="*.conf" />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="RECENT_FILTERS">
+      <map>
+        <entry key="Branch">
+          <value>
+            <list>
+              <RecentGroup>
+                <option name="FILTER_VALUES">
+                  <option value="feature/qrcode" />
+                </option>
+              </RecentGroup>
+            </list>
+          </value>
+        </entry>
+      </map>
+    </option>
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State>
+              <option name="FILTERS">
+                <map>
+                  <entry key="branch">
+                    <value>
+                      <list>
+                        <option value="dev" />
+                      </list>
+                    </value>
+                  </entry>
+                </map>
+              </option>
+            </State>
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value=":recycle: 将重复配置项迁移至nacos中&#10;根据start.md中的配置在nacos中新建配置" />
+    <MESSAGE value=":sparkles: 关播时添加直播记录内容&#10;(视频存放路径、最多观众数、总人数...)" />
+    <MESSAGE value=":sparkles: 添加minio工具方法，将录播视频转存至minio存放" />
+    <MESSAGE value=":bug: 添加性别，category类别value" />
+    <MESSAGE value=":tada: 数据库更新" />
+    <MESSAGE value=":recycle: 重构liverecord表为video表存放所有类型视频" />
+    <MESSAGE value=":sparkles: 添加用户统计信息表" />
+    <MESSAGE value=":sparkles: 完善用户信息返回内容" />
+    <MESSAGE value=":memo: 更新start.md" />
+    <MESSAGE value=":bug: 修改sql文件" />
+    <MESSAGE value=":sparkles: 使用ffmpeg自动截取图片作为录播视频封面" />
+    <MESSAGE value=":sparkles: 完善接口文档中用户信息获取功能" />
+    <MESSAGE value=":bug: 按文档修改接口" />
+    <MESSAGE value=":memo: 更新sql" />
+    <MESSAGE value=":sparkles: 使用zset记录人气指数" />
+    <MESSAGE value=":bug: 修改接口" />
+    <MESSAGE value=":sparkles: 用户进入直播间与聊天时增加人气指数(发送礼物、点赞待实现)" />
+    <MESSAGE value=":sparkles: 增加直播分类人气榜" />
+    <MESSAGE value=":sparkles: 完善人气指数功能" />
+    <MESSAGE value=":sparkles: 获取人气前五的直播间信息" />
+    <MESSAGE value=":bug: 接口修改" />
+    <MESSAGE value=":sparkles: 对接前端后台用户管理页面" />
+    <MESSAGE value=":sparkles: 对接前端后台角色管理页面" />
+    <MESSAGE value=":sparkles: 对接前端后台菜单管理页面" />
+    <MESSAGE value=":sparkles: 初步添加直播间违规消息检测、封禁、警告工作流" />
+    <option name="LAST_COMMIT_MESSAGE" value=":sparkles: 初步添加直播间违规消息检测、封禁、警告工作流" />
+  </component>
+  <component name="XSLT-Support.FileAssociations.UIState">
+    <expand />
+    <select />
+  </component>
+</project>

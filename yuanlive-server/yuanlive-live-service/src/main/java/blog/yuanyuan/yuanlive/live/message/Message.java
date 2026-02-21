@@ -4,6 +4,7 @@ import blog.yuanyuan.yuanlive.live.constant.MsgType;
 import blog.yuanyuan.yuanlive.live.message.notification.GroupChatNotification;
 import blog.yuanyuan.yuanlive.live.message.notification.LiveEndMessage;
 import blog.yuanyuan.yuanlive.live.message.notification.LiveStartMessage;
+import blog.yuanyuan.yuanlive.live.message.notification.SystemNotification;
 import blog.yuanyuan.yuanlive.live.message.request.*;
 import blog.yuanyuan.yuanlive.live.message.response.AckMessage;
 import blog.yuanyuan.yuanlive.live.message.response.JoinResponse;
@@ -35,7 +36,8 @@ import lombok.experimental.SuperBuilder;
         @JsonSubTypes.Type(value = SingleChatRequest.class, name = "SINGLE_CHAT"),
         @JsonSubTypes.Type(value = AckMessage.class, name = "ACK"),
         @JsonSubTypes.Type(value = LiveStartMessage.class, name = "LIVE_START"),
-        @JsonSubTypes.Type(value = LiveEndMessage.class, name = "LIVE_END")
+        @JsonSubTypes.Type(value = LiveEndMessage.class, name = "LIVE_END"),
+        @JsonSubTypes.Type(value = SystemNotification.class, name = "SYSTEM_NOTIFY")
 })
 public abstract class Message {
     @Getter
