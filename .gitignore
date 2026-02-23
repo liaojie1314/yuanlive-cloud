@@ -47,6 +47,7 @@ docker/SrsConfig/nginx
 docker/minio
 docker/rabbitmq/mq-data
 docker/elasticsearch/data
+docker/higress/data
 
 ### logs ###
 logs

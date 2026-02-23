@@ -1,6 +1,7 @@
 package blog.yuanyuan.yuanlive.ai.config;
 
 import blog.yuanyuan.yuanlive.ai.nodes.RiskActionNodes;
+import blog.yuanyuan.yuanlive.ai.properties.RiskProperties;
 import blog.yuanyuan.yuanlive.ai.strategy.RiskStrategies;
 import com.alibaba.cloud.ai.graph.CompileConfig;
 import com.alibaba.cloud.ai.graph.CompiledGraph;
@@ -8,6 +9,8 @@ import com.alibaba.cloud.ai.graph.StateGraph;
 import static com.alibaba.cloud.ai.graph.action.AsyncNodeAction.node_async;
 
 import static com.alibaba.cloud.ai.graph.action.AsyncEdgeAction.edge_async;
+
+import jakarta.annotation.Resource;
 import lombok.SneakyThrows;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -16,6 +19,9 @@ import java.util.Map;
 
 @Configuration
 public class RiskWorkflowConfig {
+    @Resource
+    private RiskProperties riskProperties;
+
     @SneakyThrows
     @Bean
     public CompiledGraph riskWorkflow(RiskActionNodes nodes) {
@@ -32,9 +38,9 @@ public class RiskWorkflowConfig {
                 "analyze",
                 edge_async(state -> {
                     int score = state.value(RiskStrategies.RISK_SCORE, 0);
-                    if (score >= 80) return "high";   // 映射到 admin_review
-                    if (score >= 50) return "medium"; // 映射到 broadcast
-                    if (score >= 20) return "low";    // 映射到 warn
+                    if (score >= riskProperties.getHigh()) return "high";   // 映射到 admin_review
+                    if (score >= riskProperties.getMedium()) return "medium"; // 映射到 broadcast
+                    if (score >= riskProperties.getLow()) return "low";    // 映射到 warn
                     return "safe";
                 }),
                 Map.of("high", "admin_review",

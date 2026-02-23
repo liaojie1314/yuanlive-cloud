@@ -39,8 +39,8 @@ import lombok.experimental.SuperBuilder;
         @JsonSubTypes.Type(value = LiveEndMessage.class, name = "LIVE_END"),
         @JsonSubTypes.Type(value = SystemNotification.class, name = "SYSTEM_NOTIFY")
 })
+@Getter
 public abstract class Message {
-    @Getter
     private MsgType type;     // 消息类型
     private String msgId;     // 消息ID (前端生成的UUID)
     private String roomId;    // 房间ID

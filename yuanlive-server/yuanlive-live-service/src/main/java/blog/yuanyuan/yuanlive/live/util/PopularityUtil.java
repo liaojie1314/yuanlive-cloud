@@ -79,7 +79,7 @@ public class PopularityUtil {
             // 获取人气分数
             Object scoreObj = rawResults.get(i + n);
             // 注意：zSet.score 可能返回 null 或 Double
-            double popularity = (scoreObj instanceof Double) ? (Double) scoreObj : 0.0;
+            double popularity = (scoreObj instanceof Double score) ? score : 0.0;
 
             // 4. 组装 VO
             LiveRoomRankVO vo = LiveRoomRankVO.builder()

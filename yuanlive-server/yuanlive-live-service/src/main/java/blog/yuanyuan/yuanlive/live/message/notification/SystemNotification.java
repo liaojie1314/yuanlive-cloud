@@ -13,6 +13,10 @@ public class SystemNotification extends Message {
     private String content;
     private Long toUserId;
 
+    public SystemNotification() {
+        super(MsgType.SYSTEM_NOTIFY);
+    }
+
     @Override
     public MsgType getType() {
         return MsgType.SYSTEM_NOTIFY;

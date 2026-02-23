@@ -21,7 +21,7 @@ public class RiskWorkflowTester implements CommandLineRunner {
     @Override
     public void run(String... args) throws Exception {
         // 执行高风险模拟测试
-        testHighRiskScenario("room_1024");
+        testHighRiskScenario("790546539380737");
     }
 
     /**
@@ -33,7 +33,7 @@ public class RiskWorkflowTester implements CommandLineRunner {
         // 1. 准备初始状态
         Map<String, Object> inputData = Map.of(
                 RiskStrategies.ROOM_ID, roomId,
-                RiskStrategies.CHAT_HISTORY, List.of("大家好哇", "欢迎来到直播间", "今天玩啥", "哎我操了都")
+                RiskStrategies.CHAT_HISTORY, List.of("我操你妈", "我操你妈", "我操你妈", "我操你妈")
         );
 
         // 2. 配置执行上下文 (threadId 是持久化的 Key)

@@ -15,4 +15,5 @@ public class LiveRoomProperties {
     private String mainRank;
     private String categoryRank;
     private String categoryRoomsPrefix;
+    private String chatBufferPrefix;
 }

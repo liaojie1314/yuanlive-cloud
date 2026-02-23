@@ -2,19 +2,34 @@ package blog.yuanyuan.yuanlive.ai.nodes;
 
 import blog.yuanyuan.yuanlive.ai.strategy.RiskStrategies;
 import com.alibaba.cloud.ai.graph.action.NodeAction;
+import jakarta.annotation.PostConstruct;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.model.ChatModel;
+import org.springframework.ai.chat.model.ChatResponse;
+import org.springframework.ai.mcp.AsyncMcpToolCallbackProvider;
+import org.springframework.ai.tool.ToolCallbackProvider;
+import org.springframework.ai.tool.definition.ToolDefinition;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Component
 @Slf4j
 public class RiskActionNodes {
     @Resource
     private ChatModel nvidiaModel;
+    @Resource
+    private ToolCallbackProvider asyncMcpToolCallbackProvider;
+
+    private ChatClient chatClient;
 
     public static final String systemPrompt = """
     你是一名经验丰富的直播间风控专家。你的任务是分析对话内容并给出【违规程度分值】。
@@ -35,21 +50,46 @@ public class RiskActionNodes {
     - 只返回一个 0 到 100 之间的整数，不要任何解释。
     """;
 
+    @PostConstruct
+    public void init() {
+        this.chatClient = ChatClient.builder(nvidiaModel)
+                .defaultToolCallbacks(asyncMcpToolCallbackProvider.getToolCallbacks())
+                .build();
+
+        List<ToolDefinition> collect = Arrays.stream(asyncMcpToolCallbackProvider.getToolCallbacks())
+                .map(callback -> callback.getToolDefinition())
+                .collect(Collectors.toList());
+        log.info("工具为:{}", collect.toString());
+    }
+
     public NodeAction analyze() {
         return state -> {
             String history = state.value(RiskStrategies.CHAT_HISTORY)
                     .map(Object::toString).orElse("");
-            String prompt = systemPrompt + history;
-            String result = nvidiaModel.call(prompt);
+//            String prompt = systemPrompt + history;
+//            String result = nvidiaModel.call(prompt);
+            String result = chatClient.prompt()
+                    .system(systemPrompt)
+                    .user(history)
+                    .call()
+                    .content();
             int score = Integer.parseInt(result.replaceAll("[^0-9]", ""));
-            return Map.of("risk_score", score);
+            return Map.of(RiskStrategies.RISK_SCORE, score);
         };
     }
 
     // 2. 警告主播
     public NodeAction warn() {
         return state -> {
-            System.out.println(">>> [低风险] 已向主播发送私信警告。");
+            String roomId = state.value(RiskStrategies.ROOM_ID).map(Object::toString).orElse("unknown");
+            log.info(">>> [Async] 正在调用远程 warnAnchor 工具...,房间号{}", roomId);
+
+            // 异步触发远程调用
+            ChatResponse response = chatClient.prompt("执行 warnAnchor，房间号：" + roomId)
+                    .call()
+                    .chatResponse();
+            log.info("ai 响应内容 {}", response.getResult().getOutput());
+
             return Map.of("last_action", "WARNED");
         };
     }
@@ -57,7 +97,14 @@ public class RiskActionNodes {
     // 3. 直播间公告
     public NodeAction broadcast() {
         return state -> {
-            System.out.println(">>> [中风险] 已在直播间公屏发布合规公告。");
+            String roomId = state.value(RiskStrategies.ROOM_ID).map(Object::toString).orElse("unknown");
+            log.info(">>> [Async] 正在调用远程 broadcast 工具...");
+
+            ChatResponse response = chatClient.prompt("执行 broadcast，房间号：" + roomId)
+                    .call()
+                    .chatResponse();
+            log.info("ai 响应内容 {}", response.getResult().getOutput());
+
             return Map.of("last_action", "BROADCASTED");
         };
     }
@@ -65,7 +112,14 @@ public class RiskActionNodes {
     // 4. 封禁直播间
     public NodeAction ban() {
         return state -> {
-            System.out.println(">>> [高风险] 最终裁决：已执行物理断流封禁。");
+            String roomId = state.value(RiskStrategies.ROOM_ID).map(Object::toString)
+                    .orElse("unknown");
+            log.info(">>> [Async] 正在调用远程 banRoom 工具..., 封禁房间号{}", roomId);
+
+            ChatResponse response = chatClient.prompt("执行banRoom, 房间号 " + roomId)
+                    .call()
+                    .chatResponse();
+            log.info("ai 响应内容 {}", response.getResult().getOutput());
             return Map.of("last_action", "BAN");
         };
     }

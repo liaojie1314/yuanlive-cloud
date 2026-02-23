@@ -57,6 +57,7 @@ services:
       - NACOS_AUTH_TOKEN=YXNqaGRndXF3eWdqaHNhZmlxYWhka2p5aWpkZXdqZGlhcw==
       - NACOS_AUTH_IDENTITY_KEY=yuanlive
       - NACOS_AUTH_IDENTITY_VALUE=yuanlive
+      - NACOS_CORE_API_COMPATIBILITY_CONSOLE_ENABLED=true
       - SPRING_DATASOURCE_PLATFORM=mysql
       - MYSQL_SERVICE_DB_PARAM=characterEncoding=utf8&connectTimeout=10000&socketTimeout=30000&autoReconnect=true&useSSL=false&allowPublicKeyRetrieval=true
       - MYSQL_SERVICE_HOST=mysql
@@ -93,6 +94,7 @@ services:
       - MODE=router
     ports:
       - "8001:8000"
+    restart: unless-stopped
     networks:
       - live-net
   # 分布式事务
@@ -245,6 +247,30 @@ services:
       - logstash
     networks:
       - live-net
+
+  higress-ai:
+    image: higress-registry.cn-hangzhou.cr.aliyuncs.com/higress/all-in-one:latest
+    container_name: yuanlive-higress-ai
+    user: "${UID}:${GID}"
+    environment:
+      - DATASOURCE_TYPE=nacos
+      - NACOS_ADDR=nacos:8848
+      - NACOS_NS=public
+      - NACOS_USER=nacos
+      - NACOS_PWD=nacos
+      # 强制指定为独立运行模式，不检查 K8s 环境
+      - HIGRESS_CONSOLE_MODE=standalone
+      - HIGRESS_CONSOLE_LOCAL=true
+    volumes:
+      - ./higress/data:/data
+    ports:
+      - "8002:8001"   # 控制台访问端口 (宿主机 8002 -> 容器内部 8001)
+      - "8075:8080"   # 网关 HTTP 端口 (宿主机 8075 -> 容器内部 8080)
+    networks:
+      - live-net
+    restart: unless-stopped
+    depends_on:
+      - nacos
 
 networks:
   live-net:

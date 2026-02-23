@@ -12,10 +12,12 @@ import blog.yuanyuan.yuanlive.live.message.request.PingMessage;
 import blog.yuanyuan.yuanlive.live.message.response.AckMessage;
 import blog.yuanyuan.yuanlive.live.message.response.JoinResponse;
 import blog.yuanyuan.yuanlive.live.message.response.PongMessage;
+import blog.yuanyuan.yuanlive.live.properties.AiDetectProperties;
 import blog.yuanyuan.yuanlive.live.properties.LiveRoomProperties;
 import blog.yuanyuan.yuanlive.live.properties.LiveWeightsProperties;
 import blog.yuanyuan.yuanlive.live.service.LiveRoomService;
 import blog.yuanyuan.yuanlive.live.util.PopularityUtil;
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -35,8 +37,8 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.script.DefaultRedisScript;
 import org.springframework.stereotype.Component;
 
-import java.util.Arrays;
-import java.util.Objects;
+import java.time.Duration;
+import java.util.*;
 
 @ChannelHandler.Sharable
 @Component
@@ -54,16 +56,23 @@ public class NettyServerHandler extends SimpleChannelInboundHandler<TextWebSocke
     private LiveWeightsProperties liveWeightsProperties;
     @Resource
     private LiveRoomProperties liveRoomProperties;
+    @Resource
+    private AiDetectProperties aiDetectProperties;
     @Resource(name = "joinRoomScript")
     private DefaultRedisScript<Long> joinRoomScript;
-    @Resource(name = "updatePopularityScript")
-    private DefaultRedisScript<Long> updatePopularityScript;
+    @SuppressWarnings("rawtypes")
+    @Resource(name = "harvestChatsScript")
+    private DefaultRedisScript<List> harvestChatsScript;
 
     @Resource
     private PopularityUtil popularityUtil;
 
     @Value("${live.mq.chat.exchange}")
     private String exchangeName;
+    @Value(("${live.mq.ai-detect.exchange}"))
+    private String aiDetectExchangeName;
+    @Value("${live.mq.ai-detect.routing-key}")
+    private String aiDetectRoutingKey;
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
@@ -203,7 +212,41 @@ public class NettyServerHandler extends SimpleChannelInboundHandler<TextWebSocke
                 .content(chat.getContent())
                 .timestamp(System.currentTimeMillis())
                 .build();
+        log.info("发送聊天消息: {}", notification);
         rabbitTemplate.convertAndSend(exchangeName, "", JSONUtil.toJsonStr(notification));
+        // 判断是否需要进行 AI 检测
+        Long rank = stringRedisTemplate.opsForZSet()
+                .reverseRank(liveRoomProperties.getMainRank(), roomId);
+        if (rank != null) {
+            long realRank = rank + 1L;
+            if (realRank > aiDetectProperties.getAiDetectThreshold()) {
+                return;
+            }
+            String chatBufferKey = liveRoomProperties.getChatBufferPrefix() + roomId;
+            stringRedisTemplate.opsForList().rightPush(chatBufferKey, chat.getContent());
+            stringRedisTemplate
+                    .expire(chatBufferKey, aiDetectProperties.getTtl());
+            List<String> messages = stringRedisTemplate.execute(
+                    harvestChatsScript,
+                    Collections.singletonList(chatBufferKey),
+                    aiDetectProperties.getCacheThreshold().toString()
+            );
+            // 超出阈值，说明达到水位线，发送给 MQ
+            if (CollUtil.isNotEmpty(messages)) {
+                log.info("送审消息: {}", messages);
+                Map<String, Object> payload = Map.of(
+                        "roomId", roomId,
+                        "history", String.join("\n", messages),
+                        "trigger", "WATERMARK_REACHED"
+                );
+                rabbitTemplate.convertAndSend(
+                        aiDetectExchangeName,
+                        aiDetectRoutingKey,
+                        JSONUtil.toJsonStr(payload));
+                log.info("房间 {} 达到水位线， {} 条记录送审", roomId, messages.size());
+            }
+
+        }
     }
 
     // 3. 处理离开房间
@@ -221,7 +264,6 @@ public class NettyServerHandler extends SimpleChannelInboundHandler<TextWebSocke
             sendMsg(ctx, ack);
             return;
         }
-        log.info("用户[{}] 退出房间[{}]", userId, roomId);
         // 执行离场
         leaveRoom(ctx);
         ack.setSuccess(true);

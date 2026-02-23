@@ -9,8 +9,44 @@ spring:
       base-url: https://integrate.api.nvidia.com # 注意此处路径不能带/v1
       chat:
         options:
-          model: qwen/qwen3-next-80b-a3b-instruct
+          model: qwen/qwen3-next-80b-a3b-instruct # 模型可以自行选择
+    mcp:
+      client:
+        enabled: true
+        name: ai-service-mcp-client
+        type: async
+        version: 1.0.0
+        request-timeout: 200s
+        sse:
+          connections:
+            server1:
+#              # 直接连接mcp server 不推荐(无法负载均衡)
+#              url: http://localhost:8082
+#              # higress 网关
+#              url: http://127.0.0.1:8075/mcp/live-service-mcp-server
+              # nacos mcp router
+              url: http://127.0.0.1:8001
+              sse-endpoint: /sse
+#        # 测试 stdio mcp server
+#        stdio:
+#          servers-configuration: classpath:amap.json
+#        stdio:
+#          connections:
+#            amap:
+#              command: "/home/frodepu/.nvm/versions/node/v22.13.1/bin/node" # 直接用 node 解释器
+#              args:
+#                - "/home/frodepu/.nvm/versions/node/v22.13.1/lib/node_modules/@amap/amap-maps-mcp-server/build/index.js" # 这里填入你查到的绝对路径
+#              env:
+#                AMAP_MAPS_API_KEY: "api-key"
 
+
+    alibaba:
+      mcp:
+        nacos:
+          namespace: public
+          server-addr: ${spring.cloud.nacos.server-addr}
+          username: nacos
+          password: nacos
 
   cloud:
     nacos:
@@ -46,3 +82,9 @@ logging:
   level:
     org.springframework.web.client.RestClient: DEBUG
     org.springframework.ai.openai: DEBUG
+    blog.yuanyuan.yuanlive: DEBUG
+
+risk:
+  low: 20
+  medium: 50
+  high: 80
