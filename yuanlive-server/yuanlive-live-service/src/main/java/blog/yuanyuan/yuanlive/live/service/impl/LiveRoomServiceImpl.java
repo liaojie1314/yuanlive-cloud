@@ -300,6 +300,8 @@ public class LiveRoomServiceImpl extends ServiceImpl<LiveRoomMapper, LiveRoom>
                     .remove(liveRoomProperties.getMainRank(), String.valueOf(roomId));
             String categoryKey = liveRoomProperties.getCategoryRoomsPrefix() + liveRoom.getCategoryId();
             stringRedisTemplate.opsForSet().remove(categoryKey, String.valueOf(roomId));
+            stringRedisTemplate
+                    .delete(liveRoomProperties.getChatBufferPrefix() + roomId);
         }
         return updated;
     }

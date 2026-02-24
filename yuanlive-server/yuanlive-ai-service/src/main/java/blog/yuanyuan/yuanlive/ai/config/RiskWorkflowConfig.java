@@ -10,17 +10,24 @@ import static com.alibaba.cloud.ai.graph.action.AsyncNodeAction.node_async;
 
 import static com.alibaba.cloud.ai.graph.action.AsyncEdgeAction.edge_async;
 
+import com.alibaba.cloud.ai.graph.checkpoint.BaseCheckpointSaver;
+import com.alibaba.cloud.ai.graph.checkpoint.Checkpoint;
+import com.alibaba.cloud.ai.graph.checkpoint.config.SaverConfig;
+import com.alibaba.cloud.ai.graph.checkpoint.savers.MemorySaver;
 import jakarta.annotation.Resource;
 import lombok.SneakyThrows;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import java.util.Map;
+import java.util.Optional;
 
 @Configuration
 public class RiskWorkflowConfig {
     @Resource
     private RiskProperties riskProperties;
+    @Resource(name = "redisSaver")
+    private BaseCheckpointSaver redisSaver;
 
     @SneakyThrows
     @Bean
@@ -57,6 +64,10 @@ public class RiskWorkflowConfig {
 
         CompileConfig compileConfig = CompileConfig.builder()
                 .interruptBefore("admin_review")
+                .saverConfig(
+                        SaverConfig.builder()
+                        .register(redisSaver)
+                        .build())
                 .build();
         return graph.compile(compileConfig);
     }

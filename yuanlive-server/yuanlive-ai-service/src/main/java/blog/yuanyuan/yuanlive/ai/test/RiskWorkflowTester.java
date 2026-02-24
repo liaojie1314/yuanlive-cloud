@@ -1,22 +1,26 @@
 package blog.yuanyuan.yuanlive.ai.test;
 
 import blog.yuanyuan.yuanlive.ai.strategy.RiskStrategies;
+import cn.hutool.core.util.IdUtil;
 import com.alibaba.cloud.ai.graph.CompiledGraph;
 import com.alibaba.cloud.ai.graph.RunnableConfig;
 import com.alibaba.cloud.ai.graph.state.StateSnapshot;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.Map;
 
-@Component
+//@Component
 @Slf4j
 public class RiskWorkflowTester implements CommandLineRunner {
     @Resource
     private CompiledGraph riskWorkflow; // 注入我们在 WorkflowConfig 中定义的 Bean
+    @Resource
+    private StringRedisTemplate stringRedisTemplate;
 
     @Override
     public void run(String... args) throws Exception {
@@ -72,8 +76,9 @@ public class RiskWorkflowTester implements CommandLineRunner {
                     .blockLast();
 
             // 7. 最终状态确认
-            var finalState = riskWorkflow.getState(config);
+            StateSnapshot finalState = riskWorkflow.getState(config);
             log.info("最终执行决策: {}", finalState.state().data().get("last_action"));
         }
+        RiskStrategies.cleanRedis(roomId, stringRedisTemplate);
     }
 }

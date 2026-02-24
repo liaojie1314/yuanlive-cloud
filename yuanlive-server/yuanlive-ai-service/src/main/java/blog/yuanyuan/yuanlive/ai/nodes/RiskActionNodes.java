@@ -5,16 +5,22 @@ import com.alibaba.cloud.ai.graph.action.NodeAction;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
+import org.redisson.api.RedissonClient;
 import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.ai.chat.messages.AssistantMessage;
+import org.springframework.ai.chat.messages.UserMessage;
 import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.chat.model.ChatResponse;
+import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.ai.mcp.AsyncMcpToolCallbackProvider;
 import org.springframework.ai.tool.ToolCallbackProvider;
 import org.springframework.ai.tool.definition.ToolDefinition;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
 
+import java.time.Duration;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -28,6 +34,10 @@ public class RiskActionNodes {
     private ChatModel nvidiaModel;
     @Resource
     private ToolCallbackProvider asyncMcpToolCallbackProvider;
+    @Resource
+    private StringRedisTemplate stringRedisTemplate;
+    @Resource
+    private RedissonClient redissonClient;
 
     private ChatClient chatClient;
 
@@ -66,8 +76,6 @@ public class RiskActionNodes {
         return state -> {
             String history = state.value(RiskStrategies.CHAT_HISTORY)
                     .map(Object::toString).orElse("");
-//            String prompt = systemPrompt + history;
-//            String result = nvidiaModel.call(prompt);
             String result = chatClient.prompt()
                     .system(systemPrompt)
                     .user(history)
@@ -85,7 +93,8 @@ public class RiskActionNodes {
             log.info(">>> [Async] 正在调用远程 warnAnchor 工具...,房间号{}", roomId);
 
             // 异步触发远程调用
-            ChatResponse response = chatClient.prompt("执行 warnAnchor，房间号：" + roomId)
+            Prompt prompt = new Prompt(new UserMessage("执行 warnAnchor，房间号：" + roomId));
+            ChatResponse response = chatClient.prompt(prompt)
                     .call()
                     .chatResponse();
             log.info("ai 响应内容 {}", response.getResult().getOutput());

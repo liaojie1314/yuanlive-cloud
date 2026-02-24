@@ -224,8 +224,8 @@ public class NettyServerHandler extends SimpleChannelInboundHandler<TextWebSocke
             }
             String chatBufferKey = liveRoomProperties.getChatBufferPrefix() + roomId;
             stringRedisTemplate.opsForList().rightPush(chatBufferKey, chat.getContent());
-            stringRedisTemplate
-                    .expire(chatBufferKey, aiDetectProperties.getTtl());
+//            stringRedisTemplate
+//                    .expire(chatBufferKey, aiDetectProperties.getTtl());
             List<String> messages = stringRedisTemplate.execute(
                     harvestChatsScript,
                     Collections.singletonList(chatBufferKey),
