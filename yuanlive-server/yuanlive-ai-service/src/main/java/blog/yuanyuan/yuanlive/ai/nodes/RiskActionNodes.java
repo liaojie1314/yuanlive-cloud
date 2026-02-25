@@ -2,12 +2,12 @@ package blog.yuanyuan.yuanlive.ai.nodes;
 
 import blog.yuanyuan.yuanlive.ai.strategy.RiskStrategies;
 import com.alibaba.cloud.ai.graph.action.NodeAction;
+import com.alibaba.cloud.ai.mcp.discovery.client.tool.DistributedAsyncMcpToolCallbackProvider;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.redisson.api.RedissonClient;
 import org.springframework.ai.chat.client.ChatClient;
-import org.springframework.ai.chat.messages.AssistantMessage;
 import org.springframework.ai.chat.messages.UserMessage;
 import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.chat.model.ChatResponse;
@@ -15,12 +15,9 @@ import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.ai.mcp.AsyncMcpToolCallbackProvider;
 import org.springframework.ai.tool.ToolCallbackProvider;
 import org.springframework.ai.tool.definition.ToolDefinition;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
 
-import java.time.Duration;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -33,11 +30,9 @@ public class RiskActionNodes {
     @Resource
     private ChatModel nvidiaModel;
     @Resource
-    private ToolCallbackProvider asyncMcpToolCallbackProvider;
-    @Resource
-    private StringRedisTemplate stringRedisTemplate;
-    @Resource
-    private RedissonClient redissonClient;
+    private DistributedAsyncMcpToolCallbackProvider asyncMcpToolCallbackProvider;
+//    @Resource
+//    private AsyncMcpToolCallbackProvider asyncMcpToolCallbackProvider2;
 
     private ChatClient chatClient;
 
@@ -69,7 +64,13 @@ public class RiskActionNodes {
         List<ToolDefinition> collect = Arrays.stream(asyncMcpToolCallbackProvider.getToolCallbacks())
                 .map(callback -> callback.getToolDefinition())
                 .collect(Collectors.toList());
-        log.info("工具为:{}", collect.toString());
+        log.info("spring nacos工具为:{}", collect.toString());
+
+//        List<ToolDefinition> collect2 = Arrays.stream(asyncMcpToolCallbackProvider2.getToolCallbacks())
+//                .map(callback -> callback.getToolDefinition())
+//                .collect(Collectors.toList());
+//        log.info("spring ai工具为:{}", collect2.toString());
+
     }
 
     public NodeAction analyze() {

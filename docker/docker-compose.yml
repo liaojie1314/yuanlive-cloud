@@ -60,6 +60,7 @@ services:
       - NACOS_CORE_API_COMPATIBILITY_CONSOLE_ENABLED=true
       - SPRING_DATASOURCE_PLATFORM=mysql
       - MYSQL_SERVICE_DB_PARAM=characterEncoding=utf8&connectTimeout=10000&socketTimeout=30000&autoReconnect=true&useSSL=false&allowPublicKeyRetrieval=true
+      - NACOS_SERVER_IP=127.0.0.1
       - MYSQL_SERVICE_HOST=mysql
       - MYSQL_SERVICE_PORT=3306
       - MYSQL_SERVICE_DB_NAME=nacos
@@ -69,6 +70,7 @@ services:
       - "8848:8848"
       - "9848:9848"
       - "8034:8080"
+      - "9849:9849"
     depends_on:
       mysql:
         condition: service_healthy

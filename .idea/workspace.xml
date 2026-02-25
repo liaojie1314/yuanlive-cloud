@@ -4,17 +4,13 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="2c950775-72d2-474b-801f-8670ad3e3905" name="更改" comment=":sparkles: 完善直播间聊天审核工作流&#10;(设置热度前xx房间AI审核&#10; 设置xx条聊天信息触发审核工作流&#10; 审核结果为正常、警告主播、警告直播间、封禁直播间&#10; 封禁操作中人工审核待完善)">
+    <list default="true" id="2c950775-72d2-474b-801f-8670ad3e3905" name="更改" comment=":sparkles: 尝试mcp负载均衡">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/pom.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/docker/docker-compose.yml" beforeDir="false" afterPath="$PROJECT_DIR$/docker/docker-compose.yml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/yuanlive-server/yuanlive-ai-service/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/yuanlive-server/yuanlive-ai-service/pom.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/yuanlive-server/yuanlive-ai-service/src/main/java/blog/yuanyuan/yuanlive/ai/config/RiskWorkflowConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/yuanlive-server/yuanlive-ai-service/src/main/java/blog/yuanyuan/yuanlive/ai/config/RiskWorkflowConfig.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/yuanlive-server/yuanlive-ai-service/src/main/java/blog/yuanyuan/yuanlive/ai/listener/ChatDetectListener.java" beforeDir="false" afterPath="$PROJECT_DIR$/yuanlive-server/yuanlive-ai-service/src/main/java/blog/yuanyuan/yuanlive/ai/listener/ChatDetectListener.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/yuanlive-server/yuanlive-ai-service/src/main/java/blog/yuanyuan/yuanlive/ai/nodes/RiskActionNodes.java" beforeDir="false" afterPath="$PROJECT_DIR$/yuanlive-server/yuanlive-ai-service/src/main/java/blog/yuanyuan/yuanlive/ai/nodes/RiskActionNodes.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/yuanlive-server/yuanlive-ai-service/src/main/java/blog/yuanyuan/yuanlive/ai/strategy/RiskStrategies.java" beforeDir="false" afterPath="$PROJECT_DIR$/yuanlive-server/yuanlive-ai-service/src/main/java/blog/yuanyuan/yuanlive/ai/strategy/RiskStrategies.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/yuanlive-server/yuanlive-ai-service/src/main/java/blog/yuanyuan/yuanlive/ai/test/RiskWorkflowTester.java" beforeDir="false" afterPath="$PROJECT_DIR$/yuanlive-server/yuanlive-ai-service/src/main/java/blog/yuanyuan/yuanlive/ai/test/RiskWorkflowTester.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/yuanlive-server/yuanlive-live-service/src/main/java/blog/yuanyuan/yuanlive/live/server/NettyServerHandler.java" beforeDir="false" afterPath="$PROJECT_DIR$/yuanlive-server/yuanlive-live-service/src/main/java/blog/yuanyuan/yuanlive/live/server/NettyServerHandler.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/yuanlive-server/yuanlive-live-service/src/main/java/blog/yuanyuan/yuanlive/live/service/impl/LiveRoomServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/yuanlive-server/yuanlive-live-service/src/main/java/blog/yuanyuan/yuanlive/live/service/impl/LiveRoomServiceImpl.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/yuanlive-server/yuanlive-ai-service/src/main/resources/application.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/yuanlive-server/yuanlive-ai-service/src/main/resources/application.yaml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -63,62 +59,63 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;Docker.docker.higress-ai: Compose 部署.executor&quot;: &quot;Run&quot;,
-    &quot;JUnit.AuthServiceImplTest.testCosID.executor&quot;: &quot;Run&quot;,
-    &quot;JUnit.LoginLimitPropertiesTest.test.executor&quot;: &quot;Run&quot;,
-    &quot;Maven.yuanlive-cloud [clean].executor&quot;: &quot;Run&quot;,
-    &quot;Maven.yuanlive-cloud [install].executor&quot;: &quot;Run&quot;,
-    &quot;Maven.yuanlive-common [clean].executor&quot;: &quot;Run&quot;,
-    &quot;Maven.yuanlive-common [install].executor&quot;: &quot;Run&quot;,
-    &quot;Maven.yuanlive-live-service [clean].executor&quot;: &quot;Run&quot;,
-    &quot;Maven.yuanlive-live-service [compile].executor&quot;: &quot;Run&quot;,
-    &quot;Maven.yuanlive-live-service [install].executor&quot;: &quot;Run&quot;,
-    &quot;Maven.yuanlive-live-service [verify].executor&quot;: &quot;Run&quot;,
-    &quot;Maven.yuanlive-user-service [clean].executor&quot;: &quot;Run&quot;,
-    &quot;Maven.yuanlive-user-service [install].executor&quot;: &quot;Run&quot;,
-    &quot;Notification.DisplayName-DoNotAsk-Database detector&quot;: &quot;数据库检测器&quot;,
-    &quot;Notification.DoNotAsk-Database detector&quot;: &quot;true&quot;,
-    &quot;RequestMappingsPanelOrder0&quot;: &quot;0&quot;,
-    &quot;RequestMappingsPanelOrder1&quot;: &quot;1&quot;,
-    &quot;RequestMappingsPanelWidth0&quot;: &quot;75&quot;,
-    &quot;RequestMappingsPanelWidth1&quot;: &quot;75&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
-    &quot;Spring Boot.AiApplication.executor&quot;: &quot;Run&quot;,
-    &quot;Spring Boot.AuthApplication.executor&quot;: &quot;Run&quot;,
-    &quot;Spring Boot.GatewayApplication.executor&quot;: &quot;Run&quot;,
-    &quot;Spring Boot.LiveApplication.executor&quot;: &quot;Run&quot;,
-    &quot;Spring Boot.LiveApplication2.executor&quot;: &quot;Run&quot;,
-    &quot;Spring Boot.UserApplication.executor&quot;: &quot;Run&quot;,
-    &quot;Spring Boot.WalletApplication.executor&quot;: &quot;Run&quot;,
-    &quot;com.intellij.testIntegration.createTest.CreateTestDialog.defaultLibrary&quot;: &quot;JUnit5&quot;,
-    &quot;com.intellij.testIntegration.createTest.CreateTestDialog.defaultLibrarySuperClass.JUnit5&quot;: &quot;&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;dev&quot;,
-    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
-    &quot;last_directory_selection&quot;: &quot;/home/frodepu/IdeaProjects/yuanlive-cloud/yuanlive-entity/user-entity/src/main/java/blog/yuanyuan/yuanlive&quot;,
-    &quot;last_opened_file_path&quot;: &quot;/home/frodepu/IdeaProjects/LeetCode&quot;,
-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
-    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;project.structure.last.edited&quot;: &quot;模块&quot;,
-    &quot;project.structure.proportion&quot;: &quot;0.15&quot;,
-    &quot;project.structure.side.proportion&quot;: &quot;0.2&quot;,
-    &quot;run.configurations.included.in.services&quot;: &quot;true&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;http.proxy&quot;,
-    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "Docker.docker.higress-ai: Compose 部署.executor": "Run",
+    "JUnit.AuthServiceImplTest.testCosID.executor": "Run",
+    "JUnit.LoginLimitPropertiesTest.test.executor": "Run",
+    "Maven.yuanlive-cloud [clean].executor": "Run",
+    "Maven.yuanlive-cloud [install].executor": "Run",
+    "Maven.yuanlive-common [clean].executor": "Run",
+    "Maven.yuanlive-common [install].executor": "Run",
+    "Maven.yuanlive-live-service [clean].executor": "Run",
+    "Maven.yuanlive-live-service [compile].executor": "Run",
+    "Maven.yuanlive-live-service [install].executor": "Run",
+    "Maven.yuanlive-live-service [verify].executor": "Run",
+    "Maven.yuanlive-user-service [clean].executor": "Run",
+    "Maven.yuanlive-user-service [install].executor": "Run",
+    "Notification.DisplayName-DoNotAsk-Database detector": "数据库检测器",
+    "Notification.DoNotAsk-Database detector": "true",
+    "RequestMappingsPanelOrder0": "0",
+    "RequestMappingsPanelOrder1": "1",
+    "RequestMappingsPanelWidth0": "75",
+    "RequestMappingsPanelWidth1": "75",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "Spring Boot.AiApplication.executor": "Run",
+    "Spring Boot.AuthApplication.executor": "Run",
+    "Spring Boot.GatewayApplication.executor": "Run",
+    "Spring Boot.LiveApplication (1).executor": "Run",
+    "Spring Boot.LiveApplication.executor": "Run",
+    "Spring Boot.LiveApplication2.executor": "Run",
+    "Spring Boot.UserApplication.executor": "Run",
+    "Spring Boot.WalletApplication.executor": "Run",
+    "com.intellij.testIntegration.createTest.CreateTestDialog.defaultLibrary": "JUnit5",
+    "com.intellij.testIntegration.createTest.CreateTestDialog.defaultLibrarySuperClass.JUnit5": "",
+    "git-widget-placeholder": "dev",
+    "kotlin-language-version-configured": "true",
+    "last_directory_selection": "/home/frodepu/IdeaProjects/yuanlive-cloud/yuanlive-entity/user-entity/src/main/java/blog/yuanyuan/yuanlive",
+    "last_opened_file_path": "/home/frodepu/IdeaProjects/LeetCode",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "project.structure.last.edited": "模块",
+    "project.structure.proportion": "0.15",
+    "project.structure.side.proportion": "0.2",
+    "run.configurations.included.in.services": "true",
+    "settings.editor.selected.configurable": "http.proxy",
+    "vue.rearranger.settings.migration": "true"
   },
-  &quot;keyToStringList&quot;: {
-    &quot;DatabaseDriversLRU&quot;: [
-      &quot;redis&quot;,
-      &quot;elasticsearch&quot;,
-      &quot;mysql&quot;
+  "keyToStringList": {
+    "DatabaseDriversLRU": [
+      "redis",
+      "elasticsearch",
+      "mysql"
     ]
   }
-}</component>
+}]]></component>
   <component name="ReactorSettings">
     <option name="notificationShown" value="true" />
   </component>
@@ -188,6 +185,23 @@
         <option name="Make" enabled="true" />
       </method>
     </configuration>
+    <configuration name="LiveApplication (1)" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" temporary="true" nameIsGenerated="true">
+      <module name="yuanlive-live-service" />
+      <selectedOptions>
+        <option name="environmentVariables" />
+      </selectedOptions>
+      <option name="SPRING_BOOT_MAIN_CLASS" value="blog.yuanyuan.yuanlive.live.LiveApplication" />
+      <option name="VM_PARAMETERS" value="-Dserver.port=8050 -Dyuanlive.netty.port=18082" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="blog.yuanyuan.yuanlive.live.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
     <configuration name="LiveApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" temporary="true" nameIsGenerated="true">
       <module name="yuanlive-live-service" />
       <option name="SPRING_BOOT_MAIN_CLASS" value="blog.yuanyuan.yuanlive.live.LiveApplication" />
@@ -232,22 +246,9 @@
       </deployment>
       <method v="2" />
     </configuration>
-    <configuration name="docker.higress-ai: Compose 部署" type="docker-deploy" factoryName="docker-compose.yml" temporary="true" server-name="Docker">
-      <deployment type="docker-compose.yml">
-        <settings>
-          <option name="services">
-            <list>
-              <option value="higress-ai" />
-            </list>
-          </option>
-          <option name="sourceFilePath" value="docker/docker-compose.yml" />
-        </settings>
-      </deployment>
-      <method v="2" />
-    </configuration>
     <list>
       <item itemvalue="Docker.docker: Compose 部署" />
-      <item itemvalue="Docker.docker.higress-ai: Compose 部署" />
+      <item itemvalue="Spring Boot.LiveApplication (1)" />
       <item itemvalue="Spring Boot.GatewayApplication" />
       <item itemvalue="Spring Boot.LiveApplication" />
       <item itemvalue="Spring Boot.UserApplication" />
@@ -256,10 +257,10 @@
     <recent_temporary>
       <list>
         <item itemvalue="Spring Boot.AiApplication" />
+        <item itemvalue="Spring Boot.LiveApplication (1)" />
         <item itemvalue="Spring Boot.LiveApplication" />
         <item itemvalue="Spring Boot.GatewayApplication" />
         <item itemvalue="Spring Boot.UserApplication" />
-        <item itemvalue="Docker.docker.higress-ai: Compose 部署" />
       </list>
     </recent_temporary>
   </component>
@@ -395,15 +396,8 @@
       <workItem from="1771810576142" duration="9089000" />
       <workItem from="1771833382998" duration="22710000" />
       <workItem from="1771898882112" duration="4104000" />
-      <workItem from="1771916632118" duration="22525000" />
-    </task>
-    <task id="LOCAL-00018" summary=":sparkles: 实现管理端路由返回功能">
-      <option name="closed" value="true" />
-      <created>1768749817418</created>
-      <option name="number" value="00018" />
-      <option name="presentableId" value="LOCAL-00018" />
-      <option name="project" value="LOCAL" />
-      <updated>1768749817418</updated>
+      <workItem from="1771916632118" duration="23071000" />
+      <workItem from="1771983227575" duration="14449000" />
     </task>
     <task id="LOCAL-00019" summary=":sparkles: 实现登陆时存放用户权限等信息">
       <option name="closed" value="true" />
@@ -789,7 +783,15 @@
       <option name="project" value="LOCAL" />
       <updated>1771862195049</updated>
     </task>
-    <option name="localTasksCounter" value="67" />
+    <task id="LOCAL-00067" summary=":sparkles: 完善工作流(增加工作流短期记忆)">
+      <option name="closed" value="true" />
+      <created>1771940773478</created>
+      <option name="number" value="00067" />
+      <option name="presentableId" value="LOCAL-00067" />
+      <option name="project" value="LOCAL" />
+      <updated>1771940773483</updated>
+    </task>
+    <option name="localTasksCounter" value="68" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -837,8 +839,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value=":sparkles: 添加minio工具方法，将录播视频转存至minio存放" />
-    <MESSAGE value=":bug: 添加性别，category类别value" />
     <MESSAGE value=":tada: 数据库更新" />
     <MESSAGE value=":recycle: 重构liverecord表为video表存放所有类型视频" />
     <MESSAGE value=":sparkles: 添加用户统计信息表" />
@@ -862,7 +862,9 @@
     <MESSAGE value=":sparkles: 初步添加直播间违规消息检测、封禁、警告工作流" />
     <MESSAGE value=":sparkles: 使用nacos作为mcp仓库、nacos-mcp-router作为mcp网关发现" />
     <MESSAGE value=":sparkles: 完善直播间聊天审核工作流&#10;(设置热度前xx房间AI审核&#10; 设置xx条聊天信息触发审核工作流&#10; 审核结果为正常、警告主播、警告直播间、封禁直播间&#10; 封禁操作中人工审核待完善)" />
-    <option name="LAST_COMMIT_MESSAGE" value=":sparkles: 完善直播间聊天审核工作流&#10;(设置热度前xx房间AI审核&#10; 设置xx条聊天信息触发审核工作流&#10; 审核结果为正常、警告主播、警告直播间、封禁直播间&#10; 封禁操作中人工审核待完善)" />
+    <MESSAGE value=":sparkles: 完善工作流(增加工作流短期记忆)" />
+    <MESSAGE value=":sparkles: 尝试mcp负载均衡" />
+    <option name="LAST_COMMIT_MESSAGE" value=":sparkles: 尝试mcp负载均衡" />
   </component>
   <component name="XSLT-Support.FileAssociations.UIState">
     <expand />

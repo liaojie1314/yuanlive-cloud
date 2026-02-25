@@ -25,6 +25,13 @@ public class RiskWorkflowTester implements CommandLineRunner {
     @Override
     public void run(String... args) throws Exception {
         // 执行高风险模拟测试
+        new Thread(() -> {
+            try {
+                testHighRiskScenario(IdUtil.getSnowflakeNextIdStr());
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }).start();
         testHighRiskScenario("790546539380737");
     }
 
@@ -37,7 +44,7 @@ public class RiskWorkflowTester implements CommandLineRunner {
         // 1. 准备初始状态
         Map<String, Object> inputData = Map.of(
                 RiskStrategies.ROOM_ID, roomId,
-                RiskStrategies.CHAT_HISTORY, List.of("我操你妈", "我操你妈", "我操你妈", "我操你妈")
+                RiskStrategies.CHAT_HISTORY, List.of("我操你妈", "我操你妈", "我操你妈", "我操你妈", "cn.pornhub.com")
         );
 
         // 2. 配置执行上下文 (threadId 是持久化的 Key)

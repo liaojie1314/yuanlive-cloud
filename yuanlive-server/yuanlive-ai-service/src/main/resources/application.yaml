@@ -17,28 +17,28 @@ spring:
         type: async
         version: 1.0.0
         request-timeout: 200s
-        sse:
-          connections:
-            server1:
-#              # 直接连接mcp server 不推荐(无法负载均衡)
+# 在 spring.ai中配置(无法负载均衡)
+#        sse:
+#          connections:
+#            server1:
+#              # 直接连接mcp server
 #              url: http://localhost:8082
 #              # higress 网关
 #              url: http://127.0.0.1:8075/mcp/live-service-mcp-server
               # nacos mcp router
-              url: http://127.0.0.1:8001
-              sse-endpoint: /sse
+#              url: http://127.0.0.1:8001
+#              sse-endpoint: /sse
 #        # 测试 stdio mcp server
 #        stdio:
 #          servers-configuration: classpath:amap.json
-#        stdio:
-#          connections:
-#            amap:
-#              command: "/home/frodepu/.nvm/versions/node/v22.13.1/bin/node" # 直接用 node 解释器
-#              args:
-#                - "/home/frodepu/.nvm/versions/node/v22.13.1/lib/node_modules/@amap/amap-maps-mcp-server/build/index.js" # 这里填入你查到的绝对路径
-#              env:
-#                AMAP_MAPS_API_KEY: "api-key"
-
+        stdio:
+          connections:
+            amap:
+              command: "/home/frodepu/.nvm/versions/node/v22.13.1/bin/node" # 直接用 node 解释器
+              args:
+                - "/home/frodepu/.nvm/versions/node/v22.13.1/lib/node_modules/@amap/amap-maps-mcp-server/build/index.js" # 这里填入你查到的绝对路径
+              env:
+                AMAP_MAPS_API_KEY: "43f7df3386694e8037c923f40f3085e5"
 
     alibaba:
       mcp:
@@ -47,6 +47,26 @@ spring:
           server-addr: ${spring.cloud.nacos.server-addr}
           username: nacos
           password: nacos
+          # 报错不影响(可以负载均衡，但是通过nacos-mcp-router中转无法负载均衡)
+          # 只有使用nacos中的mcp server 才能负载均衡
+          # 可以使用spring.ai接受stdio的mcp; spring.ai.alibaba.mcp.nacos接受sse或streamable的mcp
+          client:
+            enabled: true
+            sse:
+              connections:
+                live-service-mcp-server:
+                  service-name: live-service-mcp-server
+                  version: 1.0.0
+#                nacos-mcp-router:
+#                  service-name: nacos-mcp-router
+#                  version: 1.0.0
+            configs:
+              live-service-mcp-server: # 与 sse.connections中的内容一致
+                namespace: public
+                server-addr: ${spring.cloud.nacos.server-addr}
+                username: nacos
+                password: nacos
+
 
   cloud:
     nacos:
