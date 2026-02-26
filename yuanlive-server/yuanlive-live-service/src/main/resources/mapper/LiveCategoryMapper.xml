@@ -6,11 +6,34 @@
 
     <resultMap id="BaseResultMap" type="blog.yuanyuan.yuanlive.entity.live.entity.LiveCategory">
             <id property="id" column="id" />
-            <result property="parentId" column="parent_id" />
+<!--            <result property="parentId" column="parent_id" />-->
             <result property="name" column="name" />
             <result property="iconUrl" column="icon_url" />
             <result property="sortWeight" column="sort_weight" />
             <result property="value" column="value" />
     </resultMap>
+    <resultMap id="HotCategory" type="blog.yuanyuan.yuanlive.live.domain.vo.HotCategoryVO">
+        <id property="id" column="id" />
+        <result property="label" column="name" />
+        <result property="value" column="value" />
+        <collection property="parentValue" ofType="String">
+            <result column="parent_value" />
+        </collection>
+    </resultMap>
+
+    <select id="getHotCategories" resultMap="HotCategory">
+        SELECT
+            c.id,
+            c.name,
+            c.value,
+            p.value AS parent_value
+        FROM live_category c
+        LEFT JOIN live_category_relation cr ON c.id = cr.category_id
+        LEFT JOIN live_category p ON cr.parent_id = p.id
+        WHERE c.id IN
+        <foreach item="id" collection="categoryIds"  open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </select>
 
 </mapper>

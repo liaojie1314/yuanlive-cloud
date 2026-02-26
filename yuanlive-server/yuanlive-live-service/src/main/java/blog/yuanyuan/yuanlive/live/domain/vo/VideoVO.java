@@ -25,4 +25,6 @@ public class VideoVO {
     private Integer type;
     @Schema(description="是否观看过")
     private boolean watched;
+    @Schema(description="视频描述")
+    private String description;
 }

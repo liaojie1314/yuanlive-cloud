@@ -1,8 +1,10 @@
 package blog.yuanyuan.yuanlive.live.controller;
 
 import blog.yuanyuan.yuanlive.common.result.Result;
+import blog.yuanyuan.yuanlive.common.result.ResultPage;
 import blog.yuanyuan.yuanlive.entity.live.entity.VideoResource;
 import blog.yuanyuan.yuanlive.entity.live.vo.UnseenVO;
+import blog.yuanyuan.yuanlive.live.domain.dto.VideoPageQueryDTO;
 import blog.yuanyuan.yuanlive.live.domain.vo.VideoVO;
 import blog.yuanyuan.yuanlive.live.service.VideoResourceService;
 import cn.dev33.satoken.SaManager;
@@ -22,11 +24,11 @@ public class LiveRecordController {
     @Resource
     private VideoResourceService videoResourceService;
 
-    @Operation(summary = "根据id查询视频信息")
-    @GetMapping("/getRecordByUid/{uid}")
-    public Result<List<VideoVO>> getVideoByUid(@PathVariable("uid") Long uid) {
-        List<VideoVO> videos = videoResourceService.getVideoByUid(uid);
-        return Result.success(videos);
+    @Operation(summary = "根据用户ID分页查询视频信息")
+    @PostMapping("/pageQueryRecordByUid")
+    public Result<ResultPage<VideoVO>> getVideoByUidWithPaging(@RequestBody VideoPageQueryDTO queryDTO) {
+        ResultPage<VideoVO> result = videoResourceService.getVideoByUidWithPaging(queryDTO);
+        return Result.success(result);
     }
 
     @Operation(summary = "根据followingIds、lastReadVideoIds查询每个关注者的未观看视频数")

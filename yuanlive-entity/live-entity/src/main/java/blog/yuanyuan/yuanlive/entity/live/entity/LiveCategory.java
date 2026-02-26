@@ -8,8 +8,8 @@ import lombok.Data;
 public class LiveCategory {
     @Schema(description="")
     private Integer id;
-    @Schema(description="父分类ID (0表示一级分类)")
-    private Integer parentId;
+//    @Schema(description="父分类ID (0表示一级分类)")
+//    private Integer parentId;
     @Schema(description="分类名称")
     private String name;
     @Schema(description="分类图标")

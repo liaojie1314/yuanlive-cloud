@@ -7,7 +7,7 @@ import lombok.Data;
 
 @Data
 public class VideoResource {
-    @Schema(description="记录ID")
+    @Schema(description="视频ID")
     private Long id;
     @Schema(description="用户ID")
     private Long userId;
@@ -43,4 +43,6 @@ public class VideoResource {
     private Integer type;
     @Schema(description="上传时间")
     private Date createTime;
+    @Schema(description="视频描述信息")
+    private String description;
 }

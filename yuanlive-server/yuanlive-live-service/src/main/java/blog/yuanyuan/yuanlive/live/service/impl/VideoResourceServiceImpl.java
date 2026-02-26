@@ -1,10 +1,14 @@
 package blog.yuanyuan.yuanlive.live.service.impl;
 
 import blog.yuanyuan.yuanlive.common.result.Result;
+import blog.yuanyuan.yuanlive.common.result.ResultPage;
 import blog.yuanyuan.yuanlive.entity.live.dto.FollowUnseenQueryDTO;
 import blog.yuanyuan.yuanlive.entity.live.vo.UnseenVO;
 import blog.yuanyuan.yuanlive.feign.user.UserFeignClient;
+import blog.yuanyuan.yuanlive.live.domain.dto.VideoPageQueryDTO;
 import blog.yuanyuan.yuanlive.live.domain.vo.VideoVO;
+import cn.hutool.core.bean.BeanUtil;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import blog.yuanyuan.yuanlive.entity.live.entity.VideoResource;
 import blog.yuanyuan.yuanlive.live.service.VideoResourceService;
@@ -50,25 +54,36 @@ public class VideoResourceServiceImpl extends ServiceImpl<VideoResourceMapper, V
     }
 
     @Override
-    public List<VideoVO> getVideoByUid(Long uid) {
-        List<VideoResource> videos = lambdaQuery().eq(VideoResource::getUserId, uid)
-                .list();
-        videos.sort(Comparator.comparing(VideoResource::getId).reversed());
-        Result<Long> result = userFeignClient.getLastReadVideoId(uid);
+    public ResultPage<VideoVO> getVideoByUidWithPaging(VideoPageQueryDTO queryDTO) {
+        // 创建分页对象
+        Page<VideoResource> page = new Page<>(queryDTO.getPageNum(), queryDTO.getPageSize());
+
+        // 查询指定用户的视频资源，按ID降序排列（最新的在前）
+        Page<VideoResource> videoPage = lambdaQuery()
+                .eq(VideoResource::getUserId, queryDTO.getUid())
+                .orderByDesc(VideoResource::getId)
+                .page(page);
+
+        // 获取用户最后观看的视频ID
+        Result<Long> result = userFeignClient.getLastReadVideoId(queryDTO.getUid());
         Long lastReadVideoId = result.getData();
-        return videos.stream().map(video -> {
+
+        // 将VideoResource转换为VideoVO，并设置观看状态
+        List<VideoVO> videoVOList = videoPage.getRecords().stream().map(video -> {
             VideoVO videoVO = new VideoVO();
-            videoVO.setId(video.getId());
-            videoVO.setVideoUrl(video.getVideoUrl());
-            videoVO.setCoverUrl(video.getCoverUrl());
-            videoVO.setLikeCount(video.getLikeCount());
-            videoVO.setCommentCount(video.getCommentCount());
-            videoVO.setShareCount(video.getShareCount());
-            videoVO.setCollectCount(video.getCollectCount());
+            BeanUtil.copyProperties(video, videoVO);
             videoVO.setWatched(video.getId() <= lastReadVideoId);
-            videoVO.setType(video.getType());
             return videoVO;
         }).toList();
+
+        // 构建分页结果
+        ResultPage<VideoVO> resultPage = new ResultPage<>();
+        resultPage.setList(videoVOList);
+        resultPage.setTotal(videoPage.getTotal());
+        resultPage.setPageSize(videoPage.getSize());
+        resultPage.setCurrentPage(videoPage.getCurrent());
+
+        return resultPage;
     }
 }
 

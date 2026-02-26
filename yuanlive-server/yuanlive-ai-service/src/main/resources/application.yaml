@@ -38,7 +38,7 @@ spring:
               args:
                 - "/home/frodepu/.nvm/versions/node/v22.13.1/lib/node_modules/@amap/amap-maps-mcp-server/build/index.js" # 这里填入你查到的绝对路径
               env:
-                AMAP_MAPS_API_KEY: "43f7df3386694e8037c923f40f3085e5"
+                AMAP_MAPS_API_KEY: "api-key"
 
     alibaba:
       mcp:

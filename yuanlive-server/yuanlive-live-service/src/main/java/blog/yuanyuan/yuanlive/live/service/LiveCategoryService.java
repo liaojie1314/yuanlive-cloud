@@ -4,6 +4,8 @@ import blog.yuanyuan.yuanlive.common.result.ResultPage;
 import blog.yuanyuan.yuanlive.entity.live.entity.LiveCategory;
 import blog.yuanyuan.yuanlive.live.domain.dto.LiveCategoryDTO;
 import blog.yuanyuan.yuanlive.live.domain.dto.LiveCategoryQueryDTO;
+import blog.yuanyuan.yuanlive.live.domain.vo.HotCategoryVO;
+import blog.yuanyuan.yuanlive.live.domain.vo.LiveCategoryTreeVO;
 import blog.yuanyuan.yuanlive.live.domain.vo.LiveCategoryVO;
 import blog.yuanyuan.yuanlive.live.domain.vo.LiveRoomRankVO;
 import com.baomidou.mybatisplus.extension.service.IService;
@@ -56,7 +58,7 @@ public interface LiveCategoryService extends IService<LiveCategory> {
      * 获取分类树形结构
      * @return 分类树
      */
-    List<LiveCategoryVO> treeList();
+    List<LiveCategoryTreeVO> treeList();
 
     /**
      * 获取所有一级分类
@@ -65,4 +67,6 @@ public interface LiveCategoryService extends IService<LiveCategory> {
     List<LiveCategoryVO> getFirstLevelCategories();
 
     List<LiveRoomRankVO> getLiveRoomsByCategoryValue(String value);
+
+    List<HotCategoryVO> getHotCategory();
 }

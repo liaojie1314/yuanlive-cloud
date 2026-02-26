@@ -19,7 +19,11 @@
             <result property="likeCount" column="like_count" />
             <result property="commentCount" column="comment_count" />
             <result property="viewCount" column="view_count" />
+            <result property="shareCount" column="share_count" />
+            <result property="collectCount" column="collect_count" />
+            <result property="type" column="type" />
             <result property="createTime" column="create_time" />
+            <result property="description" column="description" />
     </resultMap>
 
     <select id="getUnseenCount" resultType="blog.yuanyuan.yuanlive.entity.live.vo.UnseenVO">

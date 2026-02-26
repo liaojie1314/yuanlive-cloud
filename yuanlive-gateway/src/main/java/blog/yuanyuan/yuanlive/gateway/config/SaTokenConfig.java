@@ -53,7 +53,8 @@ public class SaTokenConfig {
             "/user/follow/followers/*",
             "/user/follow/following/*",
             "/live/category/listByCategory",
-            "/live/room/popularRooms"
+            "/live/room/popularRooms",
+            "/live/category/getHotCategory"
 
     };
 

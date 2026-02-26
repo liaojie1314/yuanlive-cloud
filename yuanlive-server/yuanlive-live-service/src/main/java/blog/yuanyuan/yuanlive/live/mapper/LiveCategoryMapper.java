@@ -1,7 +1,11 @@
 package blog.yuanyuan.yuanlive.live.mapper;
 
 import blog.yuanyuan.yuanlive.entity.live.entity.LiveCategory;
+import blog.yuanyuan.yuanlive.live.domain.vo.HotCategoryVO;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import org.apache.ibatis.annotations.Param;
+
+import java.util.List;
 
 /**
 * @author frodepu
@@ -11,6 +15,7 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 */
 public interface LiveCategoryMapper extends BaseMapper<LiveCategory> {
 
+    List<HotCategoryVO> getHotCategories(@Param("categoryIds") List<Integer> categoryIds);
 }
 
 

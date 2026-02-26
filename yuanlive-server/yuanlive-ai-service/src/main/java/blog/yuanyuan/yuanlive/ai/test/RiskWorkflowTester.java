@@ -14,7 +14,7 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 import java.util.Map;
 
-//@Component
+@Component
 @Slf4j
 public class RiskWorkflowTester implements CommandLineRunner {
     @Resource
@@ -25,13 +25,13 @@ public class RiskWorkflowTester implements CommandLineRunner {
     @Override
     public void run(String... args) throws Exception {
         // 执行高风险模拟测试
-        new Thread(() -> {
-            try {
-                testHighRiskScenario(IdUtil.getSnowflakeNextIdStr());
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-        }).start();
+//        new Thread(() -> {
+//            try {
+//                testHighRiskScenario(IdUtil.getSnowflakeNextIdStr());
+//            } catch (Exception e) {
+//                throw new RuntimeException(e);
+//            }
+//        }).start();
         testHighRiskScenario("790546539380737");
     }
 

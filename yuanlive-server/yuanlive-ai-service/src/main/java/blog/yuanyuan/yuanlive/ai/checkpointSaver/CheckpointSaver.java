@@ -1,4 +1,4 @@
-package blog.yuanyuan.yuanlive.ai.config;
+package blog.yuanyuan.yuanlive.ai.checkpointSaver;
 
 import com.alibaba.cloud.ai.graph.checkpoint.BaseCheckpointSaver;
 import com.alibaba.cloud.ai.graph.checkpoint.savers.redis.RedisSaver;
@@ -11,7 +11,7 @@ import org.springframework.context.annotation.Configuration;
 public class CheckpointSaver {
     @Bean
     public BaseCheckpointSaver redisSaver(RedissonClient redisson) {
-        return RedisSaver.builder()
+        return CustomRedisSaver.builder()
                 .redisson(redisson).build();
     }
 }

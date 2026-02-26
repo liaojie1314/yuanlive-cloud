@@ -1,7 +1,9 @@
 package blog.yuanyuan.yuanlive.live.service;
 
+import blog.yuanyuan.yuanlive.common.result.ResultPage;
 import blog.yuanyuan.yuanlive.entity.live.entity.VideoResource;
 import blog.yuanyuan.yuanlive.entity.live.vo.UnseenVO;
+import blog.yuanyuan.yuanlive.live.domain.dto.VideoPageQueryDTO;
 import blog.yuanyuan.yuanlive.live.domain.vo.VideoVO;
 import com.baomidou.mybatisplus.extension.service.IService;
 
@@ -16,5 +18,5 @@ public interface VideoResourceService extends IService<VideoResource> {
 
     List<UnseenVO> getUnseenCount(List<Long> followingIds, List<Long> lastReadVideoIds);
 
-    List<VideoVO> getVideoByUid(Long uid);
+    ResultPage<VideoVO> getVideoByUidWithPaging(VideoPageQueryDTO queryDTO);
 }

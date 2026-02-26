@@ -6,6 +6,8 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import org.apache.ibatis.annotations.Update;
 
+import java.util.List;
+
 /**
  * 直播分类DTO
  */
@@ -16,8 +18,8 @@ public class LiveCategoryDTO {
     @NotNull(message = "分类ID不能为空", groups = Update.class)
     private Integer id;
 
-    @Schema(description = "父分类ID (0表示一级分类)")
-    private Integer parentId;
+    @Schema(description = "父分类IDs")
+    private List<Integer> parentIds;
 
     @Schema(description = "分类名称")
     @NotBlank(message = "分类名称不能为空")

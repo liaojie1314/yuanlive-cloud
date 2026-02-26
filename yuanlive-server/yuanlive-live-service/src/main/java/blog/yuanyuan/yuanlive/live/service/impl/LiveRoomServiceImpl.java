@@ -87,8 +87,8 @@ public class LiveRoomServiceImpl extends ServiceImpl<LiveRoomMapper, LiveRoom>
     private String active;
     @Value("${redis-key.anchor-map.key}")
     private String anchorMap;
-    @Value("${redis-key.room2client.prefix}")
-    private String room2client;
+    @Value("${live.hot.hot-rooms}")
+    private Integer hotRooms;
     @Value("${live.mq.chat.exchange}")
     private String exchange;
     @Value("${live.mq.stats.exchange}")
@@ -326,7 +326,7 @@ public class LiveRoomServiceImpl extends ServiceImpl<LiveRoomMapper, LiveRoom>
     public List<LiveRoomRankVO> getPopularRooms() {
         String rankKey = liveRoomProperties.getMainRank();
         Set<String> roomIds = stringRedisTemplate
-                .opsForZSet().reverseRange(rankKey, 0, 5);
+                .opsForZSet().reverseRange(rankKey, 0, hotRooms - 1);
         if (CollUtil.isEmpty(roomIds)) return List.of();
         List<String> roomIdList = roomIds.stream().filter(Objects::nonNull).toList();
         return popularityUtil.getPopularRoomVOS(roomIdList);

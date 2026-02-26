@@ -1,5 +1,6 @@
 package blog.yuanyuan.yuanlive.live.util;
 
+import blog.yuanyuan.yuanlive.live.domain.vo.HotCategoryVO;
 import blog.yuanyuan.yuanlive.live.domain.vo.LiveRoomRankVO;
 import blog.yuanyuan.yuanlive.live.properties.LiveRoomProperties;
 import cn.hutool.core.collection.CollUtil;
@@ -27,6 +28,7 @@ public class PopularityUtil {
     private DefaultRedisScript<Long> updatePopularityScript;
 
     public void updatePopularity(String roomId, double increment) {
+        if (!checkRoom(roomId)) return;
         String sessionKey = liveRoomProperties.getSessionPrefix() + roomId;
         stringRedisTemplate.execute(
                 updatePopularityScript,
@@ -95,6 +97,11 @@ public class PopularityUtil {
         // 按人气降序
         roomVOList.sort(Comparator.comparing(LiveRoomRankVO::getHotScore).reversed());
         return roomVOList;
+    }
+
+    // 判断直播间是否存在
+    private boolean checkRoom(String roomId) {
+        return stringRedisTemplate.hasKey(liveRoomProperties.getSessionPrefix() + roomId);
     }
 
 }

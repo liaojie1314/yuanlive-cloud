@@ -4,6 +4,8 @@ import blog.yuanyuan.yuanlive.common.result.Result;
 import blog.yuanyuan.yuanlive.common.result.ResultPage;
 import blog.yuanyuan.yuanlive.live.domain.dto.LiveCategoryDTO;
 import blog.yuanyuan.yuanlive.live.domain.dto.LiveCategoryQueryDTO;
+import blog.yuanyuan.yuanlive.live.domain.vo.HotCategoryVO;
+import blog.yuanyuan.yuanlive.live.domain.vo.LiveCategoryTreeVO;
 import blog.yuanyuan.yuanlive.live.domain.vo.LiveCategoryVO;
 import blog.yuanyuan.yuanlive.live.domain.vo.LiveRoomRankVO;
 import blog.yuanyuan.yuanlive.live.service.LiveCategoryService;
@@ -67,7 +69,7 @@ public class LiveCategoryController {
 
     @GetMapping("/tree")
     @Operation(summary = "获取分类树形结构")
-    public Result<List<LiveCategoryVO>> tree() {
+    public Result<List<LiveCategoryTreeVO>> tree() {
         return Result.success(categoryService.treeList());
     }
 
@@ -81,5 +83,11 @@ public class LiveCategoryController {
     @Operation(summary = "获取当前直播分类类别的所有直播")
     public Result<List<LiveRoomRankVO>> listByCategory(@RequestParam(value = "categoryValue", required = false) String categoryValue) {
         return Result.success(categoryService.getLiveRoomsByCategoryValue(categoryValue));
+    }
+
+    @GetMapping("/getHotCategory")
+    @Operation(summary = "获取热门分类标签")
+    public Result<List<HotCategoryVO>> getHotCategory() {
+        return Result.success(categoryService.getHotCategory());
     }
 }
