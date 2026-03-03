@@ -77,7 +77,7 @@ public class MinioTemplate {
     /**
      * 3. 流上传
      */
-    public String uploadInputStream(String business, String fileName, InputStream inputStream) throws Exception {
+    public String uploadInputStream(String business, String fileName, InputStream inputStream, long size) throws Exception {
         makeBucket(properties.getBucketName());
 
         String objectName = getFullObjectName(business, fileName);
@@ -86,7 +86,7 @@ public class MinioTemplate {
                 PutObjectArgs.builder()
                         .bucket(properties.getBucketName())
                         .object(objectName)
-                        .stream(inputStream, inputStream.available(), -1)
+                        .stream(inputStream, size, -1)
                         .contentType(getContentType(fileName))
                         .build()
         );

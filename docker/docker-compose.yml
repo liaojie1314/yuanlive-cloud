@@ -83,22 +83,22 @@ services:
       - "host.docker.internal:host-gateway"
     restart: unless-stopped
   # Nacos MCP Router：中心化 AI 工具网关
-  nacos-mcp-router:
-    image: nacos/nacos-mcp-router:0.2.2
-    container_name: yuanlive-nacos-mcp-router
-    depends_on:
-      - nacos
-    environment:
-      - NACOS_ADDR=nacos:8848
-      - NACOS_USERNAME=nacos
-      - NACOS_PASSWORD=nacos
-      - TRANSPORT_TYPE=sse
-      - MODE=router
-    ports:
-      - "8001:8000"
-    restart: unless-stopped
-    networks:
-      - live-net
+#  nacos-mcp-router:
+#    image: nacos/nacos-mcp-router:0.2.2
+#    container_name: yuanlive-nacos-mcp-router
+#    depends_on:
+#      - nacos
+#    environment:
+#      - NACOS_ADDR=nacos:8848
+#      - NACOS_USERNAME=nacos
+#      - NACOS_PASSWORD=nacos
+#      - TRANSPORT_TYPE=sse
+#      - MODE=router
+#    ports:
+#      - "8001:8000"
+#    restart: unless-stopped
+#    networks:
+#      - live-net
   # 分布式事务
   seata:
     image: apache/seata-server:2.3.0
@@ -250,29 +250,29 @@ services:
     networks:
       - live-net
 
-  higress-ai:
-    image: higress-registry.cn-hangzhou.cr.aliyuncs.com/higress/all-in-one:latest
-    container_name: yuanlive-higress-ai
-    user: "${UID}:${GID}"
-    environment:
-      - DATASOURCE_TYPE=nacos
-      - NACOS_ADDR=nacos:8848
-      - NACOS_NS=public
-      - NACOS_USER=nacos
-      - NACOS_PWD=nacos
-      # 强制指定为独立运行模式，不检查 K8s 环境
-      - HIGRESS_CONSOLE_MODE=standalone
-      - HIGRESS_CONSOLE_LOCAL=true
-    volumes:
-      - ./higress/data:/data
-    ports:
-      - "8002:8001"   # 控制台访问端口 (宿主机 8002 -> 容器内部 8001)
-      - "8075:8080"   # 网关 HTTP 端口 (宿主机 8075 -> 容器内部 8080)
-    networks:
-      - live-net
-    restart: unless-stopped
-    depends_on:
-      - nacos
+#  higress-ai:
+#    image: higress-registry.cn-hangzhou.cr.aliyuncs.com/higress/all-in-one:latest
+#    container_name: yuanlive-higress-ai
+#    user: "${UID}:${GID}"
+#    environment:
+#      - DATASOURCE_TYPE=nacos
+#      - NACOS_ADDR=nacos:8848
+#      - NACOS_NS=public
+#      - NACOS_USER=nacos
+#      - NACOS_PWD=nacos
+#      # 强制指定为独立运行模式，不检查 K8s 环境
+#      - HIGRESS_CONSOLE_MODE=standalone
+#      - HIGRESS_CONSOLE_LOCAL=true
+#    volumes:
+#      - ./higress/data:/data
+#    ports:
+#      - "8002:8001"   # 控制台访问端口 (宿主机 8002 -> 容器内部 8001)
+#      - "8075:8080"   # 网关 HTTP 端口 (宿主机 8075 -> 容器内部 8080)
+#    networks:
+#      - live-net
+#    restart: unless-stopped
+#    depends_on:
+#      - nacos
 
 networks:
   live-net:

@@ -353,7 +353,7 @@ public class LiveRoomServiceImpl extends ServiceImpl<LiveRoomMapper, LiveRoom>
             log.info("开始迁移视频至MinIO | RecordID: {} | 文件: {}", recordId, localPath);
             // 1. 生成 MinIO 中的文件名
             String fileName = stream + "-" + System.currentTimeMillis() + ".mp4";
-            // 2. 调用你之前写的 uploadLocalFile 方法 (业务设为 "records")
+            // 2. 调用之前写的 uploadLocalFile 方法 (业务设为 "records")
             String videoUrl = minioTemplate.uploadLocalFile("records", fileName, localPath);
             String coverUrl = minioTemplate
                     .uploadLocalFile("records/cover"

@@ -5,7 +5,6 @@ import org.springframework.stereotype.Component;
 import ws.schild.jave.EncoderException;
 import ws.schild.jave.MultimediaObject;
 import ws.schild.jave.ScreenExtractor;
-import ws.schild.jave.info.AudioInfo;
 import ws.schild.jave.info.MultimediaInfo;
 import ws.schild.jave.info.VideoInfo;
 

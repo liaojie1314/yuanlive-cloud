@@ -259,6 +259,7 @@
           chat:
             exchange: live.chat.fanout
           stats:
+            # topic
             exchange: user.stats.exchange
             queue:
               video: user.stats.video.queue
@@ -266,4 +267,14 @@
             routing-key:
               video: "video.#"
               like: "like.#"
+          ai-detect:
+            exchange: live.analysis.exchange
+            queue: live.analysis.queue
+            routing-key: "risk.audit"
       ```
+
+## 8. AI api-key配置
+- 进入[nvidia](https://build.nvidia.com/models)官网，登录或注册（也可选择其他平台）
+- 点击右上角头像，选择`API Keys`，申请获得key
+- 在`yuanlive-ai-service`微服务中添加`NVIDIA_API_KEY`环境变量
+- 可以自行选择更换其他模型
