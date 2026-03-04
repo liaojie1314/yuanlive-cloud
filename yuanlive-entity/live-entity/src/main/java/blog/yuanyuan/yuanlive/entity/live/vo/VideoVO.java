@@ -1,15 +1,13 @@
-package blog.yuanyuan.yuanlive.live.domain.vo;
+package blog.yuanyuan.yuanlive.entity.live.vo;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
-
-import java.util.Date;
 
 @Data
 public class VideoVO {
     @Schema(description="视频ID")
     private Long id;
-    @Schema(description="回放视频地址")
+    @Schema(description="视频地址")
     private String videoUrl;
     @Schema(description="视频封面")
     private String coverUrl;

@@ -80,6 +80,18 @@ redis-key:
       timeunit: SECONDS
   anchor-map: # 存储在线主播与房间id的映射 anchor_id -> room_id
     key: "yuanlive:live:anchor_map"
+  search:
+    # 个人搜索历史
+    history:
+      prefix: "yuanlive:search:user:history:"
+      ttl: 30d
+      max-count: 10
+    # 全站热搜
+    hot:
+      rank-key: "yuanlive:search:hot:total:rank" # 总热搜榜单
+      hour-rank-prefix: "yuanlive:search:hot:hour:rank:" # 小时热搜榜单
+      ttl: 48h # 小时级热搜榜单过期时间
+
 
 cosid:
   namespace: ${spring.application.name}

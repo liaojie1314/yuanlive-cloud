@@ -7,7 +7,7 @@ import blog.yuanyuan.yuanlive.live.domain.dto.LiveCategoryQueryDTO;
 import blog.yuanyuan.yuanlive.live.domain.vo.HotCategoryVO;
 import blog.yuanyuan.yuanlive.live.domain.vo.LiveCategoryTreeVO;
 import blog.yuanyuan.yuanlive.live.domain.vo.LiveCategoryVO;
-import blog.yuanyuan.yuanlive.live.domain.vo.LiveRoomRankVO;
+import blog.yuanyuan.yuanlive.entity.live.vo.LiveRoomRankVO;
 import com.baomidou.mybatisplus.extension.service.IService;
 
 import java.util.List;

@@ -1,18 +1,24 @@
 package blog.yuanyuan.yuanlive.common.util;
 
 import blog.yuanyuan.yuanlive.common.domain.BucketPolicyConfigDTO;
+import blog.yuanyuan.yuanlive.common.exception.ApiException;
 import blog.yuanyuan.yuanlive.common.properties.MinioProperties;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.json.JSONUtil;
 import io.minio.*;
+import io.minio.errors.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
+import java.io.IOException;
 import java.io.InputStream;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 
 @Slf4j
 @Component
@@ -93,6 +99,31 @@ public class MinioTemplate {
         return getFileUrl(objectName);
     }
 
+    public String composeChunks(String business, List<String> chunkNames, String targetName) {
+        try {
+            List<ComposeSource> sources = chunkNames.stream()
+                    .map(chunk -> ComposeSource.builder()
+                            .bucket(properties.getBucketName())
+                            .object(getFullObjectName(business, chunk))
+                            .build()).toList();
+            String target = getFullObjectName(business, targetName);
+            minioClient.composeObject(
+                    ComposeObjectArgs.builder()
+                            .bucket(properties.getBucketName())
+                            .object(target)
+                            .sources(sources)
+                            .build()
+            );
+            // 清空临时分片
+            chunkNames.forEach(chunk -> {
+                removeFile(getFullObjectName(business, chunk));
+            });
+            return getFileUrl(target);
+        } catch (Exception e) {
+            throw new ApiException("文件合并失败:" + e.getMessage());
+        }
+    }
+
     /**
      * 4. 获取文件外网访问地址
      */
@@ -108,14 +139,18 @@ public class MinioTemplate {
     /**
      * 5. 删除文件 (objectName 需包含业务前缀)
      */
-    public void removeFile(String objectName) throws Exception {
-        minioClient.removeObject(
-                RemoveObjectArgs.builder()
-                        .bucket(properties.getBucketName())
-                        .object(objectName)
-                        .build()
-        );
-        log.info("MinIO 文件已删除: {}", objectName);
+    public void removeFile(String objectName) {
+        try {
+            minioClient.removeObject(
+                    RemoveObjectArgs.builder()
+                            .bucket(properties.getBucketName())
+                            .object(objectName)
+                            .build()
+            );
+            log.info("MinIO 文件已删除: {}", objectName);
+        } catch (Exception e) {
+            throw new ApiException("文件删除失败:" + e.getMessage());
+        }
     }
 
     private String getContentType(String fileName) {

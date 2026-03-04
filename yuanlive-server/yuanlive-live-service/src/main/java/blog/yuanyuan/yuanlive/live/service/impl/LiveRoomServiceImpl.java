@@ -1,13 +1,14 @@
 package blog.yuanyuan.yuanlive.live.service.impl;
 
 import blog.yuanyuan.yuanlive.common.exception.ApiException;
-import blog.yuanyuan.yuanlive.common.result.Result;
 import blog.yuanyuan.yuanlive.common.result.ResultCode;
 import blog.yuanyuan.yuanlive.common.result.ResultPage;
 import blog.yuanyuan.yuanlive.common.util.MinioTemplate;
+import blog.yuanyuan.yuanlive.entity.live.dto.SearchQueryDTO;
 import blog.yuanyuan.yuanlive.entity.live.entity.LiveCategory;
 import blog.yuanyuan.yuanlive.entity.live.entity.LiveRoom;
 import blog.yuanyuan.yuanlive.entity.live.entity.VideoResource;
+import blog.yuanyuan.yuanlive.entity.live.vo.SearchVO;
 import blog.yuanyuan.yuanlive.entity.user.entity.SysUser;
 import blog.yuanyuan.yuanlive.feign.user.UserFeignClient;
 import blog.yuanyuan.yuanlive.live.domain.dto.LiveRoomDTO;
@@ -15,9 +16,10 @@ import blog.yuanyuan.yuanlive.live.domain.dto.LiveRoomQueryDTO;
 import blog.yuanyuan.yuanlive.live.domain.dto.SrsCallBackDTO;
 import blog.yuanyuan.yuanlive.live.domain.vo.LiveRoomDetailVO;
 import blog.yuanyuan.yuanlive.entity.live.vo.LiveRoomVO;
-import blog.yuanyuan.yuanlive.live.domain.vo.LiveRoomRankVO;
+import blog.yuanyuan.yuanlive.entity.live.vo.LiveRoomRankVO;
 import blog.yuanyuan.yuanlive.live.mapper.LiveCategoryMapper;
 import blog.yuanyuan.yuanlive.live.mapper.LiveRoomMapper;
+import blog.yuanyuan.yuanlive.live.mapper.VideoResourceMapper;
 import blog.yuanyuan.yuanlive.live.message.notification.LiveStartMessage;
 import blog.yuanyuan.yuanlive.live.properties.LiveRoomProperties;
 import blog.yuanyuan.yuanlive.live.service.LiveCategoryService;
@@ -38,7 +40,6 @@ import lombok.extern.slf4j.Slf4j;
 import me.ahoo.cosid.provider.IdGeneratorProvider;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
@@ -73,6 +74,8 @@ public class LiveRoomServiceImpl extends ServiceImpl<LiveRoomMapper, LiveRoom>
     @Resource
     private LiveCategoryMapper liveCategoryMapper;
     @Resource
+    private VideoResourceMapper videoResourceMapper;
+    @Resource
     private RabbitTemplate rabbitTemplate;
     @Resource
     private LiveCategoryService categoryService;
@@ -82,6 +85,8 @@ public class LiveRoomServiceImpl extends ServiceImpl<LiveRoomMapper, LiveRoom>
     private MinioTemplate minioTemplate;
     @Resource
     private VideoProcessUtil videoProcessUtil;
+    @Resource
+    private LiveRoomMapper liveRoomMapper;
 
     @Value("${redis-key.active-rooms.key}")
     private String active;
@@ -119,8 +124,9 @@ public class LiveRoomServiceImpl extends ServiceImpl<LiveRoomMapper, LiveRoom>
         LiveRoom liveRoom = new LiveRoom();
         BeanUtils.copyProperties(roomDTO, liveRoom);
         liveRoom.setAnchorId(anchorId);
-        liveRoom.setRoomStatus(0); // 默认未开播
+        liveRoom.setRoomStatus(0);
         liveRoom.setViewCount(0);
+        liveRoom.setAnchorName(userFeignClient.getInfo(anchorId).getData().getUsername());
         liveRoom.setId(idGeneratorProvider.getRequired("safe-js").generate());
 
         boolean saved = save(liveRoom);
@@ -189,10 +195,10 @@ public class LiveRoomServiceImpl extends ServiceImpl<LiveRoomMapper, LiveRoom>
         liveRoom.setUpdateTime(new Date());
         boolean updated = updateById(liveRoom);
         if (updated) {
-            Result<SysUser> result = userFeignClient.getInfo(liveRoom.getAnchorId());
-            if (result == null || !result.isSuccess()) {
-                throw new ApiException("获取主播信息失败");
-            }
+//            Result<SysUser> result = userFeignClient.getInfo(liveRoom.getAnchorId());
+//            if (result == null || !result.isSuccess()) {
+//                throw new ApiException("获取主播信息失败");
+//            }
             VideoResource video = new VideoResource();
             video.setId(idGeneratorProvider.getRequired("video").generate());
             video.setUserId(liveRoom.getAnchorId());
@@ -202,9 +208,10 @@ public class LiveRoomServiceImpl extends ServiceImpl<LiveRoomMapper, LiveRoom>
             // 直播标题(主播名-直播间title-日期-直播回放)
             String format = LocalDateTime.now()
                     .format(DateTimeFormatter.ofPattern("yyyy年MM月dd日HH:mm"));
-            String title = result.getData().getUsername() + "-"
+            String title = liveRoom.getAnchorName() + "-"
                     + liveRoom.getTitle() + "-" + format + "-直播回放";
             video.setTitle(title);
+            video.setDescription(title);
             videoResourceService.save(video);
             // redis存储会话信息
             String sessionKey = liveRoomProperties.getSessionPrefix() + roomId;
@@ -212,7 +219,7 @@ public class LiveRoomServiceImpl extends ServiceImpl<LiveRoomMapper, LiveRoom>
             session.put("recordId", String.valueOf(video.getId()));
             session.put("peak", "0");
             session.put("client", dto.getClient_id());
-            session.put("anchor", result.getData().getUsername());
+            session.put("anchor", liveRoom.getAnchorName());
             session.put("anchorId", liveRoom.getAnchorId().toString());
             session.put("roomTitle", liveRoom.getTitle());
             session.put("categoryId", liveRoom.getCategoryId().toString());
@@ -238,7 +245,7 @@ public class LiveRoomServiceImpl extends ServiceImpl<LiveRoomMapper, LiveRoom>
                     .roomId(String.valueOf(roomId))
                     .title(liveRoom.getTitle())
                     .userId(uid)
-                    .anchorName(result.getData().getUsername())
+                    .anchorName(liveRoom.getAnchorName())
                     .category(categoryName)
                     .coverImage(liveRoom.getCoverImg()).build();
             rabbitTemplate.convertAndSend(exchange, "", JSONUtil.toJsonStr(message));
@@ -331,6 +338,122 @@ public class LiveRoomServiceImpl extends ServiceImpl<LiveRoomMapper, LiveRoom>
         List<String> roomIdList = roomIds.stream().filter(Objects::nonNull).toList();
         return popularityUtil.getPopularRoomVOS(roomIdList);
 
+    }
+
+    @Override
+    public ResultPage<VideoResource> searchVideos(String keyword, Integer pageNum, Integer pageSize) {
+        // 如果关键词为空，返回空列表
+        if (keyword == null || keyword.trim().isEmpty()) {
+            return ResultPage.empty();
+        }
+        Page<VideoResource> page = new Page<>(pageNum, pageSize);
+        List<VideoResource> videoResources = videoResourceMapper.searchVideos(page, keyword.trim());
+        page.setRecords(videoResources);
+        return ResultPage.of(page);
+    }
+
+    @Override
+    public ResultPage<SearchVO> search(SearchQueryDTO searchQueryDTO) {
+        String keyword = searchQueryDTO.getQuery().trim();
+        int pageNum = searchQueryDTO.getPageNum();
+        int pageSize = searchQueryDTO.getPageSize();
+        int globalOffset = (pageNum - 1) * pageSize;
+
+        // 1. 获取两者的总数，计算全局 Total
+        ResultPage<LiveRoomRankVO> roomPage = searchLiveRoom(keyword, pageNum, pageSize);
+        long liveTotal = roomPage.getTotal();
+        long videoTotal = searchVideos(keyword, pageNum, pageSize).getTotal();
+
+        List<SearchVO> combinedList = new ArrayList<>();
+
+        // 判断当前分页偏移量落在哪个区间
+        if (globalOffset < liveTotal) {
+            // --- 情况 A: 偏移量在直播间范围内，当前页包含直播间 ---
+            // 2.1 查直播间（从 globalOffset 开始查）
+            roomPage.getList().forEach(room -> {
+                SearchVO searchVO = new SearchVO();
+                searchVO.setLiveRoom(room);
+                searchVO.setVideo(null);
+                searchVO.setCheckRoom(true);
+                combinedList.add(searchVO);
+            });
+
+            // 2.2 如果直播间没填满 pageSize，说明到了“交界页”，用视频补齐
+            if (combinedList.size() < pageSize) {
+                int needVideoCount = pageSize - combinedList.size();
+                // 此时视频永远从第 0 条开始取
+                ResultPage<VideoResource> videoPage = searchVideos(keyword, 1, needVideoCount);
+                videoPage.getList().forEach(video -> {
+                    SearchVO searchVO = new SearchVO();
+                    searchVO.setVideo(video);
+                    searchVO.setLiveRoom(null);
+                    searchVO.setCheckRoom(false);
+                    combinedList.add(searchVO);
+                });
+            }
+        } else {
+            // --- 情况 B: 偏移量已经超过直播间总数，整页都是视频 ---
+            // 计算视频的相对偏移量
+            int videoOffset = globalOffset - (int) liveTotal;
+            List<VideoResource> videos = videoResourceMapper.searchVideosByOffset(keyword, videoOffset, pageSize);
+            videos.forEach(video -> {
+                SearchVO searchVO = new SearchVO();
+                searchVO.setVideo(video);
+                searchVO.setLiveRoom(null);
+                searchVO.setCheckRoom(false);
+                combinedList.add(searchVO);
+            });
+        }
+
+        // 封装返回
+        Page<SearchVO> resultPage = new Page<>(pageNum, pageSize, liveTotal + videoTotal);
+        resultPage.setRecords(combinedList);
+        return ResultPage.of(resultPage);
+    }
+
+    @Override
+    public ResultPage<LiveRoomRankVO> searchLiveRoom(String keyword, Integer pageNum, Integer pageSize) {
+        // 如果关键词为空，返回所有直播间
+        if (keyword == null || keyword.trim().isEmpty()) {
+            return ResultPage.empty();
+        }
+        
+        // 通过 Mapper 执行 SQL 查询和过滤
+        Page<LiveRoomRankVO> page = new Page<>(pageNum, pageSize);
+        List<LiveRoomRankVO> rooms = liveRoomMapper.searchLiveRooms(page, keyword.trim());
+        // 从 Redis 中获取人气分数并填充
+        page.setRecords(enrichHotScore(rooms));
+        return ResultPage.of(page);
+    }
+
+    /**
+     * 从 Redis 获取人气分数并填充到 VO 列表中
+     */
+    private List<LiveRoomRankVO> enrichHotScore(List<LiveRoomRankVO> rooms) {
+        if (CollUtil.isEmpty(rooms)) {
+            return rooms;
+        }
+        List<String> roomIdList = rooms.stream()
+                .map(vo -> String.valueOf(vo.getId()))
+                .collect(Collectors.toList());
+        
+        // 使用 PopularityUtil 批量获取人气数据
+        List<LiveRoomRankVO> enrichedRooms = popularityUtil.getPopularRoomVOS(roomIdList);
+        // 如果没有人气数据的房间，保持原有的 0.0 分数
+        if (enrichedRooms.size() < rooms.size()) {
+            Set<String> enrichedIds = enrichedRooms.stream()
+                    .map(vo -> String.valueOf(vo.getId()))
+                    .collect(Collectors.toSet());
+            
+            for (LiveRoomRankVO room : rooms) {
+                if (!enrichedIds.contains(String.valueOf(room.getId()))) {
+                    enrichedRooms.add(room);
+                }
+            }
+        }
+        // 按人气降序排序
+        enrichedRooms.sort(Comparator.comparing(LiveRoomRankVO::getHotScore).reversed());
+        return enrichedRooms;
     }
 
     private void migrateVideoToMinio(Long recordId, String localPath, String stream) {

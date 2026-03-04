@@ -19,6 +19,8 @@ public class LiveRoom {
     private Long id;
     @Schema(description="主播ID (对应user库id)")
     private Long anchorId;
+    @Schema(description = "主播名称")
+    private String anchorName;
     @Schema(description="直播间标题")
     private String title;
     @Schema(description="直播间封面图URL")

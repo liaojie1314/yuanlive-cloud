@@ -1,4 +1,4 @@
-package blog.yuanyuan.yuanlive.live.domain.vo;
+package blog.yuanyuan.yuanlive.entity.live.vo;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;

@@ -278,3 +278,14 @@
 - 点击右上角头像，选择`API Keys`，申请获得key
 - 在`yuanlive-ai-service`微服务中添加`NVIDIA_API_KEY`环境变量
 - 可以自行选择更换其他模型
+
+## 9. 账号管理
+- 管理员
+  - 账号: fordepu  
+  - 密码: yuanlive+123
+  - 角色: 超级管理员(拥有所有权限)
+- 主播
+  - 账号: jjw  
+  - 密码: yuanlive+123
+- 普通用户
+  - 请自行注册

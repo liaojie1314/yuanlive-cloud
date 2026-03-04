@@ -1,7 +1,6 @@
 package blog.yuanyuan.yuanlive.live.util;
 
-import blog.yuanyuan.yuanlive.live.domain.vo.HotCategoryVO;
-import blog.yuanyuan.yuanlive.live.domain.vo.LiveRoomRankVO;
+import blog.yuanyuan.yuanlive.entity.live.vo.LiveRoomRankVO;
 import blog.yuanyuan.yuanlive.live.properties.LiveRoomProperties;
 import cn.hutool.core.collection.CollUtil;
 import jakarta.annotation.Resource;

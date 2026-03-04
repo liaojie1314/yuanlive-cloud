@@ -6,7 +6,7 @@ import blog.yuanyuan.yuanlive.entity.live.dto.FollowUnseenQueryDTO;
 import blog.yuanyuan.yuanlive.entity.live.vo.UnseenVO;
 import blog.yuanyuan.yuanlive.feign.user.UserFeignClient;
 import blog.yuanyuan.yuanlive.live.domain.dto.VideoPageQueryDTO;
-import blog.yuanyuan.yuanlive.live.domain.vo.VideoVO;
+import blog.yuanyuan.yuanlive.entity.live.vo.VideoVO;
 import cn.hutool.core.bean.BeanUtil;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -17,7 +17,6 @@ import jakarta.annotation.Resource;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 
 /**

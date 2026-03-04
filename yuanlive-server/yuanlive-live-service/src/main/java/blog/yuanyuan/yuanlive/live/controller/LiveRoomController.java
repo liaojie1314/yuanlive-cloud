@@ -2,12 +2,16 @@ package blog.yuanyuan.yuanlive.live.controller;
 
 import blog.yuanyuan.yuanlive.common.result.Result;
 import blog.yuanyuan.yuanlive.common.result.ResultPage;
+import blog.yuanyuan.yuanlive.entity.live.dto.SearchQueryDTO;
+import blog.yuanyuan.yuanlive.entity.live.entity.VideoResource;
+import blog.yuanyuan.yuanlive.entity.live.vo.SearchVO;
+import blog.yuanyuan.yuanlive.entity.live.vo.VideoVO;
 import blog.yuanyuan.yuanlive.live.domain.dto.LiveRoomDTO;
 import blog.yuanyuan.yuanlive.live.domain.dto.LiveRoomQueryDTO;
 import blog.yuanyuan.yuanlive.live.domain.dto.SrsCallBackDTO;
 import blog.yuanyuan.yuanlive.live.domain.vo.LiveRoomDetailVO;
 import blog.yuanyuan.yuanlive.entity.live.vo.LiveRoomVO;
-import blog.yuanyuan.yuanlive.live.domain.vo.LiveRoomRankVO;
+import blog.yuanyuan.yuanlive.entity.live.vo.LiveRoomRankVO;
 import blog.yuanyuan.yuanlive.live.service.LiveRoomService;
 import cn.dev33.satoken.annotation.SaCheckRole;
 import cn.dev33.satoken.stp.StpUtil;
@@ -131,5 +135,27 @@ public class LiveRoomController {
     public Result<List<LiveRoomRankVO>> getPopularRooms() {
         List<LiveRoomRankVO> rooms = liveRoomService.getPopularRooms();
         return Result.success(rooms);
+    }
+
+//    @GetMapping("/searchRoom")
+//    @Operation(summary = "搜索直播间")
+//    public ResultPage<LiveRoomRankVO> searchLiveRoom(@RequestParam("keyword") String keyword,
+//                                                     @RequestParam(value = "pageNum", defaultValue = "1") Integer pageNum,
+//                                                     @RequestParam(value = "pageSize", defaultValue = "10") Integer pageSize) {
+//        return liveRoomService.searchLiveRoom(keyword, pageNum, pageSize);
+//    }
+//
+//    @GetMapping("/searchVideo")
+//    @Operation(summary = "搜索视频")
+//    public ResultPage<VideoResource> searchVideo(@RequestParam("keyword") String keyword,
+//                                           @RequestParam(value = "pageNum", defaultValue = "1") Integer pageNum,
+//                                           @RequestParam(value = "pageSize", defaultValue = "10") Integer pageSize) {
+//        return liveRoomService.searchVideos(keyword, pageNum, pageSize);
+//    }
+
+    @PostMapping("/search")
+    @Operation(summary = "综合搜索视频与直播间")
+    public ResultPage<SearchVO> search(@RequestBody @Validated SearchQueryDTO searchQueryDTO) {
+        return liveRoomService.search(searchQueryDTO);
     }
 }

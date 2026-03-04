@@ -1,7 +1,11 @@
 package blog.yuanyuan.yuanlive.user.controller;
 
 import blog.yuanyuan.yuanlive.common.result.Result;
+import blog.yuanyuan.yuanlive.common.result.ResultPage;
+import blog.yuanyuan.yuanlive.entity.live.dto.SearchQueryDTO;
+import blog.yuanyuan.yuanlive.entity.live.vo.SearchVO;
 import blog.yuanyuan.yuanlive.entity.user.entity.SysUser;
+import blog.yuanyuan.yuanlive.user.domain.vo.SearchResponseVO;
 import blog.yuanyuan.yuanlive.user.domain.vo.UserVO;
 import blog.yuanyuan.yuanlive.user.service.SysUserService;
 import cn.hutool.core.bean.BeanUtil;
@@ -9,6 +13,8 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
+import org.springdoc.core.annotations.ParameterObject;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -37,5 +43,11 @@ public class UserController {
         UserVO userVO = userService.getUserById(userId);
         SysUser user = BeanUtil.copyProperties(userVO, SysUser.class);
         return Result.success(user);
+    }
+
+    @Operation(summary = "用户搜索视频或直播间")
+    @GetMapping("/search")
+    public ResultPage<SearchVO> search(@ParameterObject @Validated SearchQueryDTO queryDTO) {
+        return userService.search(queryDTO);
     }
 }

@@ -34,4 +34,31 @@
                 (user_id = #{item.followingId} AND id > #{item.lastReadVideoId})
             </foreach>
     </select>
+    
+    <!-- 搜索视频 SQL -->
+    <select id="searchVideos" resultMap="BaseResultMap">
+        SELECT DISTINCT
+            vr.*
+        FROM video_resource vr
+        LEFT JOIN live_room lr ON vr.room_id = lr.id
+        LEFT JOIN yuanlive_user.sys_user su ON vr.user_id = su.uid
+        WHERE
+            LOWER(vr.title) LIKE CONCAT('%', LOWER(#{keyword}), '%')
+            OR LOWER(su.username) LIKE CONCAT('%', LOWER(#{keyword}), '%')
+            OR LOWER(lr.title) LIKE CONCAT('%', LOWER(#{keyword}), '%')
+        ORDER BY vr.id DESC
+    </select>
+    <select id="searchVideosByOffset" resultMap="BaseResultMap">
+        SELECT DISTINCT
+            vr.*
+        FROM video_resource vr
+                 LEFT JOIN live_room lr ON vr.room_id = lr.id
+                 LEFT JOIN yuanlive_user.sys_user su ON vr.user_id = su.uid
+        WHERE
+            LOWER(vr.title) LIKE CONCAT('%', LOWER(#{keyword}), '%')
+           OR LOWER(su.username) LIKE CONCAT('%', LOWER(#{keyword}), '%')
+           OR LOWER(lr.title) LIKE CONCAT('%', LOWER(#{keyword}), '%')
+        ORDER BY vr.id DESC
+        LIMIT #{offset}, #{limit}
+    </select>
 </mapper>

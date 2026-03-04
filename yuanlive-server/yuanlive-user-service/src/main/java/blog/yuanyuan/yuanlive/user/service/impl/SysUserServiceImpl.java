@@ -2,7 +2,10 @@ package blog.yuanyuan.yuanlive.user.service.impl;
 
 import blog.yuanyuan.yuanlive.common.exception.ApiException;
 import blog.yuanyuan.yuanlive.common.result.ResultPage;
+import blog.yuanyuan.yuanlive.entity.live.dto.SearchQueryDTO;
+import blog.yuanyuan.yuanlive.entity.live.vo.SearchVO;
 import blog.yuanyuan.yuanlive.entity.user.entity.*;
+import blog.yuanyuan.yuanlive.feign.live.LiveFeignClient;
 import blog.yuanyuan.yuanlive.user.domain.dto.PasswordDTO;
 import blog.yuanyuan.yuanlive.user.domain.dto.UserQueryDTO;
 import blog.yuanyuan.yuanlive.user.domain.dto.UserRoleDTO;
@@ -11,6 +14,7 @@ import blog.yuanyuan.yuanlive.user.domain.vo.RouterVO;
 import blog.yuanyuan.yuanlive.user.domain.vo.UserVO;
 import blog.yuanyuan.yuanlive.user.mapper.SysUserMapper;
 import blog.yuanyuan.yuanlive.user.mapper.UserFollowMapper;
+import blog.yuanyuan.yuanlive.user.properties.SearchProperties;
 import blog.yuanyuan.yuanlive.user.service.*;
 import cn.dev33.satoken.stp.StpUtil;
 import cn.hutool.core.bean.BeanUtil;
@@ -25,11 +29,14 @@ import me.ahoo.cosid.provider.IdGeneratorProvider;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -61,6 +68,10 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
     private IdGeneratorProvider idGeneratorProvider;
     @Resource
     private StringRedisTemplate stringRedisTemplate;
+    @Resource
+    private SearchProperties searchProperties;
+    @Resource
+    private LiveFeignClient liveFeignClient;
     @Value("${redis-key.anchor-map.key}")
     private String anchorMap;
 
@@ -204,6 +215,31 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
         SysUser user = getById(uid);
         user.setDelFlag(user.getDelFlag() == 1 ? 0 : 1);
         return updateById(user);
+    }
+
+    @Override
+    public ResultPage<SearchVO> search(SearchQueryDTO queryDTO) {
+        long uid = StpUtil.getLoginIdAsLong();
+        String trimKeyword = queryDTO.getQuery().trim();
+        asyncRecordHistory(uid, trimKeyword);
+        return liveFeignClient.search(queryDTO);
+    }
+
+    @Async
+    public void asyncRecordHistory(Long uid, String keyword) {
+        String historyKey = searchProperties.getHistory().getPrefix() + uid;
+        String rankKey = searchProperties.getHot().getRankKey();
+        String hour = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHH"));
+        String hourKey = searchProperties.getHot().getHourRankPrefix() + hour;
+        stringRedisTemplate.opsForZSet().add(historyKey, keyword, System.currentTimeMillis());
+        stringRedisTemplate.opsForZSet()
+                .removeRange(historyKey, 0, -searchProperties.getHistory().getMaxCount() - 1);
+        stringRedisTemplate.expire(historyKey, searchProperties.getHistory().getTtl());
+
+        stringRedisTemplate.opsForZSet().incrementScore(rankKey, keyword, 1);
+        stringRedisTemplate.opsForZSet().incrementScore(hourKey, keyword, 1);
+        stringRedisTemplate.expire(hourKey, searchProperties.getHot().getTtl());
+
     }
 
     private void insertUserRole(Long userId, List<Long> roleIds) {

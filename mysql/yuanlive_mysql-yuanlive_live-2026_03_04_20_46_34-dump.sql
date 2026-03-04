@@ -98,6 +98,7 @@ CREATE TABLE `live_room` (
   `last_start_time` datetime DEFAULT NULL COMMENT '最近一次开播时间',
   `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+  `anchor_name` varchar(255) DEFAULT NULL COMMENT '主播名称',
   PRIMARY KEY (`id`),
   UNIQUE KEY `uk_anchor_id` (`anchor_id`),
   KEY `idx_status` (`room_status`)
@@ -110,7 +111,7 @@ CREATE TABLE `live_room` (
 
 LOCK TABLES `live_room` WRITE;
 /*!40000 ALTER TABLE `live_room` DISABLE KEYS */;
-INSERT INTO `live_room` VALUES (790546539380737,7,'原神启动!!!',NULL,0,0,7,'2026-02-26 19:43:21','2026-02-04 20:22:06','2026-02-26 19:43:21');
+INSERT INTO `live_room` VALUES (790546539380737,7,'原神启动!!!',NULL,0,0,7,'2026-02-26 19:43:21','2026-02-04 20:22:06','2026-03-04 15:09:12','jjw');
 /*!40000 ALTER TABLE `live_room` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -194,4 +195,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-02-26 19:48:30
+-- Dump completed on 2026-03-04 20:46:35

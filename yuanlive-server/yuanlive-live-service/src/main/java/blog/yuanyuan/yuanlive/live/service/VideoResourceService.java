@@ -4,7 +4,7 @@ import blog.yuanyuan.yuanlive.common.result.ResultPage;
 import blog.yuanyuan.yuanlive.entity.live.entity.VideoResource;
 import blog.yuanyuan.yuanlive.entity.live.vo.UnseenVO;
 import blog.yuanyuan.yuanlive.live.domain.dto.VideoPageQueryDTO;
-import blog.yuanyuan.yuanlive.live.domain.vo.VideoVO;
+import blog.yuanyuan.yuanlive.entity.live.vo.VideoVO;
 import com.baomidou.mybatisplus.extension.service.IService;
 
 import java.util.List;

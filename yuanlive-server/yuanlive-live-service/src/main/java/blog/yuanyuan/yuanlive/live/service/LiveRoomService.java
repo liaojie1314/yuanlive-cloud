@@ -1,13 +1,16 @@
 package blog.yuanyuan.yuanlive.live.service;
 
 import blog.yuanyuan.yuanlive.common.result.ResultPage;
+import blog.yuanyuan.yuanlive.entity.live.dto.SearchQueryDTO;
 import blog.yuanyuan.yuanlive.entity.live.entity.LiveRoom;
+import blog.yuanyuan.yuanlive.entity.live.entity.VideoResource;
+import blog.yuanyuan.yuanlive.entity.live.vo.SearchVO;
 import blog.yuanyuan.yuanlive.live.domain.dto.LiveRoomDTO;
 import blog.yuanyuan.yuanlive.live.domain.dto.LiveRoomQueryDTO;
 import blog.yuanyuan.yuanlive.live.domain.dto.SrsCallBackDTO;
 import blog.yuanyuan.yuanlive.live.domain.vo.LiveRoomDetailVO;
 import blog.yuanyuan.yuanlive.entity.live.vo.LiveRoomVO;
-import blog.yuanyuan.yuanlive.live.domain.vo.LiveRoomRankVO;
+import blog.yuanyuan.yuanlive.entity.live.vo.LiveRoomRankVO;
 import com.baomidou.mybatisplus.extension.service.IService;
 
 import java.util.List;
@@ -73,4 +76,10 @@ public interface LiveRoomService extends IService<LiveRoom> {
     boolean dvr(SrsCallBackDTO dto);
 
     List<LiveRoomRankVO> getPopularRooms();
+
+    ResultPage<LiveRoomRankVO> searchLiveRoom(String keyword, Integer pageNum, Integer pageSize);
+
+    ResultPage<VideoResource> searchVideos(String keyword, Integer pageNum, Integer pageSize);
+
+    ResultPage<SearchVO> search(SearchQueryDTO searchQueryDTO);
 }
