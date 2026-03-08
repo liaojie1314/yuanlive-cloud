@@ -9,8 +9,10 @@ import blog.yuanyuan.yuanlive.entity.live.entity.LiveCategory;
 import blog.yuanyuan.yuanlive.entity.live.entity.LiveRoom;
 import blog.yuanyuan.yuanlive.entity.live.entity.VideoResource;
 import blog.yuanyuan.yuanlive.entity.live.vo.SearchVO;
+import blog.yuanyuan.yuanlive.entity.live.vo.VideoSearchVO;
 import blog.yuanyuan.yuanlive.entity.user.entity.SysUser;
 import blog.yuanyuan.yuanlive.feign.user.UserFeignClient;
+import blog.yuanyuan.yuanlive.live.domain.document.SearchDoc;
 import blog.yuanyuan.yuanlive.live.domain.dto.LiveRoomDTO;
 import blog.yuanyuan.yuanlive.live.domain.dto.LiveRoomQueryDTO;
 import blog.yuanyuan.yuanlive.live.domain.dto.SrsCallBackDTO;
@@ -33,6 +35,9 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.http.HttpUtil;
 import cn.hutool.json.JSONUtil;
+import co.elastic.clients.elasticsearch._types.query_dsl.MultiMatchQuery;
+import co.elastic.clients.elasticsearch._types.query_dsl.QueryBuilders;
+import co.elastic.clients.elasticsearch._types.query_dsl.TextQueryType;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import jakarta.annotation.Resource;
@@ -41,6 +46,11 @@ import me.ahoo.cosid.provider.IdGeneratorProvider;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.elasticsearch.client.elc.ElasticsearchTemplate;
+import org.springframework.data.elasticsearch.client.elc.NativeQuery;
+import org.springframework.data.elasticsearch.client.elc.NativeQueryBuilder;
+import org.springframework.data.elasticsearch.core.SearchHits;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -67,6 +77,8 @@ public class LiveRoomServiceImpl extends ServiceImpl<LiveRoomMapper, LiveRoom>
 
     @Resource
     private StringRedisTemplate stringRedisTemplate;
+    @Resource
+    private ElasticsearchTemplate esTemplate;
     @Resource
     private IdGeneratorProvider idGeneratorProvider;
     @Resource
@@ -353,77 +365,172 @@ public class LiveRoomServiceImpl extends ServiceImpl<LiveRoomMapper, LiveRoom>
     }
 
     @Override
-    public ResultPage<SearchVO> search(SearchQueryDTO searchQueryDTO) {
-        String keyword = searchQueryDTO.getQuery().trim();
-        int pageNum = searchQueryDTO.getPageNum();
-        int pageSize = searchQueryDTO.getPageSize();
-        int globalOffset = (pageNum - 1) * pageSize;
-
-        // 1. 获取两者的总数，计算全局 Total
-        ResultPage<LiveRoomRankVO> roomPage = searchLiveRoom(keyword, pageNum, pageSize);
-        long liveTotal = roomPage.getTotal();
-        long videoTotal = searchVideos(keyword, pageNum, pageSize).getTotal();
-
-        List<SearchVO> combinedList = new ArrayList<>();
-
-        // 判断当前分页偏移量落在哪个区间
-        if (globalOffset < liveTotal) {
-            // --- 情况 A: 偏移量在直播间范围内，当前页包含直播间 ---
-            // 2.1 查直播间（从 globalOffset 开始查）
-            roomPage.getList().forEach(room -> {
-                SearchVO searchVO = new SearchVO();
-                searchVO.setLiveRoom(room);
-                searchVO.setVideo(null);
-                searchVO.setCheckRoom(true);
-                combinedList.add(searchVO);
-            });
-
-            // 2.2 如果直播间没填满 pageSize，说明到了“交界页”，用视频补齐
-            if (combinedList.size() < pageSize) {
-                int needVideoCount = pageSize - combinedList.size();
-                // 此时视频永远从第 0 条开始取
-                ResultPage<VideoResource> videoPage = searchVideos(keyword, 1, needVideoCount);
-                videoPage.getList().forEach(video -> {
-                    SearchVO searchVO = new SearchVO();
-                    searchVO.setVideo(video);
-                    searchVO.setLiveRoom(null);
-                    searchVO.setCheckRoom(false);
-                    combinedList.add(searchVO);
-                });
-            }
-        } else {
-            // --- 情况 B: 偏移量已经超过直播间总数，整页都是视频 ---
-            // 计算视频的相对偏移量
-            int videoOffset = globalOffset - (int) liveTotal;
-            List<VideoResource> videos = videoResourceMapper.searchVideosByOffset(keyword, videoOffset, pageSize);
-            videos.forEach(video -> {
-                SearchVO searchVO = new SearchVO();
-                searchVO.setVideo(video);
-                searchVO.setLiveRoom(null);
-                searchVO.setCheckRoom(false);
-                combinedList.add(searchVO);
-            });
-        }
-
-        // 封装返回
-        Page<SearchVO> resultPage = new Page<>(pageNum, pageSize, liveTotal + videoTotal);
-        resultPage.setRecords(combinedList);
-        return ResultPage.of(resultPage);
-    }
-
-    @Override
     public ResultPage<LiveRoomRankVO> searchLiveRoom(String keyword, Integer pageNum, Integer pageSize) {
         // 如果关键词为空，返回所有直播间
         if (keyword == null || keyword.trim().isEmpty()) {
             return ResultPage.empty();
         }
-        
+
         // 通过 Mapper 执行 SQL 查询和过滤
         Page<LiveRoomRankVO> page = new Page<>(pageNum, pageSize);
         List<LiveRoomRankVO> rooms = liveRoomMapper.searchLiveRooms(page, keyword.trim());
         // 从 Redis 中获取人气分数并填充
         page.setRecords(enrichHotScore(rooms));
         return ResultPage.of(page);
+    }
+
+//    @Override
+//    public ResultPage<SearchVO> search(SearchQueryDTO searchQueryDTO) {
+//        String keyword = searchQueryDTO.getQuery().trim();
+//        int pageNum = searchQueryDTO.getPageNum();
+//        int pageSize = searchQueryDTO.getPageSize();
+//        int globalOffset = (pageNum - 1) * pageSize;
+//
+//        // 1. 获取两者的总数，计算全局 Total
+//        ResultPage<LiveRoomRankVO> roomPage = searchLiveRoom(keyword, pageNum, pageSize);
+//        long liveTotal = roomPage.getTotal();
+//        long videoTotal = searchVideos(keyword, pageNum, pageSize).getTotal();
+//
+//        List<SearchVO> combinedList = new ArrayList<>();
+//
+//        // 判断当前分页偏移量落在哪个区间
+//        if (globalOffset < liveTotal) {
+//            // --- 情况 A: 偏移量在直播间范围内，当前页包含直播间 ---
+//            // 2.1 查直播间（从 globalOffset 开始查）
+//            roomPage.getList().forEach(room -> {
+//                SearchVO searchVO = new SearchVO();
+//                searchVO.setLiveRoom(room);
+//                searchVO.setVideo(null);
+//                searchVO.setCheckRoom(true);
+//                combinedList.add(searchVO);
+//            });
+//
+//            // 2.2 如果直播间没填满 pageSize，说明到了“交界页”，用视频补齐
+//            if (combinedList.size() < pageSize) {
+//                int needVideoCount = pageSize - combinedList.size();
+//                // 此时视频永远从第 0 条开始取
+//                ResultPage<VideoResource> videoPage = searchVideos(keyword, 1, needVideoCount);
+//                videoPage.getList().forEach(video -> {
+//                    SearchVO searchVO = new SearchVO();
+//                    searchVO.setVideo(video);
+//                    searchVO.setLiveRoom(null);
+//                    searchVO.setCheckRoom(false);
+//                    combinedList.add(searchVO);
+//                });
+//            }
+//        } else {
+//            // --- 情况 B: 偏移量已经超过直播间总数，整页都是视频 ---
+//            // 计算视频的相对偏移量
+//            int videoOffset = globalOffset - (int) liveTotal;
+//            List<VideoResource> videos = videoResourceMapper.searchVideosByOffset(keyword, videoOffset, pageSize);
+//            videos.forEach(video -> {
+//                SearchVO searchVO = new SearchVO();
+//                searchVO.setVideo(video);
+//                searchVO.setLiveRoom(null);
+//                searchVO.setCheckRoom(false);
+//                combinedList.add(searchVO);
+//            });
+//        }
+//
+//        // 封装返回
+//        Page<SearchVO> resultPage = new Page<>(pageNum, pageSize, liveTotal + videoTotal);
+//        resultPage.setRecords(combinedList);
+//        return ResultPage.of(resultPage);
+//    }
+
+    @Override
+    public ResultPage<SearchVO> search(SearchQueryDTO searchQueryDTO) {
+        String keyword = searchQueryDTO.getQuery().trim();
+        if (StrUtil.isBlank(keyword)) {
+            return ResultPage.empty();
+        }
+
+        int pageNum = Math.max(0, searchQueryDTO.getPageNum() - 1);
+        int pageSize = searchQueryDTO.getPageSize();
+
+        // 1. 构建 ES 查询：保持“直播间优先”的权重
+        NativeQuery query = new NativeQueryBuilder()
+                .withQuery(q -> q.bool(b -> b
+                        .must(m -> m.multiMatch(mm -> mm
+                                .query(keyword)
+                                .fields("title^3", "anchor_name^2", "category_name", "description")
+                                .type(TextQueryType.BestFields)))
+                        .should(s -> s.term(t -> t.field("biz_type").value(1).boost(10.0f)))
+                ))
+                .withPageable(PageRequest.of(pageNum, pageSize))
+                .build();
+
+        SearchHits<SearchDoc> hits = esTemplate.search(query, SearchDoc.class);
+
+        // 2. 分类提取数据
+        List<LiveRoomRankVO> liveRoomVOs = new ArrayList<>();
+        List<VideoSearchVO> videoVOs = new ArrayList<>();
+
+        hits.getSearchHits().forEach(hit -> {
+            SearchDoc doc = hit.getContent();
+            if (doc.getBizType() == 1) { // 1 为直播间
+                liveRoomVOs.add(convertToLiveRoomVO(doc));
+            } else { // 2 为视频
+                videoVOs.add(convertToVideoVO(doc));
+            }
+        });
+
+        // 3. 执行方案 B 的核心：对当前页的直播间进行 Redis 热度回填并重排序
+        List<LiveRoomRankVO> enrichedSortedRooms = new ArrayList<>();
+        if (!liveRoomVOs.isEmpty()) {
+            // 调用你原有的 enrichHotScore，它会回填分数并执行降序排序
+            enrichedSortedRooms = enrichHotScore(liveRoomVOs);
+        }
+
+        // 4. 重新组合：先放排好序的直播间，再放视频
+        List<SearchVO> finalVoList = new ArrayList<>();
+
+        enrichedSortedRooms.forEach(room -> {
+            SearchVO vo = new SearchVO();
+            vo.setLiveRoom(room);
+            vo.setCheckRoom(true);
+            finalVoList.add(vo);
+        });
+
+        videoVOs.forEach(video -> {
+            SearchVO vo = new SearchVO();
+            vo.setVideo(video);
+            vo.setCheckRoom(false);
+            finalVoList.add(vo);
+        });
+
+        // 5. 封装分页返回（注意：pageNum+1 对应前端的第1页）
+        Page<SearchVO> resultPage = new Page<>(searchQueryDTO.getPageNum(), pageSize, hits.getTotalHits());
+        resultPage.setRecords(finalVoList);
+
+        return ResultPage.of(resultPage);
+    }
+
+    // 辅助转换方法
+    private LiveRoomRankVO convertToLiveRoomVO(SearchDoc doc) {
+        LiveRoomRankVO vo = new LiveRoomRankVO();
+        vo.setId(doc.getId());
+        vo.setTitle(doc.getTitle());
+        vo.setAnchorName(doc.getAnchorName());
+        vo.setCoverImg(doc.getCoverUrl());
+        vo.setHotScore(0.0); // 初始设为 0，由 enrich 填充
+        vo.setCategoryId(doc.getCategoryId());
+        return vo;
+    }
+
+    private VideoSearchVO convertToVideoVO(SearchDoc doc) {
+        VideoSearchVO vo = new VideoSearchVO();
+        vo.setId(doc.getId());
+        vo.setTitle(doc.getTitle());
+        vo.setVideoUrl(doc.getVideoUrl());
+        vo.setCoverUrl(doc.getCoverUrl());
+        vo.setCategoryId(doc.getCategoryId());
+        vo.setCategoryName(doc.getCategoryName());
+        vo.setDescription(doc.getDescription());
+        vo.setUserId(doc.getUid());
+        vo.setUsername(doc.getAnchorName());
+        vo.setCreateTime(doc.getCreateTime());
+        return vo;
     }
 
     /**

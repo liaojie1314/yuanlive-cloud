@@ -110,6 +110,9 @@ cosid:
       safe-js:
         machine-bit: 4
         sequence-bit: 8
+      search-history:
+        machine-bit: 4
+        sequence-bit: 8
     epoch: 1577203200000
   segment:
     enabled: true

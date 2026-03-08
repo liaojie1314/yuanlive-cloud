@@ -4,36 +4,27 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="2c950775-72d2-474b-801f-8670ad3e3905" name="更改" comment=":sparkles: 实现文件上传功能(暂未实现分片上传)">
+    <list default="true" id="2c950775-72d2-474b-801f-8670ad3e3905" name="更改" comment=":sparkles: 使用flink将视频与直播间信息同步至es进行查询">
+      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/dataSources.local.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dataSources.local.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/dataSources/77a91b57-2946-40a7-ad5e-26ee38621679.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dataSources/77a91b57-2946-40a7-ad5e-26ee38621679.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/mybatisx/templates.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/mybatisx/templates.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/docker/.env" beforeDir="false" afterPath="$PROJECT_DIR$/docker/.env" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/docker/docker-compose.yml" beforeDir="false" afterPath="$PROJECT_DIR$/docker/docker-compose.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/docker/elasticsearch/plugins/ik/elasticsearch-analysis-ik-9.2.4.jar" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docker/elasticsearch/plugins/ik/ik-core-1.0.jar" beforeDir="false" afterPath="$PROJECT_DIR$/docker/elasticsearch/plugins/ik/ik-core-1.0.jar" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/docker/elasticsearch/plugins/ik/plugin-descriptor.properties" beforeDir="false" afterPath="$PROJECT_DIR$/docker/elasticsearch/plugins/ik/plugin-descriptor.properties" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/docker/start.md" beforeDir="false" afterPath="$PROJECT_DIR$/docker/start.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mysql/yuanlive_mysql-yuanlive_live-2026_02_26_19_48_30-dump.sql" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/mysql/yuanlive_mysql-yuanlive_user-2026_02_26_19_48_41-dump.sql" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/yuanlive-common/src/main/java/blog/yuanyuan/yuanlive/common/util/MinioTemplate.java" beforeDir="false" afterPath="$PROJECT_DIR$/yuanlive-common/src/main/java/blog/yuanyuan/yuanlive/common/util/MinioTemplate.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/yuanlive-entity/live-entity/src/main/java/blog/yuanyuan/yuanlive/entity/live/entity/LiveRoom.java" beforeDir="false" afterPath="$PROJECT_DIR$/yuanlive-entity/live-entity/src/main/java/blog/yuanyuan/yuanlive/entity/live/entity/LiveRoom.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/yuanlive-server-client/yuanlive-live-client/src/main/java/blog/yuanyuan/yuanlive/feign/live/LiveFeignClient.java" beforeDir="false" afterPath="$PROJECT_DIR$/yuanlive-server-client/yuanlive-live-client/src/main/java/blog/yuanyuan/yuanlive/feign/live/LiveFeignClient.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/yuanlive-server/yuanlive-ai-service/src/main/java/blog/yuanyuan/yuanlive/ai/test/RiskWorkflowTester.java" beforeDir="false" afterPath="$PROJECT_DIR$/yuanlive-server/yuanlive-ai-service/src/main/java/blog/yuanyuan/yuanlive/ai/test/RiskWorkflowTester.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/yuanlive-server/yuanlive-live-service/src/main/java/blog/yuanyuan/yuanlive/live/controller/LiveCategoryController.java" beforeDir="false" afterPath="$PROJECT_DIR$/yuanlive-server/yuanlive-live-service/src/main/java/blog/yuanyuan/yuanlive/live/controller/LiveCategoryController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/yuanlive-server/yuanlive-live-service/src/main/java/blog/yuanyuan/yuanlive/live/controller/LiveRecordController.java" beforeDir="false" afterPath="$PROJECT_DIR$/yuanlive-server/yuanlive-live-service/src/main/java/blog/yuanyuan/yuanlive/live/controller/LiveRecordController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/yuanlive-entity/live-entity/src/main/java/blog/yuanyuan/yuanlive/entity/live/entity/VideoResource.java" beforeDir="false" afterPath="$PROJECT_DIR$/yuanlive-entity/live-entity/src/main/java/blog/yuanyuan/yuanlive/entity/live/entity/VideoResource.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/yuanlive-entity/live-entity/src/main/java/blog/yuanyuan/yuanlive/entity/live/vo/LiveRoomRankVO.java" beforeDir="false" afterPath="$PROJECT_DIR$/yuanlive-entity/live-entity/src/main/java/blog/yuanyuan/yuanlive/entity/live/vo/LiveRoomRankVO.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/yuanlive-entity/live-entity/src/main/java/blog/yuanyuan/yuanlive/entity/live/vo/SearchVO.java" beforeDir="false" afterPath="$PROJECT_DIR$/yuanlive-entity/live-entity/src/main/java/blog/yuanyuan/yuanlive/entity/live/vo/SearchVO.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/yuanlive-server/yuanlive-live-service/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/yuanlive-server/yuanlive-live-service/pom.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/yuanlive-server/yuanlive-live-service/src/main/java/blog/yuanyuan/yuanlive/live/controller/LiveRoomController.java" beforeDir="false" afterPath="$PROJECT_DIR$/yuanlive-server/yuanlive-live-service/src/main/java/blog/yuanyuan/yuanlive/live/controller/LiveRoomController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/yuanlive-server/yuanlive-live-service/src/main/java/blog/yuanyuan/yuanlive/live/domain/vo/LiveRoomRankVO.java" beforeDir="false" afterPath="$PROJECT_DIR$/yuanlive-entity/live-entity/src/main/java/blog/yuanyuan/yuanlive/entity/live/vo/LiveRoomRankVO.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/yuanlive-server/yuanlive-live-service/src/main/java/blog/yuanyuan/yuanlive/live/domain/vo/VideoVO.java" beforeDir="false" afterPath="$PROJECT_DIR$/yuanlive-entity/live-entity/src/main/java/blog/yuanyuan/yuanlive/entity/live/vo/VideoVO.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/yuanlive-server/yuanlive-live-service/src/main/java/blog/yuanyuan/yuanlive/live/mapper/LiveRoomMapper.java" beforeDir="false" afterPath="$PROJECT_DIR$/yuanlive-server/yuanlive-live-service/src/main/java/blog/yuanyuan/yuanlive/live/mapper/LiveRoomMapper.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/yuanlive-server/yuanlive-live-service/src/main/java/blog/yuanyuan/yuanlive/live/mapper/VideoResourceMapper.java" beforeDir="false" afterPath="$PROJECT_DIR$/yuanlive-server/yuanlive-live-service/src/main/java/blog/yuanyuan/yuanlive/live/mapper/VideoResourceMapper.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/yuanlive-server/yuanlive-live-service/src/main/java/blog/yuanyuan/yuanlive/live/service/LiveCategoryService.java" beforeDir="false" afterPath="$PROJECT_DIR$/yuanlive-server/yuanlive-live-service/src/main/java/blog/yuanyuan/yuanlive/live/service/LiveCategoryService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/yuanlive-server/yuanlive-live-service/src/main/java/blog/yuanyuan/yuanlive/live/service/LiveRoomService.java" beforeDir="false" afterPath="$PROJECT_DIR$/yuanlive-server/yuanlive-live-service/src/main/java/blog/yuanyuan/yuanlive/live/service/LiveRoomService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/yuanlive-server/yuanlive-live-service/src/main/java/blog/yuanyuan/yuanlive/live/service/VideoResourceService.java" beforeDir="false" afterPath="$PROJECT_DIR$/yuanlive-server/yuanlive-live-service/src/main/java/blog/yuanyuan/yuanlive/live/service/VideoResourceService.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/yuanlive-server/yuanlive-live-service/src/main/java/blog/yuanyuan/yuanlive/live/service/impl/LiveCategoryServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/yuanlive-server/yuanlive-live-service/src/main/java/blog/yuanyuan/yuanlive/live/service/impl/LiveCategoryServiceImpl.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/yuanlive-server/yuanlive-live-service/src/main/java/blog/yuanyuan/yuanlive/live/service/impl/LiveRoomServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/yuanlive-server/yuanlive-live-service/src/main/java/blog/yuanyuan/yuanlive/live/service/impl/LiveRoomServiceImpl.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/yuanlive-server/yuanlive-live-service/src/main/java/blog/yuanyuan/yuanlive/live/service/impl/VideoResourceServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/yuanlive-server/yuanlive-live-service/src/main/java/blog/yuanyuan/yuanlive/live/service/impl/VideoResourceServiceImpl.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/yuanlive-server/yuanlive-live-service/src/main/java/blog/yuanyuan/yuanlive/live/util/PopularityUtil.java" beforeDir="false" afterPath="$PROJECT_DIR$/yuanlive-server/yuanlive-live-service/src/main/java/blog/yuanyuan/yuanlive/live/util/PopularityUtil.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/yuanlive-server/yuanlive-live-service/src/main/resources/application.yml" beforeDir="false" afterPath="$PROJECT_DIR$/yuanlive-server/yuanlive-live-service/src/main/resources/application.yml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/yuanlive-server/yuanlive-live-service/src/main/resources/mapper/LiveRoomMapper.xml" beforeDir="false" afterPath="$PROJECT_DIR$/yuanlive-server/yuanlive-live-service/src/main/resources/mapper/LiveRoomMapper.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/yuanlive-server/yuanlive-live-service/src/main/resources/mapper/VideoResourceMapper.xml" beforeDir="false" afterPath="$PROJECT_DIR$/yuanlive-server/yuanlive-live-service/src/main/resources/mapper/VideoResourceMapper.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/yuanlive-server/yuanlive-user-service/src/main/java/blog/yuanyuan/yuanlive/user/controller/UserController.java" beforeDir="false" afterPath="$PROJECT_DIR$/yuanlive-server/yuanlive-user-service/src/main/java/blog/yuanyuan/yuanlive/user/controller/UserController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/yuanlive-server/yuanlive-user-service/src/main/java/blog/yuanyuan/yuanlive/user/service/SysUserService.java" beforeDir="false" afterPath="$PROJECT_DIR$/yuanlive-server/yuanlive-user-service/src/main/java/blog/yuanyuan/yuanlive/user/service/SysUserService.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/yuanlive-server/yuanlive-user-service/src/main/java/blog/yuanyuan/yuanlive/user/service/impl/SysUserServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/yuanlive-server/yuanlive-user-service/src/main/java/blog/yuanyuan/yuanlive/user/service/impl/SysUserServiceImpl.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/yuanlive-server/yuanlive-user-service/src/main/resources/application.yml" beforeDir="false" afterPath="$PROJECT_DIR$/yuanlive-server/yuanlive-user-service/src/main/resources/application.yml" afterDir="false" />
     </list>
@@ -87,63 +78,63 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "Docker.docker.higress-ai: Compose 部署.executor": "Run",
-    "JUnit.AuthServiceImplTest.testCosID.executor": "Run",
-    "JUnit.LoginLimitPropertiesTest.test.executor": "Run",
-    "Maven.yuanlive-cloud [clean].executor": "Run",
-    "Maven.yuanlive-cloud [install].executor": "Run",
-    "Maven.yuanlive-common [clean].executor": "Run",
-    "Maven.yuanlive-common [install].executor": "Run",
-    "Maven.yuanlive-live-service [clean].executor": "Run",
-    "Maven.yuanlive-live-service [compile].executor": "Run",
-    "Maven.yuanlive-live-service [install].executor": "Run",
-    "Maven.yuanlive-live-service [verify].executor": "Run",
-    "Maven.yuanlive-user-service [clean].executor": "Run",
-    "Maven.yuanlive-user-service [install].executor": "Run",
-    "Notification.DisplayName-DoNotAsk-Database detector": "数据库检测器",
-    "Notification.DoNotAsk-Database detector": "true",
-    "RequestMappingsPanelOrder0": "0",
-    "RequestMappingsPanelOrder1": "1",
-    "RequestMappingsPanelWidth0": "75",
-    "RequestMappingsPanelWidth1": "75",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "Spring Boot.AiApplication.executor": "Run",
-    "Spring Boot.AuthApplication.executor": "Run",
-    "Spring Boot.GatewayApplication.executor": "Run",
-    "Spring Boot.LiveApplication (1).executor": "Run",
-    "Spring Boot.LiveApplication.executor": "Run",
-    "Spring Boot.LiveApplication2.executor": "Run",
-    "Spring Boot.UserApplication.executor": "Run",
-    "Spring Boot.WalletApplication.executor": "Run",
-    "com.intellij.testIntegration.createTest.CreateTestDialog.defaultLibrary": "JUnit5",
-    "com.intellij.testIntegration.createTest.CreateTestDialog.defaultLibrarySuperClass.JUnit5": "",
-    "git-widget-placeholder": "dev",
-    "kotlin-language-version-configured": "true",
-    "last_directory_selection": "/home/frodepu/IdeaProjects/yuanlive-cloud/yuanlive-entity/live-entity/src/main/java/blog/yuanyuan/yuanlive",
-    "last_opened_file_path": "/home/frodepu/IdeaProjects/LeetCode",
-    "node.js.detected.package.eslint": "true",
-    "node.js.detected.package.tslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "project.structure.last.edited": "模块",
-    "project.structure.proportion": "0.15",
-    "project.structure.side.proportion": "0.2",
-    "run.configurations.included.in.services": "true",
-    "settings.editor.selected.configurable": "http.proxy",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;Docker.docker.higress-ai: Compose 部署.executor&quot;: &quot;Run&quot;,
+    &quot;JUnit.AuthServiceImplTest.testCosID.executor&quot;: &quot;Run&quot;,
+    &quot;JUnit.LoginLimitPropertiesTest.test.executor&quot;: &quot;Run&quot;,
+    &quot;Maven.yuanlive-cloud [clean].executor&quot;: &quot;Run&quot;,
+    &quot;Maven.yuanlive-cloud [install].executor&quot;: &quot;Run&quot;,
+    &quot;Maven.yuanlive-common [clean].executor&quot;: &quot;Run&quot;,
+    &quot;Maven.yuanlive-common [install].executor&quot;: &quot;Run&quot;,
+    &quot;Maven.yuanlive-live-service [clean].executor&quot;: &quot;Run&quot;,
+    &quot;Maven.yuanlive-live-service [compile].executor&quot;: &quot;Run&quot;,
+    &quot;Maven.yuanlive-live-service [install].executor&quot;: &quot;Run&quot;,
+    &quot;Maven.yuanlive-live-service [verify].executor&quot;: &quot;Run&quot;,
+    &quot;Maven.yuanlive-user-service [clean].executor&quot;: &quot;Run&quot;,
+    &quot;Maven.yuanlive-user-service [install].executor&quot;: &quot;Run&quot;,
+    &quot;Notification.DisplayName-DoNotAsk-Database detector&quot;: &quot;数据库检测器&quot;,
+    &quot;Notification.DoNotAsk-Database detector&quot;: &quot;true&quot;,
+    &quot;RequestMappingsPanelOrder0&quot;: &quot;0&quot;,
+    &quot;RequestMappingsPanelOrder1&quot;: &quot;1&quot;,
+    &quot;RequestMappingsPanelWidth0&quot;: &quot;75&quot;,
+    &quot;RequestMappingsPanelWidth1&quot;: &quot;75&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;Spring Boot.AiApplication.executor&quot;: &quot;Run&quot;,
+    &quot;Spring Boot.AuthApplication.executor&quot;: &quot;Run&quot;,
+    &quot;Spring Boot.GatewayApplication.executor&quot;: &quot;Run&quot;,
+    &quot;Spring Boot.LiveApplication (1).executor&quot;: &quot;Run&quot;,
+    &quot;Spring Boot.LiveApplication.executor&quot;: &quot;Run&quot;,
+    &quot;Spring Boot.LiveApplication2.executor&quot;: &quot;Run&quot;,
+    &quot;Spring Boot.UserApplication.executor&quot;: &quot;Run&quot;,
+    &quot;Spring Boot.WalletApplication.executor&quot;: &quot;Run&quot;,
+    &quot;com.intellij.testIntegration.createTest.CreateTestDialog.defaultLibrary&quot;: &quot;JUnit5&quot;,
+    &quot;com.intellij.testIntegration.createTest.CreateTestDialog.defaultLibrarySuperClass.JUnit5&quot;: &quot;&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;dev&quot;,
+    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
+    &quot;last_directory_selection&quot;: &quot;/home/frodepu/IdeaProjects/yuanlive-cloud/yuanlive-entity/live-entity/src/main/java/blog/yuanyuan/yuanlive&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/home/frodepu/IdeaProjects/LeetCode&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;project.structure.last.edited&quot;: &quot;模块&quot;,
+    &quot;project.structure.proportion&quot;: &quot;0.15&quot;,
+    &quot;project.structure.side.proportion&quot;: &quot;0.2&quot;,
+    &quot;run.configurations.included.in.services&quot;: &quot;true&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;http.proxy&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   },
-  "keyToStringList": {
-    "DatabaseDriversLRU": [
-      "redis",
-      "elasticsearch",
-      "mysql"
+  &quot;keyToStringList&quot;: {
+    &quot;DatabaseDriversLRU&quot;: [
+      &quot;redis&quot;,
+      &quot;elasticsearch&quot;,
+      &quot;mysql&quot;
     ]
   }
-}]]></component>
+}</component>
   <component name="ReactorSettings">
     <option name="notificationShown" value="true" />
   </component>
@@ -152,8 +143,8 @@
       <recent name="$PROJECT_DIR$/yuanlive-common/src/main/java/blog/yuanyuan/yuanlive/common" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
-      <recent name="$PROJECT_DIR$/yuanlive-server/yuanlive-live-service/src/main/resources/lua" />
       <recent name="$PROJECT_DIR$/yuanlive-server/yuanlive-user-service/src/main/resources/mapper" />
+      <recent name="$PROJECT_DIR$/yuanlive-server/yuanlive-live-service/src/main/resources/lua" />
       <recent name="$PROJECT_DIR$/yuanlive-server/yuanlive-live-service/src/main/resources/mapper" />
       <recent name="$PROJECT_DIR$/yuanlive-server/yuanlive-user-service/src/main/resources" />
       <recent name="$PROJECT_DIR$/yuanlive-common/src/main/java/blog/yuanyuan/yuanlive/common" />
@@ -285,9 +276,9 @@
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="Spring Boot.LiveApplication" />
         <item itemvalue="Spring Boot.GatewayApplication" />
         <item itemvalue="Spring Boot.UserApplication" />
-        <item itemvalue="Spring Boot.LiveApplication" />
         <item itemvalue="Spring Boot.AiApplication" />
         <item itemvalue="Spring Boot.LiveApplication (1)" />
       </list>
@@ -433,15 +424,14 @@
       <workItem from="1772088261542" duration="9175000" />
       <workItem from="1772107369535" duration="12000" />
       <workItem from="1772521553089" duration="11291000" />
-      <workItem from="1772598048878" duration="27145000" />
-    </task>
-    <task id="LOCAL-00022" summary=":sparkles: 搭建websocket框架、SRS添加webrtc功能">
-      <option name="closed" value="true" />
-      <created>1768901336217</created>
-      <option name="number" value="00022" />
-      <option name="presentableId" value="LOCAL-00022" />
-      <option name="project" value="LOCAL" />
-      <updated>1768901336217</updated>
+      <workItem from="1772598048878" duration="27236000" />
+      <workItem from="1772628950651" duration="568000" />
+      <workItem from="1772629572337" duration="91000" />
+      <workItem from="1772635947849" duration="33000" />
+      <workItem from="1772685226775" duration="16953000" />
+      <workItem from="1772720144436" duration="4533000" />
+      <workItem from="1772772731566" duration="25494000" />
+      <workItem from="1772951410124" duration="6884000" />
     </task>
     <task id="LOCAL-00023" summary=":sparkles: 实现websocket水平扩展并通过gateway同意访问&#10;（访问地址：ws://localhost:8080/ws）">
       <option name="closed" value="true" />
@@ -827,7 +817,15 @@
       <option name="project" value="LOCAL" />
       <updated>1772539147387</updated>
     </task>
-    <option name="localTasksCounter" value="71" />
+    <task id="LOCAL-00071" summary=":sparkles: 实现用户综合搜索视频与直播间">
+      <option name="closed" value="true" />
+      <created>1772628730908</created>
+      <option name="number" value="00071" />
+      <option name="presentableId" value="LOCAL-00071" />
+      <option name="project" value="LOCAL" />
+      <updated>1772628730908</updated>
+    </task>
+    <option name="localTasksCounter" value="72" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -875,8 +873,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value=":sparkles: 添加用户统计信息表" />
-    <MESSAGE value=":sparkles: 完善用户信息返回内容" />
     <MESSAGE value=":memo: 更新start.md" />
     <MESSAGE value=":bug: 修改sql文件" />
     <MESSAGE value=":sparkles: 使用ffmpeg自动截取图片作为录播视频封面" />
@@ -900,7 +896,9 @@
     <MESSAGE value=":sparkles: 尝试mcp负载均衡" />
     <MESSAGE value=":sparkles: 返回热门分类标签、重构直播分类多对多关系" />
     <MESSAGE value=":sparkles: 实现文件上传功能(暂未实现分片上传)" />
-    <option name="LAST_COMMIT_MESSAGE" value=":sparkles: 实现文件上传功能(暂未实现分片上传)" />
+    <MESSAGE value=":sparkles: 实现用户综合搜索视频与直播间" />
+    <MESSAGE value=":sparkles: 使用flink将视频与直播间信息同步至es进行查询" />
+    <option name="LAST_COMMIT_MESSAGE" value=":sparkles: 使用flink将视频与直播间信息同步至es进行查询" />
   </component>
   <component name="XSLT-Support.FileAssociations.UIState">
     <expand />

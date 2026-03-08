@@ -12,7 +12,7 @@ import java.util.List;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class SearchVO {
     @Schema(description = "视频信息")
-    private VideoResource video;
+    private VideoSearchVO video;
     @Schema(description = "直播房间信息")
     private LiveRoomRankVO liveRoom;
     @Schema(description = "是否是房间信息")

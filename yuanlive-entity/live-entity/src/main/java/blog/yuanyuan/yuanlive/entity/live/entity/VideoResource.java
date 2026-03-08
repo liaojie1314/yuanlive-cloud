@@ -13,6 +13,8 @@ public class VideoResource {
     private Long userId;
     @Schema(description="直播间ID")
     private Long roomId;
+    @Schema(description = "直播间分类")
+    private Integer categoryId;
     @Schema(description="视频时长")
     private Long duration;
     @Schema(description="视频标题（录播可默认为“直播回放+日期”")

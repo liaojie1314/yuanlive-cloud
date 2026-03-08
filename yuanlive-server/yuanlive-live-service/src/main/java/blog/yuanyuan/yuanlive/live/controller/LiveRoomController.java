@@ -137,22 +137,6 @@ public class LiveRoomController {
         return Result.success(rooms);
     }
 
-//    @GetMapping("/searchRoom")
-//    @Operation(summary = "搜索直播间")
-//    public ResultPage<LiveRoomRankVO> searchLiveRoom(@RequestParam("keyword") String keyword,
-//                                                     @RequestParam(value = "pageNum", defaultValue = "1") Integer pageNum,
-//                                                     @RequestParam(value = "pageSize", defaultValue = "10") Integer pageSize) {
-//        return liveRoomService.searchLiveRoom(keyword, pageNum, pageSize);
-//    }
-//
-//    @GetMapping("/searchVideo")
-//    @Operation(summary = "搜索视频")
-//    public ResultPage<VideoResource> searchVideo(@RequestParam("keyword") String keyword,
-//                                           @RequestParam(value = "pageNum", defaultValue = "1") Integer pageNum,
-//                                           @RequestParam(value = "pageSize", defaultValue = "10") Integer pageSize) {
-//        return liveRoomService.searchVideos(keyword, pageNum, pageSize);
-//    }
-
     @PostMapping("/search")
     @Operation(summary = "综合搜索视频与直播间")
     public ResultPage<SearchVO> search(@RequestBody @Validated SearchQueryDTO searchQueryDTO) {

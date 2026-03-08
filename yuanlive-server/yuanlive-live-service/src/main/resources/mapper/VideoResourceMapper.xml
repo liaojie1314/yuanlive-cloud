@@ -31,33 +31,35 @@
         from video_resource
         where
             <foreach collection="dtos" item="item" separator="OR">
-                (user_id = #{item.followingId} AND id > #{item.lastReadVideoId})
+                (user_id = #{item.followingId} AND id > #{item.lastReadVideoId} AND video_url IS NOT NULL)
             </foreach>
     </select>
     
     <!-- 搜索视频 SQL -->
-    <select id="searchVideos" resultMap="BaseResultMap">
+    <select id="searchVideos" resultType="blog.yuanyuan.yuanlive.entity.live.entity.VideoResource">
         SELECT DISTINCT
-            vr.*
+            vr.*,
+            lr.category_id
         FROM video_resource vr
         LEFT JOIN live_room lr ON vr.room_id = lr.id
-        LEFT JOIN yuanlive_user.sys_user su ON vr.user_id = su.uid
         WHERE
-            LOWER(vr.title) LIKE CONCAT('%', LOWER(#{keyword}), '%')
-            OR LOWER(su.username) LIKE CONCAT('%', LOWER(#{keyword}), '%')
-            OR LOWER(lr.title) LIKE CONCAT('%', LOWER(#{keyword}), '%')
+            (LOWER(vr.title) LIKE CONCAT('%', LOWER(#{keyword}), '%')
+            OR LOWER(lr.anchor_name) LIKE CONCAT('%', LOWER(#{keyword}), '%')
+            OR LOWER(lr.title) LIKE CONCAT('%', LOWER(#{keyword}), '%'))
+            AND vr.video_url IS NOT NULL
         ORDER BY vr.id DESC
     </select>
-    <select id="searchVideosByOffset" resultMap="BaseResultMap">
+    <select id="searchVideosByOffset" resultType="blog.yuanyuan.yuanlive.entity.live.entity.VideoResource">
         SELECT DISTINCT
-            vr.*
+            vr.*,
+            lr.category_id
         FROM video_resource vr
                  LEFT JOIN live_room lr ON vr.room_id = lr.id
-                 LEFT JOIN yuanlive_user.sys_user su ON vr.user_id = su.uid
         WHERE
-            LOWER(vr.title) LIKE CONCAT('%', LOWER(#{keyword}), '%')
-           OR LOWER(su.username) LIKE CONCAT('%', LOWER(#{keyword}), '%')
-           OR LOWER(lr.title) LIKE CONCAT('%', LOWER(#{keyword}), '%')
+            (LOWER(vr.title) LIKE CONCAT('%', LOWER(#{keyword}), '%')
+           OR LOWER(lr.anchor_name) LIKE CONCAT('%', LOWER(#{keyword}), '%')
+           OR LOWER(lr.title) LIKE CONCAT('%', LOWER(#{keyword}), '%'))
+            AND vr.video_url IS NOT NULL
         ORDER BY vr.id DESC
         LIMIT #{offset}, #{limit}
     </select>

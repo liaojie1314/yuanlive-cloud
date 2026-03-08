@@ -1,0 +1,91 @@
+################################################################################
+#  基础核心配置
+################################################################################
+
+# JobManager 的地址，在 Docker Compose 环境下使用服务名
+jobmanager.rpc.address: flink-jobmanager
+jobmanager.rpc.port: 6123
+
+# 绑定地址设为 0.0.0.0 允许容器外访问
+jobmanager.bind-host: 0.0.0.0
+taskmanager.bind-host: 0.0.0.0
+rest.address: 0.0.0.0
+rest.bind-address: 0.0.0.0
+
+# 内存配置 (保持你原有的配置)
+jobmanager.memory.process.size: 1600m
+taskmanager.memory.process.size: 1728m
+
+# 任务槽数（建议与你的 Docker Compose 中的 numberOfTaskSlots 保持一致）
+taskmanager.numberOfTaskSlots: 2
+parallelism.default: 1
+
+# Java 17 支持 (保持原有)
+env.java.opts.all: --add-exports=java.base/sun.net.util=ALL-UNNAMED --add-exports=java.rmi/sun.rmi.registry=ALL-UNNAMED --add-exports=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED --add-exports=jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED --add-exports=jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED --add-exports=jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED --add-exports=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED --add-exports=java.security.jgss/sun.security.krb5=ALL-UNNAMED --add-opens=java.base/java.lang=ALL-UNNAMED --add-opens=java.base/java.net=ALL-UNNAMED --add-opens=java.base/java.io=ALL-UNNAMED --add-opens=java.base/java.nio=ALL-UNNAMED --add-opens=java.base/sun.nio.ch=ALL-UNNAMED --add-opens=java.base/java.lang.reflect=ALL-UNNAMED --add-opens=java.base/java.text=ALL-UNNAMED --add-opens=java.base/java.time=ALL-UNNAMED --add-opens=java.base/java.util=ALL-UNNAMED --add-opens=java.base/java.util.concurrent=ALL-UNNAMED --add-opens=java.base/java.util.concurrent.atomic=ALL-UNNAMED --add-opens=java.base/java.util.concurrent.locks=ALL-UNNAMED
+
+################################################################################
+#  SQL Gateway 配置 (解决你无法访问 8083 的问题)
+################################################################################
+
+# 显式开启 REST 端点地址
+sql-gateway.endpoint.rest.address: 0.0.0.0
+sql-gateway.endpoint.rest.port: 8083
+
+# 允许跨域（方便某些 UI 工具连接）
+rest.flamegraph.enabled: true
+
+################################################################################
+#  故障恢复与持久化 (解决你任务重启丢失的问题)
+################################################################################
+
+# 状态后端：使用内存+文件系统
+state.backend.type: hashmap
+
+# Checkpoint 存储路径 (对应容器内挂载的 /opt/flink/checkpoints)
+state.checkpoints.dir: file:///opt/flink/checkpoints
+
+# 故障恢复策略：重启受影响的区域
+jobmanager.execution.failover-strategy: region
+
+# 固定延迟重启策略：失败后尝试重启 10 次，每次间隔 10 秒
+execution.restart-strategy.type: fixed-delay
+execution.restart-strategy.fixed-delay.attempts: 10
+execution.restart-strategy.fixed-delay.delay: 10s
+
+# 允许在取消任务时保留 Checkpoint，以便下次手动恢复
+execution.checkpointing.externalized-checkpoint-retention: RETAIN_ON_CANCELLATION
+
+################################################################################
+#  高级配置
+################################################################################
+
+# 解决类加载冲突的关键（保持 Flink 默认的优先加载子类）
+classloader.resolve-order: child-first
+
+blob.server.port: 6124
+query.server.port: 6125
+jobmanager.rpc.address: flink-jobmanager
+taskmanager.numberOfTaskSlots: 2
+
+
+
+jobmanager.rpc.address: flink-jobmanager
+
+
+jobmanager.rpc.address: flink-jobmanager
+taskmanager.numberOfTaskSlots: 2
+
+
+jobmanager.rpc.address: flink-jobmanager
+taskmanager.numberOfTaskSlots: 2
+
+
+jobmanager.rpc.address: flink-jobmanager
+
+
+jobmanager.rpc.address: flink-jobmanager
+
+
+jobmanager.rpc.address: flink-jobmanager
+taskmanager.numberOfTaskSlots: 2
+

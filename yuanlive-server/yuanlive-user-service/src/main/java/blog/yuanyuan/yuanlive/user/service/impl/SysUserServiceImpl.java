@@ -38,6 +38,7 @@ import org.springframework.util.StringUtils;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
@@ -58,6 +59,8 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
     private SysRoleService roleService;
     @Resource
     private UserStatsService userStatsService;
+    @Resource
+    private SearchHistoryService searchHistoryService;
     @Resource
     private SysUserMapper userMapper;
     @Resource
@@ -221,12 +224,26 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
     public ResultPage<SearchVO> search(SearchQueryDTO queryDTO) {
         long uid = StpUtil.getLoginIdAsLong();
         String trimKeyword = queryDTO.getQuery().trim();
-        asyncRecordHistory(uid, trimKeyword);
-        return liveFeignClient.search(queryDTO);
+        ResultPage<SearchVO> result = liveFeignClient.search(queryDTO);
+        Integer topCategoryId = null;
+        if (!result.getList().isEmpty()) {
+            Map<Integer, Long> map = result.getList().stream()
+                    .map(searchVO -> searchVO.isCheckRoom()
+                            ? searchVO.getLiveRoom().getCategoryId()
+                            : searchVO.getVideo().getCategoryId())
+                    .filter(Objects::nonNull)
+                    .collect(Collectors.groupingBy(id -> id, Collectors.counting()));
+            topCategoryId = map.entrySet().stream()
+                    .max(Map.Entry.comparingByValue())
+                    .map(Map.Entry::getKey)
+                    .orElse(null);
+        }
+        asyncRecordHistory(uid, trimKeyword, topCategoryId);
+        return result;
     }
 
     @Async
-    public void asyncRecordHistory(Long uid, String keyword) {
+    public void asyncRecordHistory(Long uid, String keyword, Integer categoryId) {
         String historyKey = searchProperties.getHistory().getPrefix() + uid;
         String rankKey = searchProperties.getHot().getRankKey();
         String hour = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHH"));
@@ -240,6 +257,12 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
         stringRedisTemplate.opsForZSet().incrementScore(hourKey, keyword, 1);
         stringRedisTemplate.expire(hourKey, searchProperties.getHot().getTtl());
 
+        SearchHistory history = new SearchHistory();
+        history.setUserId(uid);
+        history.setKeyword(keyword);
+        history.setCategoryId(categoryId);
+        history.setId(idGeneratorProvider.getRequired("search-history").generate());
+        searchHistoryService.save(history);
     }
 
     private void insertUserRole(Long userId, List<Long> roleIds) {

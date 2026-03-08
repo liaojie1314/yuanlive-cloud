@@ -28,12 +28,13 @@
     </resultMap>
 
     <!-- 搜索直播间 SQL -->
-    <select id="searchLiveRooms" resultMap="LiveRoomRankVOMap">
+    <select id="searchLiveRooms" resultType="blog.yuanyuan.yuanlive.entity.live.vo.LiveRoomRankVO">
         SELECT
             lr.id,
             lr.title,
             lr.cover_img,
             lr.anchor_name,
+            lr.category_id,
             0.0 AS hot_score
         FROM live_room lr
         LEFT JOIN live_category lc ON lr.category_id = lc.id

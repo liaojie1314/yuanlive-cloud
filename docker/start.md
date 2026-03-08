@@ -289,3 +289,25 @@
   - 密码: yuanlive+123
 - 普通用户
   - 请自行注册
+
+
+CREATE TABLE mysql_room (
+>     id BIGINT,
+>     anchor_id BIGINT,     -- 刚才漏掉的字段，它是关联用户的关键
+>     title STRING,
+>     anchor_name STRING,
+>     category_id INT,
+>     cover_img STRING,
+>     create_time TIMESTAMP(3),
+>     PRIMARY KEY (id) NOT ENFORCED
+> ) WITH (
+>     'connector' = 'mysql-cdc',
+>     'hostname' = 'mysql',
+>     'port' = '3307',
+>     'username' = 'root',
+>     'password' = 'yuanlive',
+>     'database-name' = 'yuanlive_live',
+>     'table-name' = 'live_room',
+>     'server-time-zone' = 'Asia/Shanghai'
+> );
+

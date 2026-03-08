@@ -25,4 +25,6 @@ public class LiveRoomRankVO {
     private String coverImg;
     @Schema(description = "人气指数")
     private double hotScore;
+    @Schema(description = "房间分类")
+    private Integer categoryId;
 }

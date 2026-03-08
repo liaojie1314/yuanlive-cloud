@@ -424,26 +424,32 @@ public class LiveCategoryServiceImpl extends ServiceImpl<LiveCategoryMapper, Liv
     @Override
     public List<LiveCategoryVO> getFirstLevelCategories() {
         log.info("获取一级分类列表");
-        
-        // 查询所有不在关联表中的分类作为一级分类
-        List<Integer> allRelatedCategoryIds = liveCategoryRelationService.list()
-            .stream()
-            .map(LiveCategoryRelation::getCategoryId)
-            .collect(Collectors.toList());
-        
+
+        // 1. 查询所有“子分类”的ID（即在关联表中 parentId 不为 0 的记录）
+        List<Integer> subCategoryIds = liveCategoryRelationService.lambdaQuery()
+                .ne(LiveCategoryRelation::getParentId, 0)
+                .list()
+                .stream()
+                .map(LiveCategoryRelation::getCategoryId)
+                .collect(Collectors.toList());
+
+        // 2. 构造查询条件：只要分类 ID 不在“子分类 ID 列表”中，它就是一级分类
         LambdaQueryWrapper<LiveCategory> categoryQuery = new LambdaQueryWrapper<>();
-        if (!allRelatedCategoryIds.isEmpty()) {
-            categoryQuery.notIn(LiveCategory::getId, allRelatedCategoryIds);
+        if (!subCategoryIds.isEmpty()) {
+            categoryQuery.notIn(LiveCategory::getId, subCategoryIds);
         }
+
+        // 排序逻辑保持不变
         categoryQuery.orderByDesc(LiveCategory::getSortWeight)
-                     .orderByAsc(LiveCategory::getId);
-        
+                .orderByAsc(LiveCategory::getId);
+
         List<LiveCategory> topLevelCategories = this.list(categoryQuery);
-        
+
+        // 3. 封装为 VO 返回
         return topLevelCategories.stream()
                 .map(category -> {
                     LiveCategoryVO vo = BeanUtil.copyProperties(category, LiveCategoryVO.class);
-                    vo.setParentIds(List.of(0)); // 一级分类的父IDs为[0]
+                    vo.setParentIds(List.of(0)); // 一级分类的逻辑父ID统一设为0
                     return vo;
                 })
                 .collect(Collectors.toList());

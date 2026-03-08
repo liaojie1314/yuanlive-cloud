@@ -193,7 +193,7 @@ services:
 
   # elasticsearch
   es:
-    image: elasticsearch:9.2.4
+    image: elasticsearch:8.19.12
     container_name: yuanlive-es
     restart: unless-stopped
     ports:
@@ -211,7 +211,7 @@ services:
       - live-net
   # kibana
   kibana:
-    image: elastic/kibana:9.2.4
+    image: elastic/kibana:8.19.12
     container_name: yuanlive-kibana
     restart: unless-stopped
     ports:
@@ -224,7 +224,7 @@ services:
       - live-net
   # logstash
   logstash:
-    image: elastic/logstash:9.2.4
+    image: elastic/logstash:8.19.12
     container_name: yuanlive-logstash
     restart: unless-stopped
     ports:
@@ -237,7 +237,7 @@ services:
       - live-net
   # 4. Filebeat (日志搬运工)
   filebeat:
-    image: elastic/filebeat:9.2.4
+    image: elastic/filebeat:8.19.12
     container_name: yuanlive-filebeat
     restart: unless-stopped
     user: root
@@ -249,6 +249,52 @@ services:
       - logstash
     networks:
       - live-net
+  # flink
+  flink-jobmanager:
+    container_name: yuanlive-flink-jobmanager
+    image: flink:1.18.1
+    restart: unless-stopped
+    ports:
+      - "8061:8081"
+      - "8063:8083"
+    volumes:
+      - ./flink/flink-lib/flink-sql-connector-elasticsearch7-3.1.0-1.18.jar:/opt/flink/lib/flink-sql-connector-elasticsearch7-3.1.0-1.18.jar
+      - ./flink/flink-lib/flink-sql-connector-mysql-cdc-3.1.0.jar:/opt/flink/lib/flink-sql-connector-mysql-cdc-3.1.0.jar
+      - ./flink/flink-lib/mysql-connector-j-8.0.33.jar:/opt/flink/lib/mysql-connector-j-8.0.33.jar
+      - ./flink/conf/flink-conf.yaml:/opt/flink/conf/flink-conf.yaml
+      - ./flink/checkpoints:/opt/flink/checkpoints
+    command: >
+      /bin/bash -c "
+      /opt/flink/bin/sql-gateway.sh start && 
+      /opt/flink/bin/jobmanager.sh start-foreground
+      "
+    networks:
+      - live-net
+    environment:
+      - |
+        FLINK_PROPERTIES=
+        jobmanager.rpc.address: flink-jobmanager
+
+  flink-taskmanager:
+    image: flink:1.18.1
+    container_name: yuanlive-flink-taskmanager
+    restart: unless-stopped
+    volumes:
+      - ./flink/flink-lib/flink-sql-connector-elasticsearch7-3.1.0-1.18.jar:/opt/flink/lib/flink-sql-connector-elasticsearch7-3.1.0-1.18.jar
+      - ./flink/flink-lib/flink-sql-connector-mysql-cdc-3.1.0.jar:/opt/flink/lib/flink-sql-connector-mysql-cdc-3.1.0.jar
+      - ./flink/flink-lib/mysql-connector-j-8.0.33.jar:/opt/flink/lib/mysql-connector-j-8.0.33.jar
+      - ./flink/conf/flink-conf.yaml:/opt/flink/conf/flink-conf.yaml
+      - ./flink/checkpoints:/opt/flink/checkpoints
+    depends_on:
+      - flink-jobmanager
+    command: taskmanager
+    networks:
+      - live-net
+    environment:
+      - |
+        FLINK_PROPERTIES=
+        jobmanager.rpc.address: flink-jobmanager
+        taskmanager.numberOfTaskSlots: 2
 
 #  higress-ai:
 #    image: higress-registry.cn-hangzhou.cr.aliyuncs.com/higress/all-in-one:latest
