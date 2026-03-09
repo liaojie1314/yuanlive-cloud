@@ -64,28 +64,5 @@ classloader.resolve-order: child-first
 
 blob.server.port: 6124
 query.server.port: 6125
-jobmanager.rpc.address: flink-jobmanager
-taskmanager.numberOfTaskSlots: 2
 
-
-
-jobmanager.rpc.address: flink-jobmanager
-
-
-jobmanager.rpc.address: flink-jobmanager
-taskmanager.numberOfTaskSlots: 2
-
-
-jobmanager.rpc.address: flink-jobmanager
-taskmanager.numberOfTaskSlots: 2
-
-
-jobmanager.rpc.address: flink-jobmanager
-
-
-jobmanager.rpc.address: flink-jobmanager
-
-
-jobmanager.rpc.address: flink-jobmanager
-taskmanager.numberOfTaskSlots: 2
 

@@ -8,23 +8,17 @@
       <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/dataSources.local.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dataSources.local.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/dataSources/77a91b57-2946-40a7-ad5e-26ee38621679.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dataSources/77a91b57-2946-40a7-ad5e-26ee38621679.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/mybatisx/templates.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/mybatisx/templates.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/docker/.env" beforeDir="false" afterPath="$PROJECT_DIR$/docker/.env" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/docker/docker-compose.yml" beforeDir="false" afterPath="$PROJECT_DIR$/docker/docker-compose.yml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/docker/elasticsearch/plugins/ik/elasticsearch-analysis-ik-9.2.4.jar" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/docker/elasticsearch/plugins/ik/ik-core-1.0.jar" beforeDir="false" afterPath="$PROJECT_DIR$/docker/elasticsearch/plugins/ik/ik-core-1.0.jar" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/docker/elasticsearch/plugins/ik/plugin-descriptor.properties" beforeDir="false" afterPath="$PROJECT_DIR$/docker/elasticsearch/plugins/ik/plugin-descriptor.properties" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/docker/start.md" beforeDir="false" afterPath="$PROJECT_DIR$/docker/start.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/yuanlive-entity/live-entity/src/main/java/blog/yuanyuan/yuanlive/entity/live/entity/VideoResource.java" beforeDir="false" afterPath="$PROJECT_DIR$/yuanlive-entity/live-entity/src/main/java/blog/yuanyuan/yuanlive/entity/live/entity/VideoResource.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/yuanlive-entity/live-entity/src/main/java/blog/yuanyuan/yuanlive/entity/live/vo/LiveRoomRankVO.java" beforeDir="false" afterPath="$PROJECT_DIR$/yuanlive-entity/live-entity/src/main/java/blog/yuanyuan/yuanlive/entity/live/vo/LiveRoomRankVO.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/yuanlive-entity/live-entity/src/main/java/blog/yuanyuan/yuanlive/entity/live/vo/SearchVO.java" beforeDir="false" afterPath="$PROJECT_DIR$/yuanlive-entity/live-entity/src/main/java/blog/yuanyuan/yuanlive/entity/live/vo/SearchVO.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/yuanlive-server/yuanlive-live-service/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/yuanlive-server/yuanlive-live-service/pom.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/yuanlive-server/yuanlive-live-service/src/main/java/blog/yuanyuan/yuanlive/live/controller/LiveRoomController.java" beforeDir="false" afterPath="$PROJECT_DIR$/yuanlive-server/yuanlive-live-service/src/main/java/blog/yuanyuan/yuanlive/live/controller/LiveRoomController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/yuanlive-server/yuanlive-live-service/src/main/java/blog/yuanyuan/yuanlive/live/service/impl/LiveCategoryServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/yuanlive-server/yuanlive-live-service/src/main/java/blog/yuanyuan/yuanlive/live/service/impl/LiveCategoryServiceImpl.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/yuanlive-server/yuanlive-live-service/src/main/java/blog/yuanyuan/yuanlive/live/service/impl/LiveRoomServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/yuanlive-server/yuanlive-live-service/src/main/java/blog/yuanyuan/yuanlive/live/service/impl/LiveRoomServiceImpl.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/yuanlive-server/yuanlive-live-service/src/main/resources/mapper/LiveRoomMapper.xml" beforeDir="false" afterPath="$PROJECT_DIR$/yuanlive-server/yuanlive-live-service/src/main/resources/mapper/LiveRoomMapper.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/yuanlive-server/yuanlive-live-service/src/main/resources/mapper/VideoResourceMapper.xml" beforeDir="false" afterPath="$PROJECT_DIR$/yuanlive-server/yuanlive-live-service/src/main/resources/mapper/VideoResourceMapper.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/docker/flink/conf/flink-conf.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/docker/flink/conf/flink-conf.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/docker/start.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/mysql/yuanlive_mysql-yuanlive_live-2026_03_04_20_46_34-dump.sql" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/mysql/yuanlive_mysql-yuanlive_user-2026_03_04_20_46_40-dump.sql" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/pom.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/yuanlive-server/yuanlive-user-service/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/yuanlive-server/yuanlive-user-service/pom.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/yuanlive-server/yuanlive-user-service/src/main/java/blog/yuanyuan/yuanlive/user/controller/UserController.java" beforeDir="false" afterPath="$PROJECT_DIR$/yuanlive-server/yuanlive-user-service/src/main/java/blog/yuanyuan/yuanlive/user/controller/UserController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/yuanlive-server/yuanlive-user-service/src/main/java/blog/yuanyuan/yuanlive/user/properties/SearchProperties.java" beforeDir="false" afterPath="$PROJECT_DIR$/yuanlive-server/yuanlive-user-service/src/main/java/blog/yuanyuan/yuanlive/user/properties/SearchProperties.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/yuanlive-server/yuanlive-user-service/src/main/java/blog/yuanyuan/yuanlive/user/service/SysUserService.java" beforeDir="false" afterPath="$PROJECT_DIR$/yuanlive-server/yuanlive-user-service/src/main/java/blog/yuanyuan/yuanlive/user/service/SysUserService.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/yuanlive-server/yuanlive-user-service/src/main/java/blog/yuanyuan/yuanlive/user/service/impl/SysUserServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/yuanlive-server/yuanlive-user-service/src/main/java/blog/yuanyuan/yuanlive/user/service/impl/SysUserServiceImpl.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/yuanlive-server/yuanlive-user-service/src/main/resources/application.yml" beforeDir="false" afterPath="$PROJECT_DIR$/yuanlive-server/yuanlive-user-service/src/main/resources/application.yml" afterDir="false" />
     </list>
@@ -431,15 +425,9 @@
       <workItem from="1772685226775" duration="16953000" />
       <workItem from="1772720144436" duration="4533000" />
       <workItem from="1772772731566" duration="25494000" />
-      <workItem from="1772951410124" duration="6884000" />
-    </task>
-    <task id="LOCAL-00023" summary=":sparkles: 实现websocket水平扩展并通过gateway同意访问&#10;（访问地址：ws://localhost:8080/ws）">
-      <option name="closed" value="true" />
-      <created>1768918314846</created>
-      <option name="number" value="00023" />
-      <option name="presentableId" value="LOCAL-00023" />
-      <option name="project" value="LOCAL" />
-      <updated>1768918314846</updated>
+      <workItem from="1772951410124" duration="7036000" />
+      <workItem from="1773033466788" duration="64000" />
+      <workItem from="1773035389525" duration="18367000" />
     </task>
     <task id="LOCAL-00024" summary=":sparkles: 实现ELK日志收集管理">
       <option name="closed" value="true" />
@@ -825,7 +813,15 @@
       <option name="project" value="LOCAL" />
       <updated>1772628730908</updated>
     </task>
-    <option name="localTasksCounter" value="72" />
+    <task id="LOCAL-00072" summary=":sparkles: 使用flink将视频与直播间信息同步至es进行查询">
+      <option name="closed" value="true" />
+      <created>1772958421859</created>
+      <option name="number" value="00072" />
+      <option name="presentableId" value="LOCAL-00072" />
+      <option name="project" value="LOCAL" />
+      <updated>1772958421859</updated>
+    </task>
+    <option name="localTasksCounter" value="73" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">

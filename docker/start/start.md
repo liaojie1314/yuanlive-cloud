@@ -274,12 +274,136 @@
       ```
 
 ## 8. AI api-key配置
+
 - 进入[nvidia](https://build.nvidia.com/models)官网，登录或注册（也可选择其他平台）
 - 点击右上角头像，选择`API Keys`，申请获得key
 - 在`yuanlive-ai-service`微服务中添加`NVIDIA_API_KEY`环境变量
 - 可以自行选择更换其他模型
 
-## 9. 账号管理
+## 9.Flink CDC配置
+
+- 进入[kibana](http://localhost:5601)中的 `Dev Tools`界面中
+
+- 创建相关索引，代码如下
+  
+  ```
+  PUT /yuanlive_search
+  {
+    "settings": {
+      "index": {
+        "number_of_shards": 1,
+        "number_of_replicas": 1,
+        "analysis": {
+          "analyzer": {
+            "ik_analyzer": {
+              "type": "ik_max_word"
+            }
+          }
+        }
+      }
+    },
+    "mappings": {
+      "dynamic": "strict",
+      "properties": {
+        "id": {
+          "type": "long"
+        },
+        "uid": {
+          "type": "long"
+        },
+        "biz_type": {
+          "type": "integer"
+        },
+        "title": {
+          "type": "text",
+          "analyzer": "ik_max_word",
+          "search_analyzer": "ik_smart",
+          "fields": {
+            "keyword": {
+              "type": "keyword",
+              "ignore_above": 256
+            }
+          }
+        },
+        "anchor_name": {
+          "type": "text",
+          "analyzer": "ik_max_word",
+          "search_analyzer": "ik_smart",
+          "fields": {
+            "keyword": {
+              "type": "keyword"
+            }
+          }
+        },
+        "room_title": {
+          "type": "text",
+          "analyzer": "ik_max_word",
+          "search_analyzer": "ik_smart"
+        },
+        "category_id": {
+          "type": "integer"
+        },
+        "category_name": {
+          "type": "text",
+          "analyzer": "ik_smart",
+          "fields": {
+            "keyword": {
+              "type": "keyword"
+            }
+          }
+        },
+        "cover_url": {
+          "type": "keyword",
+          "index": false
+        },
+        "video_url": {
+          "type": "keyword",
+          "index": false
+        },
+        "hot_score": {
+          "type": "double"
+        },
+        "create_time": {
+          "type": "date",
+          "format": "yyyy-MM-dd HH:mm:ss||yyyy-MM-dd||epoch_millis"
+        },
+        "description": {
+          "type": "text",
+          "analyzer": "ik_smart"
+        },
+        "suggestion": {
+          "type": "completion",
+          "analyzer": "ik_max_word"
+        }
+      }
+    }
+  }
+  ```
+
+## 10. xxl-job 定时任务
+
+- 首先执行相应mysql脚本创建对应的表，流程如下
+  
+  - 输入`docker exec -it yuanlive-mysql bash`进入数据库容器
+  
+  - 输入`mysql -u root -pyuanlive`进入mysql
+  
+  - 输入`SOURCE /docker-entrypoint-initdb.d/tables_xxl_job.sql;`执行建表脚本
+
+- 设置xxl-job定时任务
+  
+  - 进入[xxl-job-admin](http://127.0.0.1:8062/xxl-job-admin)界面,账号`admin`,密码`123456`
+  
+  - 按如下图片新增执行器,注意需要先启动`yuanlive-user-service`微服务,其中AppName不要修改,名称可自行修改
+    
+    <img title="" src="./pic/xxljob2.png" alt="执行器" width="610">
+  
+  - 接下来新增任务管理，配置如下图,其中除负责人与任务描述外其余内容保持一致
+    
+    ![任务管理](./pic/xxljob1.png)
+
+## 11. 账号管理
+
 - 管理员
   - 账号: fordepu  
   - 密码: yuanlive+123
@@ -289,25 +413,3 @@
   - 密码: yuanlive+123
 - 普通用户
   - 请自行注册
-
-
-CREATE TABLE mysql_room (
->     id BIGINT,
->     anchor_id BIGINT,     -- 刚才漏掉的字段，它是关联用户的关键
->     title STRING,
->     anchor_name STRING,
->     category_id INT,
->     cover_img STRING,
->     create_time TIMESTAMP(3),
->     PRIMARY KEY (id) NOT ENFORCED
-> ) WITH (
->     'connector' = 'mysql-cdc',
->     'hostname' = 'mysql',
->     'port' = '3307',
->     'username' = 'root',
->     'password' = 'yuanlive',
->     'database-name' = 'yuanlive_live',
->     'table-name' = 'live_room',
->     'server-time-zone' = 'Asia/Shanghai'
-> );
-

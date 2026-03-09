@@ -9,6 +9,7 @@ import blog.yuanyuan.yuanlive.user.domain.dto.UserQueryDTO;
 import blog.yuanyuan.yuanlive.user.domain.dto.UserRoleDTO;
 import blog.yuanyuan.yuanlive.user.domain.dto.UserDTO;
 import blog.yuanyuan.yuanlive.user.domain.vo.RouterVO;
+import blog.yuanyuan.yuanlive.user.domain.vo.SearchHotVO;
 import blog.yuanyuan.yuanlive.user.domain.vo.UserVO;
 import com.baomidou.mybatisplus.extension.service.IService;
 
@@ -76,4 +77,6 @@ public interface SysUserService extends IService<SysUser> {
     Boolean restoreOrDelete(Long uid);
 
     ResultPage<SearchVO> search(SearchQueryDTO queryDTO);
+
+    List<SearchHotVO> getHotSearch();
 }

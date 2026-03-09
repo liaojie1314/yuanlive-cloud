@@ -11,6 +11,7 @@ import blog.yuanyuan.yuanlive.user.domain.dto.UserQueryDTO;
 import blog.yuanyuan.yuanlive.user.domain.dto.UserRoleDTO;
 import blog.yuanyuan.yuanlive.user.domain.dto.UserDTO;
 import blog.yuanyuan.yuanlive.user.domain.vo.RouterVO;
+import blog.yuanyuan.yuanlive.user.domain.vo.SearchHotVO;
 import blog.yuanyuan.yuanlive.user.domain.vo.UserVO;
 import blog.yuanyuan.yuanlive.user.mapper.SysUserMapper;
 import blog.yuanyuan.yuanlive.user.mapper.UserFollowMapper;
@@ -29,6 +30,7 @@ import me.ahoo.cosid.provider.IdGeneratorProvider;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.data.redis.core.ZSetOperations;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -37,9 +39,8 @@ import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 /**
@@ -240,6 +241,24 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
         }
         asyncRecordHistory(uid, trimKeyword, topCategoryId);
         return result;
+    }
+
+    @Override
+    public List<SearchHotVO> getHotSearch() {
+        String aggKey = searchProperties.getHot().getAggKey();
+        Set<ZSetOperations.TypedTuple<String>> result = stringRedisTemplate
+                .opsForZSet().reverseRangeWithScores(aggKey, 0, 4);
+        if (CollUtil.isEmpty(result)) {
+            return Collections.emptyList();
+        }
+        AtomicInteger index = new AtomicInteger(1);
+        return result.stream()
+                .map(search -> {
+                    SearchHotVO vo = new SearchHotVO();
+                    vo.setContent(search.getValue());
+                    vo.setId(index.getAndIncrement());
+                    return vo;
+                }).toList();
     }
 
     @Async

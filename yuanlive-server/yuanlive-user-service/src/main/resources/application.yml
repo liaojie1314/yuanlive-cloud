@@ -90,7 +90,17 @@ redis-key:
     hot:
       rank-key: "yuanlive:search:hot:total:rank" # 总热搜榜单
       hour-rank-prefix: "yuanlive:search:hot:hour:rank:" # 小时热搜榜单
+      agg-Key: "yuanlive:search:hot:aggregate" # 48小时热搜榜单聚合
       ttl: 48h # 小时级热搜榜单过期时间
+
+xxl:
+  job:
+    admin:
+      addresses: http://127.0.0.1:8062/xxl-job-admin
+    executor:
+      appname: yuanlive-hot-search
+      logpath: ./docker/xxl-job/log
+      port: 9999
 
 
 cosid:

@@ -24,6 +24,34 @@ CREATE DATABASE /*!32312 IF NOT EXISTS*/ `yuanlive_user` /*!40100 DEFAULT CHARAC
 USE `yuanlive_user`;
 
 --
+-- Table structure for table `search_history`
+--
+
+DROP TABLE IF EXISTS `search_history`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `search_history` (
+  `id` bigint NOT NULL,
+  `user_id` bigint NOT NULL,
+  `keyword` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `category_id` int DEFAULT NULL COMMENT '记录搜索时的关联分类，方便AI分析',
+  `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `idx_user_id` (`user_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='用户搜索记录表';
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `search_history`
+--
+
+LOCK TABLES `search_history` WRITE;
+/*!40000 ALTER TABLE `search_history` DISABLE KEYS */;
+INSERT INTO `search_history` VALUES (800716886554881,6,'jjw',7,'2026-03-05 14:05:21'),(800716897630466,6,'jjw',7,'2026-03-05 14:05:23'),(802220028930817,7,'原神',7,'2026-03-09 20:01:39'),(802220089862914,7,'jjw',7,'2026-03-09 20:01:54'),(802220144683779,7,'三角洲',NULL,'2026-03-09 20:02:07'),(802220368628484,7,'原神',7,'2026-03-09 20:03:02'),(802221044574981,7,'jjw',7,'2026-03-09 20:05:47');
+/*!40000 ALTER TABLE `search_history` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Table structure for table `sys_menu`
 --
 
@@ -257,7 +285,7 @@ CREATE TABLE `user_stats` (
 
 LOCK TABLES `user_stats` WRITE;
 /*!40000 ALTER TABLE `user_stats` DISABLE KEYS */;
-INSERT INTO `user_stats` VALUES (6,2,1,0,0,'2026-02-11 18:32:27'),(7,1,2,0,101,'2026-02-26 19:44:51'),(790541515841537,0,0,0,0,'2026-02-07 18:16:52'),(791474412748801,0,0,0,0,'2026-02-07 18:16:52');
+INSERT INTO `user_stats` VALUES (6,2,1,0,0,'2026-02-11 18:32:27'),(7,1,2,0,102,'2026-03-08 16:20:33'),(790541515841537,0,0,0,0,'2026-02-07 18:16:52'),(791474412748801,0,0,0,0,'2026-02-07 18:16:52');
 /*!40000 ALTER TABLE `user_stats` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -270,4 +298,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-03-04 20:46:42
+-- Dump completed on 2026-03-09 20:37:24

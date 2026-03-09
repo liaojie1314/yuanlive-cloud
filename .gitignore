@@ -49,6 +49,7 @@ docker/rabbitmq/mq-data
 docker/elasticsearch/data
 docker/higress/data
 docker/flink/checkpoints
+docker/xxl-job
 
 .idea
 

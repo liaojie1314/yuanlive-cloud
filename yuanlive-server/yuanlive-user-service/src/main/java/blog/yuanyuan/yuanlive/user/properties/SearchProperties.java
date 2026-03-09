@@ -24,6 +24,7 @@ public class SearchProperties {
     public static class Hot {
         private String rankKey;
         private String hourRankPrefix;
+        private String aggKey;
         private Duration ttl;
     }
 }
