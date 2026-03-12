@@ -90,4 +90,10 @@ public class LiveCategoryController {
     public Result<List<HotCategoryVO>> getHotCategory() {
         return Result.success(categoryService.getHotCategory());
     }
+
+    @GetMapping("/getCategoryIdBySearch")
+    @Operation(summary = "根据用户搜索获取分类ID")
+    public Result<Integer> getCategoryIdBySearch(@RequestParam("keyword") String keyword) {
+        return Result.success(categoryService.getCategoryIdBySearch(keyword));
+    }
 }

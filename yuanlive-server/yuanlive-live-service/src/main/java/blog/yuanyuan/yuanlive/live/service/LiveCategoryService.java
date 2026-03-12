@@ -69,4 +69,6 @@ public interface LiveCategoryService extends IService<LiveCategory> {
     List<LiveRoomRankVO> getLiveRoomsByCategoryValue(String value);
 
     List<HotCategoryVO> getHotCategory();
+
+    Integer getCategoryIdBySearch(String keyword);
 }

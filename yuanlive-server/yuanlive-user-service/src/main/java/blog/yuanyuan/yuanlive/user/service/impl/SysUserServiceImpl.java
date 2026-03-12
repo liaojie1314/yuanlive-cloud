@@ -2,6 +2,7 @@ package blog.yuanyuan.yuanlive.user.service.impl;
 
 import blog.yuanyuan.yuanlive.common.exception.ApiException;
 import blog.yuanyuan.yuanlive.common.result.ResultPage;
+import blog.yuanyuan.yuanlive.common.util.InterestUtil;
 import blog.yuanyuan.yuanlive.entity.live.dto.SearchQueryDTO;
 import blog.yuanyuan.yuanlive.entity.live.vo.SearchVO;
 import blog.yuanyuan.yuanlive.entity.user.entity.*;
@@ -10,12 +11,14 @@ import blog.yuanyuan.yuanlive.user.domain.dto.PasswordDTO;
 import blog.yuanyuan.yuanlive.user.domain.dto.UserQueryDTO;
 import blog.yuanyuan.yuanlive.user.domain.dto.UserRoleDTO;
 import blog.yuanyuan.yuanlive.user.domain.dto.UserDTO;
+import blog.yuanyuan.yuanlive.common.enums.BehaviorType;
 import blog.yuanyuan.yuanlive.user.domain.vo.RouterVO;
 import blog.yuanyuan.yuanlive.user.domain.vo.SearchHotVO;
+import blog.yuanyuan.yuanlive.user.domain.vo.SearchRecommendVO;
 import blog.yuanyuan.yuanlive.user.domain.vo.UserVO;
 import blog.yuanyuan.yuanlive.user.mapper.SysUserMapper;
 import blog.yuanyuan.yuanlive.user.mapper.UserFollowMapper;
-import blog.yuanyuan.yuanlive.user.properties.SearchProperties;
+import blog.yuanyuan.yuanlive.common.properties.SearchProperties;
 import blog.yuanyuan.yuanlive.user.service.*;
 import cn.dev33.satoken.stp.StpUtil;
 import cn.hutool.core.bean.BeanUtil;
@@ -76,6 +79,8 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
     private SearchProperties searchProperties;
     @Resource
     private LiveFeignClient liveFeignClient;
+    @Resource
+    private InterestUtil interestUtil;
     @Value("${redis-key.anchor-map.key}")
     private String anchorMap;
 
@@ -225,29 +230,33 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
     public ResultPage<SearchVO> search(SearchQueryDTO queryDTO) {
         long uid = StpUtil.getLoginIdAsLong();
         String trimKeyword = queryDTO.getQuery().trim();
-        ResultPage<SearchVO> result = liveFeignClient.search(queryDTO);
+        Integer categoryId = liveFeignClient.getCategoryIdBySearch(queryDTO.getQuery()).getData();
         Integer topCategoryId = null;
-        if (!result.getList().isEmpty()) {
-            Map<Integer, Long> map = result.getList().stream()
-                    .map(searchVO -> searchVO.isCheckRoom()
-                            ? searchVO.getLiveRoom().getCategoryId()
-                            : searchVO.getVideo().getCategoryId())
-                    .filter(Objects::nonNull)
-                    .collect(Collectors.groupingBy(id -> id, Collectors.counting()));
-            topCategoryId = map.entrySet().stream()
-                    .max(Map.Entry.comparingByValue())
-                    .map(Map.Entry::getKey)
-                    .orElse(null);
+        topCategoryId = categoryId != null ? categoryId : topCategoryId;
+        ResultPage<SearchVO> result = liveFeignClient.search(queryDTO);
+        if (topCategoryId == null) {
+            if (!result.getList().isEmpty()) {
+                Map<Integer, Long> map = result.getList().stream()
+                        .map(searchVO -> searchVO.isCheckRoom()
+                                ? searchVO.getLiveRoom().getCategoryId()
+                                : searchVO.getVideo().getCategoryId())
+                        .filter(Objects::nonNull)
+                        .collect(Collectors.groupingBy(id -> id, Collectors.counting()));
+                topCategoryId = map.entrySet().stream()
+                        .max(Map.Entry.comparingByValue())
+                        .map(Map.Entry::getKey)
+                        .orElse(null);
+            }
         }
         asyncRecordHistory(uid, trimKeyword, topCategoryId);
         return result;
     }
 
     @Override
-    public List<SearchHotVO> getHotSearch() {
+    public List<SearchHotVO> getHotSearch(int k) {
         String aggKey = searchProperties.getHot().getAggKey();
         Set<ZSetOperations.TypedTuple<String>> result = stringRedisTemplate
-                .opsForZSet().reverseRangeWithScores(aggKey, 0, 4);
+                .opsForZSet().reverseRangeWithScores(aggKey, 0, k - 1);
         if (CollUtil.isEmpty(result)) {
             return Collections.emptyList();
         }
@@ -261,6 +270,50 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
                 }).toList();
     }
 
+    @Override
+    public List<SearchRecommendVO> getRecommend(int num) {
+        Long uid = StpUtil.getLoginIdAsLong();
+        String globalHotKey = searchProperties.getHot().getAggKey();
+        String interestKey = searchProperties.getHistory().getInterestPrefix() + uid;
+
+        ArrayList<SearchRecommendVO> result = new ArrayList<>();
+        Set<String> selectedWords = new HashSet<>();
+        Set<String> topCategories = stringRedisTemplate.opsForZSet().reverseRange(interestKey, 0, 0);
+        String favoriteCategoryId = CollUtil.getFirst(topCategories);
+        AtomicInteger index = new AtomicInteger(1);
+        if (favoriteCategoryId != null) {
+            String categoryHotPrefix = searchProperties.getHot().getCategoryHotPrefix() + favoriteCategoryId;
+            Set<String> catHotWords = stringRedisTemplate.opsForZSet().reverseRange(categoryHotPrefix, 0, 4);
+            if (CollUtil.isNotEmpty(catHotWords)) {
+                ArrayList<String> list = new ArrayList<>(catHotWords);
+                Collections.shuffle(list);
+                list.stream().limit(2)
+                        .forEach(word -> {
+                            SearchRecommendVO vo = new SearchRecommendVO();
+                            vo.setContent(word);
+                            vo.setId(index.getAndIncrement());
+                            vo.setIsMostRecommended(true);
+                            result.add(vo);
+                            selectedWords.add(word);
+                        });
+            }
+        }
+        int remain = num - result.size();
+        Set<String> globalHotWords = stringRedisTemplate.opsForZSet().reverseRange(globalHotKey, 0, 19);
+        if (CollUtil.isNotEmpty(globalHotWords)) {
+            List<String> remainPool = globalHotWords.stream()
+                    .filter(word -> !selectedWords.contains(word))
+                    .collect(Collectors.toList());
+
+            Collections.shuffle(remainPool); // 随机打乱
+            remainPool.stream().limit(remain).forEach(word -> {
+                result.add(new SearchRecommendVO(index.getAndIncrement(), word, false));
+            });
+        }
+        return result;
+    }
+
+
     @Async
     public void asyncRecordHistory(Long uid, String keyword, Integer categoryId) {
         String historyKey = searchProperties.getHistory().getPrefix() + uid;
@@ -273,8 +326,12 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
         stringRedisTemplate.expire(historyKey, searchProperties.getHistory().getTtl());
 
         stringRedisTemplate.opsForZSet().incrementScore(rankKey, keyword, 1);
-        stringRedisTemplate.opsForZSet().incrementScore(hourKey, keyword, 1);
-        stringRedisTemplate.expire(hourKey, searchProperties.getHot().getTtl());
+        interestUtil.recordSearch(keyword, BehaviorType.SEARCH);
+
+        if (categoryId != null) {
+            // 维护用户个人的兴趣偏好 (ZSet)
+            interestUtil.recordUserInterest(uid, categoryId, BehaviorType.SEARCH);
+        }
 
         SearchHistory history = new SearchHistory();
         history.setUserId(uid);

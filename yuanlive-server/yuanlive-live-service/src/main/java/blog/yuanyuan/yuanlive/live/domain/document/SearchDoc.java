@@ -17,6 +17,14 @@ public class SearchDoc {
     private Long uid;
     @Field(name = "biz_type", type = FieldType.Integer)
     private Integer bizType;
+    @Field(name = "like_count", type = FieldType.Integer)
+    private Integer likeCount;
+    @Field(name = "comment_count", type = FieldType.Integer)
+    private Integer commentCount;
+    @Field(name = "share_count", type = FieldType.Integer)
+    private Integer shareCount;
+    @Field(name = "collect_count", type = FieldType.Integer)
+    private Integer collectCount;
 
     // 处理 title 及其 keyword 子字段
     @MultiField(

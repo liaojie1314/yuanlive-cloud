@@ -12,7 +12,18 @@
             <result property="createTime" column="create_time" />
     </resultMap>
 
-    <sql id="Base_Column_List">
-        id,user_id,keyword,category_id,create_time
-    </sql>
+    <select id="selectTopCategoryForKeywords" resultType="blog.yuanyuan.yuanlive.user.domain.dto.KeywordCategoryDTO">
+        SELECT keyword, category_id
+        FROM (
+        SELECT keyword, category_id,
+        ROW_NUMBER() OVER(PARTITION BY keyword ORDER BY COUNT(*) DESC) as rn
+        FROM search_history
+        WHERE keyword IN
+        <foreach collection="hot" item="k" open="(" separator="," close=")">
+            #{k}
+        </foreach>
+        GROUP BY keyword, category_id
+        ) t
+        WHERE rn = 1
+    </select>
 </mapper>

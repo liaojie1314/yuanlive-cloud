@@ -52,6 +52,7 @@ public class SaTokenConfig {
             "/live/room/dvr",
             "/user/follow/followers/*",
             "/user/follow/following/*",
+            "/user/user/hotSearch",
             "/live/category/listByCategory",
             "/live/room/popularRooms",
             "/live/category/getHotCategory"
@@ -90,7 +91,7 @@ public class SaTokenConfig {
                     SaRouter.match("/user/menu/**", r -> StpUtil.checkRole(UserRoleEnum.ADMIN.name()));
                     SaRouter.match("/user/admin/**", r -> StpUtil.checkRole(UserRoleEnum.ADMIN.name()));
                     SaRouter.match("/user/role/**", r -> StpUtil.checkRole(UserRoleEnum.ADMIN.name()));
-                    SaRouter.match("/live/category/**", r -> StpUtil.checkRole(UserRoleEnum.ADMIN.name()));
+                    SaRouter.match("/live/category/**", "/live/category/getCategoryIdBySearch",r -> StpUtil.checkRole(UserRoleEnum.ADMIN.name()));
                 })
                 // 异常处理方法：每次setAuth函数出现异常时进入
                 .setError(e -> {

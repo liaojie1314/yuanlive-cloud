@@ -117,44 +117,49 @@
 - 运行以下指令创建索引模式
   
   ```
-  PUT /_index_template/yuanlive_chinese_template
+  PUT /yuanlive_search
   {
-    "index_patterns": ["yuanlive-logs-*"], 
-    "priority": 10,
-    "template": {
-      "settings": {
-        "number_of_shards": 1
-      },
-      "mappings": {
-        "properties": {
-          // --- 1. 核心业务字段 (Grok 切分出来的) ---
-          "msg": {
-            "type": "text",
-            "analyzer": "ik_max_word",       // 存的时候：做最细粒度拆分 (用户、登录、用户登录)
-            "search_analyzer": "ik_smart",   // 搜的时候：做智能拆分 (搜"用户登录"就匹配"用户登录")
-            "fields": {
-              "keyword": { "type": "keyword", "ignore_above": 256 }
+    "settings": {
+      "index": {
+        "number_of_shards": 1,
+        "number_of_replicas": 1,
+        "analysis": {
+          "analyzer": {
+            "ik_analyzer": {
+              "type": "ik_max_word"
             }
-          },
-  
-          // --- 2. 原始日志字段 ---
-          "message": {
-            "type": "text",
-            "analyzer": "ik_max_word",
-            "search_analyzer": "ik_smart",
-            "fields": {
-               // 防止 message 太长导致报错，只保留 text，不留 keyword，或者设大 ignore_above
-              "keyword": { "type": "keyword", "ignore_above": 512 }
-            }
-          },
-  
-          // --- 3. 其他不需要分词的字段 (显式声明以提高性能) ---
-          "traceId": { "type": "keyword" },
-          "service_name": { "type": "keyword" },
-          "level": { "type": "keyword" },
-          "logger": {
+          }
+        }
+      }
+    },
+    "mappings": {
+      "dynamic": "strict",
+      "properties": {
+        "id": {
+          "type": "long"
+        },
+        "uid": {
+          "type": "long"
+        },
+        "biz_type": {
+          "type": "integer"
+        },
+        "like_count": {
+          "type": "integer"
+        },
+        "comment_count": {
+          "type": "integer"
+        },
+        "share_count": {
+          "type": "integer"
+        },
+        "collect_count": {
+          "type": "integer"
+        },
+        "title": {
           "type": "text",
-          "analyzer": "standard",
+          "analyzer": "ik_max_word",
+          "search_analyzer": "ik_smart",
           "fields": {
             "keyword": {
               "type": "keyword",
@@ -162,23 +167,64 @@
             }
           }
         },
-          "thread": { "type": "keyword" },
-  
-          // --- 4. 时间字段 ---
-          "@timestamp": { "type": "date" },
-          "host": {
-          "properties": {
-            "name": {
-              "type": "text",
-              "fields": {
-                "keyword": {
-                  "type": "keyword",
-                  "ignore_above": 256
-                }
-              }
+        "anchor_name": {
+          "type": "text",
+          "analyzer": "ik_max_word",
+          "search_analyzer": "ik_smart",
+          "fields": {
+            "keyword": {
+              "type": "keyword"
             }
           }
-        }
+        },
+        "room_title": {
+          "type": "text",
+          "analyzer": "ik_max_word",
+          "search_analyzer": "ik_smart"
+        },
+        "category_id": {
+          "type": "integer"
+        },
+        "category_name": {
+          "type": "text",
+          "analyzer": "ik_smart",
+          "fields": {
+            "keyword": {
+              "type": "keyword"
+            }
+          }
+        },
+        "parents_category_name": {
+          "type": "text",
+          "analyzer": "ik_smart",
+          "fields": {
+            "keyword": {
+              "type": "keyword"
+            }
+          }
+        },
+        "cover_url": {
+          "type": "keyword",
+          "index": false
+        },
+        "video_url": {
+          "type": "keyword",
+          "index": false
+        },
+        "hot_score": {
+          "type": "double"
+        },
+        "create_time": {
+          "type": "date",
+          "format": "yyyy-MM-dd HH:mm:ss||yyyy-MM-dd||epoch_millis"
+        },
+        "description": {
+          "type": "text",
+          "analyzer": "ik_smart"
+        },
+        "suggestion": {
+          "type": "completion",
+          "analyzer": "ik_max_word"
         }
       }
     }
@@ -285,100 +331,6 @@
 - 进入[kibana](http://localhost:5601)中的 `Dev Tools`界面中
 
 - 创建相关索引，代码如下
-  
-  ```
-  PUT /yuanlive_search
-  {
-    "settings": {
-      "index": {
-        "number_of_shards": 1,
-        "number_of_replicas": 1,
-        "analysis": {
-          "analyzer": {
-            "ik_analyzer": {
-              "type": "ik_max_word"
-            }
-          }
-        }
-      }
-    },
-    "mappings": {
-      "dynamic": "strict",
-      "properties": {
-        "id": {
-          "type": "long"
-        },
-        "uid": {
-          "type": "long"
-        },
-        "biz_type": {
-          "type": "integer"
-        },
-        "title": {
-          "type": "text",
-          "analyzer": "ik_max_word",
-          "search_analyzer": "ik_smart",
-          "fields": {
-            "keyword": {
-              "type": "keyword",
-              "ignore_above": 256
-            }
-          }
-        },
-        "anchor_name": {
-          "type": "text",
-          "analyzer": "ik_max_word",
-          "search_analyzer": "ik_smart",
-          "fields": {
-            "keyword": {
-              "type": "keyword"
-            }
-          }
-        },
-        "room_title": {
-          "type": "text",
-          "analyzer": "ik_max_word",
-          "search_analyzer": "ik_smart"
-        },
-        "category_id": {
-          "type": "integer"
-        },
-        "category_name": {
-          "type": "text",
-          "analyzer": "ik_smart",
-          "fields": {
-            "keyword": {
-              "type": "keyword"
-            }
-          }
-        },
-        "cover_url": {
-          "type": "keyword",
-          "index": false
-        },
-        "video_url": {
-          "type": "keyword",
-          "index": false
-        },
-        "hot_score": {
-          "type": "double"
-        },
-        "create_time": {
-          "type": "date",
-          "format": "yyyy-MM-dd HH:mm:ss||yyyy-MM-dd||epoch_millis"
-        },
-        "description": {
-          "type": "text",
-          "analyzer": "ik_smart"
-        },
-        "suggestion": {
-          "type": "completion",
-          "analyzer": "ik_max_word"
-        }
-      }
-    }
-  }
-  ```
 
 ## 10. xxl-job 定时任务
 
@@ -401,6 +353,10 @@
   - 接下来新增任务管理，配置如下图,其中除负责人与任务描述外其余内容保持一致
     
     ![任务管理](./pic/xxljob1.png)
+  
+  - 设置用户的兴趣榜单每日衰减定时任务, 内容如下图
+    
+    ![榜单衰减](./pic/xxljob3.png)
 
 ## 11. 账号管理
 

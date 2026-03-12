@@ -26,4 +26,7 @@ public interface LiveFeignClient {
 
     @PostMapping("/room/search")
     public ResultPage<SearchVO> search(@RequestBody @Validated SearchQueryDTO searchQueryDTO);
+
+    @GetMapping("/category/getCategoryIdBySearch")
+    public Result<Integer> getCategoryIdBySearch(@RequestParam("keyword") String keyword);
 }

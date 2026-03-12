@@ -7,6 +7,7 @@
     <resultMap id="BaseResultMap" type="blog.yuanyuan.yuanlive.entity.live.entity.VideoResource">
             <id property="id" column="id" />
             <result property="userId" column="user_id" />
+            <result property="categoryId" column="category_id" />
             <result property="roomId" column="room_id" />
             <result property="duration" column="duration" />
             <result property="title" column="title" />

@@ -56,6 +56,21 @@ public class FlinkSyncConfig implements ApplicationRunner {
                             "    'server-time-zone' = 'Asia/Shanghai'\n" +
                             ")",
 
+                    "CREATE TABLE IF NOT EXISTS mysql_category_relation (\n" +
+                            "    category_id INT,\n" +
+                            "    parent_id INT,\n" +
+                            "    PRIMARY KEY (category_id, parent_id) NOT ENFORCED\n" +
+                            ") WITH (\n" +
+                            "    'connector' = 'mysql-cdc',\n" +
+                            "    'hostname' = 'mysql',\n" +
+                            "    'port' = '3306',\n" +
+                            "    'username' = 'root',\n" +
+                            "    'password' = 'yuanlive',\n" +
+                            "    'database-name' = 'yuanlive_live',\n" +
+                            "    'table-name' = 'live_category_relation',\n" +
+                            "    'server-time-zone' = 'Asia/Shanghai'\n" +
+                            ")",
+
                     "CREATE TABLE IF NOT EXISTS mysql_room (\n" +
                             "    id BIGINT,\n" +
                             "    anchor_id BIGINT,\n" +
@@ -77,6 +92,10 @@ public class FlinkSyncConfig implements ApplicationRunner {
 
                     "CREATE TABLE IF NOT EXISTS mysql_video (\n" +
                             "    id BIGINT,\n" +
+                            "    like_count INT,\n" +
+                            "    comment_count INT,\n" +
+                            "    share_count INT,\n" +
+                            "    collect_count INT,\n" +
                             "    user_id BIGINT,\n" +
                             "    room_id BIGINT,\n" +
                             "    title STRING,\n" +
@@ -111,15 +130,28 @@ public class FlinkSyncConfig implements ApplicationRunner {
                             "    'server-time-zone' = 'Asia/Shanghai'\n" +
                             ")",
 
+                    "CREATE TEMPORARY VIEW v_parents_agg AS \n" +
+                            "SELECT \n" +
+                            "  r.category_id, \n" +
+                            "  LISTAGG(p.name, ', ') as all_parent_names \n" +
+                            "FROM mysql_category_relation r \n" +
+                            "JOIN mysql_category p ON r.parent_id = p.id \n" +
+                            "GROUP BY r.category_id",
+
                     "CREATE TABLE IF NOT EXISTS es_search_sink (\n" +
                             "    id BIGINT,\n" +
                             "    uid BIGINT,\n" +
                             "    biz_type INT,\n" +
+                            "    like_count INT,\n" +
+                            "    comment_count INT,\n" +
+                            "    share_count INT,\n" +
+                            "    collect_count INT,\n" +
                             "    title STRING,\n" +
                             "    anchor_name STRING,\n" +
                             "    room_title STRING,\n" +
                             "    category_id INT,\n" +
                             "    category_name STRING,\n" +
+                            "    parents_category_name STRING,\n" +
                             "    cover_url STRING,\n" +
                             "    video_url STRING,\n" +
                             "    hot_score DOUBLE,\n" +
@@ -137,13 +169,36 @@ public class FlinkSyncConfig implements ApplicationRunner {
                             ")",
 
                     "INSERT INTO es_search_sink " +
-                            "SELECT lr.id, lr.anchor_id, 1, lr.title, su.username, lr.title, lr.category_id, lc.name, lr.cover_img, CAST(NULL AS STRING), 0.0, " +
-                            "COALESCE(lr.create_time, TO_TIMESTAMP('1970-01-01 00:00:00')), CAST(NULL AS STRING), lr.title " +
-                            "FROM mysql_room lr LEFT JOIN mysql_user su ON lr.anchor_id = su.uid LEFT JOIN mysql_category lc ON lr.category_id = lc.id " +
+                            "SELECT " +
+                            "  lr.id, lr.anchor_id, 1, 0, 0, 0, 0, lr.title, su.username, lr.title, " +
+                            "  lr.category_id, " +
+                            "  lc.name, " +
+                            "  pa.all_parent_names, " +
+                            "  lr.cover_img, CAST(NULL AS STRING), 0.0, " +
+                            "  COALESCE(lr.create_time, TIMESTAMP '2025-12-30 00:00:00'), " +
+                            "  CAST(NULL AS STRING), " +
+                            "  lr.title " + // 这里的 suggestion 字段，如果想搜分类也能搜到，建议改成 CONCAT(lr.title, ' ', lc.name)
+                            "FROM mysql_room lr " +
+                            "LEFT JOIN mysql_user su ON lr.anchor_id = su.uid " +
+                            "LEFT JOIN mysql_category lc ON lr.category_id = lc.id " +
+                            "LEFT JOIN v_parents_agg pa ON lr.category_id = pa.category_id " +
+
                             "UNION ALL " +
-                            "SELECT vr.id, vr.user_id, 2, vr.title, su.username, lr.title, lr.category_id, lc.name, vr.cover_url, vr.video_url, 0.0, " +
-                            "COALESCE(vr.create_time, TO_TIMESTAMP('1970-01-01 00:00:00')), vr.description, vr.title " +
-                            "FROM mysql_video vr LEFT JOIN mysql_user su ON vr.user_id = su.uid LEFT JOIN mysql_room lr ON vr.room_id = lr.id LEFT JOIN mysql_category lc ON lr.category_id = lc.id " +
+
+                            "SELECT " +
+                            "  vr.id, vr.user_id, 2, vr.like_count, vr.comment_count, vr.share_count, vr.collect_count, vr.title, su.username, lr.title, " +
+                            "  lr.category_id, " + // 这里利用了下方的 JOIN lr 拿到分类 ID
+                            "  lc.name, " +
+                            "  pa.all_parent_names, " +
+                            "  vr.cover_url, vr.video_url, 0.0, " +
+                            "  COALESCE(vr.create_time, TIMESTAMP '2025-12-30 00:00:00'), " +
+                            "  vr.description, " +
+                            "  vr.title " + // 注意这里的空格
+                            "FROM mysql_video vr " +
+                            "LEFT JOIN mysql_user su ON vr.user_id = su.uid " +
+                            "LEFT JOIN mysql_room lr ON vr.room_id = lr.id " +
+                            "LEFT JOIN mysql_category lc ON lr.category_id = lc.id " +
+                            "LEFT JOIN v_parents_agg pa ON lr.category_id = pa.category_id " +
                             "WHERE vr.video_url IS NOT NULL"
             };
 

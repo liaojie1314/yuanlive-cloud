@@ -35,9 +35,7 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.http.HttpUtil;
 import cn.hutool.json.JSONUtil;
-import co.elastic.clients.elasticsearch._types.query_dsl.MultiMatchQuery;
-import co.elastic.clients.elasticsearch._types.query_dsl.QueryBuilders;
-import co.elastic.clients.elasticsearch._types.query_dsl.TextQueryType;
+import co.elastic.clients.elasticsearch._types.query_dsl.*;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import jakarta.annotation.Resource;
@@ -214,6 +212,7 @@ public class LiveRoomServiceImpl extends ServiceImpl<LiveRoomMapper, LiveRoom>
             VideoResource video = new VideoResource();
             video.setId(idGeneratorProvider.getRequired("video").generate());
             video.setUserId(liveRoom.getAnchorId());
+            video.setCategoryId(liveRoom.getCategoryId());
             video.setRoomId(roomId);
             video.setType(0);
             video.setStartTime(new Date());
@@ -449,13 +448,40 @@ public class LiveRoomServiceImpl extends ServiceImpl<LiveRoomMapper, LiveRoom>
         int pageSize = searchQueryDTO.getPageSize();
 
         // 1. 构建 ES 查询：保持“直播间优先”的权重
-        NativeQuery query = new NativeQueryBuilder()
-                .withQuery(q -> q.bool(b -> b
-                        .must(m -> m.multiMatch(mm -> mm
-                                .query(keyword)
-                                .fields("title^3", "anchor_name^2", "category_name", "description")
-                                .type(TextQueryType.BestFields)))
-                        .should(s -> s.term(t -> t.field("biz_type").value(1).boost(10.0f)))
+        NativeQuery query = NativeQuery.builder()
+                .withQuery(q -> q.functionScore(fs -> fs
+                        // 1. 基础查询
+                        .query(queryChild -> queryChild.bool(b -> b
+                                .must(m -> m.multiMatch(mm -> mm
+                                        .query(keyword)
+                                        .fields("title^3", "anchor_name^2", "category_name", "parents_category_name", "description")
+                                        .type(TextQueryType.BestFields)))
+                                .should(s -> s.term(t -> t.field("biz_type").value(1).boost(10.0f)))
+                        ))
+                        // 2. 修正后的 functions 列表写法
+                        .functions(List.of(
+                                // 优先级 1: 点赞
+                                FunctionScore.of(f -> f.fieldValueFactor(fv -> fv
+                                        .field("like_count").factor(10.0)
+                                        .modifier(FieldValueFactorModifier.Log1p).missing(0.0))),
+
+                                // 优先级 2: 评论
+                                FunctionScore.of(f -> f.fieldValueFactor(fv -> fv
+                                        .field("comment_count").factor(5.0)
+                                        .modifier(FieldValueFactorModifier.Log1p).missing(0.0))),
+
+                                // 优先级 3: 收藏
+                                FunctionScore.of(f -> f.fieldValueFactor(fv -> fv
+                                        .field("collect_count").factor(2.0)
+                                        .modifier(FieldValueFactorModifier.Log1p).missing(0.0))),
+
+                                // 优先级 4: 分享
+                                FunctionScore.of(f -> f.fieldValueFactor(fv -> fv
+                                        .field("share_count").factor(1.0)
+                                        .modifier(FieldValueFactorModifier.Log1p).missing(0.0)))
+                        ))
+                        .scoreMode(FunctionScoreMode.Sum)
+                        .boostMode(FunctionBoostMode.Sum)
                 ))
                 .withPageable(PageRequest.of(pageNum, pageSize))
                 .build();
@@ -474,31 +500,27 @@ public class LiveRoomServiceImpl extends ServiceImpl<LiveRoomMapper, LiveRoom>
                 videoVOs.add(convertToVideoVO(doc));
             }
         });
-
-        // 3. 执行方案 B 的核心：对当前页的直播间进行 Redis 热度回填并重排序
+        // 3. 对当前页的直播间进行 Redis 热度回填并重排序
         List<LiveRoomRankVO> enrichedSortedRooms = new ArrayList<>();
         if (!liveRoomVOs.isEmpty()) {
-            // 调用你原有的 enrichHotScore，它会回填分数并执行降序排序
+            // 调用 enrichHotScore，回填分数并执行降序排序
             enrichedSortedRooms = enrichHotScore(liveRoomVOs);
         }
-
         // 4. 重新组合：先放排好序的直播间，再放视频
         List<SearchVO> finalVoList = new ArrayList<>();
-
         enrichedSortedRooms.forEach(room -> {
             SearchVO vo = new SearchVO();
             vo.setLiveRoom(room);
             vo.setCheckRoom(true);
             finalVoList.add(vo);
         });
-
-        videoVOs.forEach(video -> {
-            SearchVO vo = new SearchVO();
-            vo.setVideo(video);
-            vo.setCheckRoom(false);
-            finalVoList.add(vo);
-        });
-
+        // 回填videovo中的相关信息
+        for (VideoSearchVO vo : videoVOs) {
+            SearchVO searchVO = new SearchVO();
+            searchVO.setVideo(vo);
+            searchVO.setCheckRoom(false);
+            finalVoList.add(searchVO);
+        }
         // 5. 封装分页返回（注意：pageNum+1 对应前端的第1页）
         Page<SearchVO> resultPage = new Page<>(searchQueryDTO.getPageNum(), pageSize, hits.getTotalHits());
         resultPage.setRecords(finalVoList);
@@ -530,6 +552,10 @@ public class LiveRoomServiceImpl extends ServiceImpl<LiveRoomMapper, LiveRoom>
         vo.setUserId(doc.getUid());
         vo.setUsername(doc.getAnchorName());
         vo.setCreateTime(doc.getCreateTime());
+        vo.setLikeCount(doc.getLikeCount());
+        vo.setCommentCount(doc.getCommentCount());
+        vo.setShareCount(doc.getShareCount());
+        vo.setCollectCount(doc.getCollectCount());
         return vo;
     }
 

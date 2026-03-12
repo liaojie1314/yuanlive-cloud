@@ -86,12 +86,14 @@ redis-key:
       prefix: "yuanlive:search:user:history:"
       ttl: 30d
       max-count: 10
+      interest-prefix: "yuanlive:search:user:interest:"
     # 全站热搜
     hot:
       rank-key: "yuanlive:search:hot:total:rank" # 总热搜榜单
       hour-rank-prefix: "yuanlive:search:hot:hour:rank:" # 小时热搜榜单
       agg-Key: "yuanlive:search:hot:aggregate" # 48小时热搜榜单聚合
       ttl: 48h # 小时级热搜榜单过期时间
+      category-hot-prefix: "yuanlive:search:hot:category:" # 分类热搜榜单
 
 xxl:
   job:

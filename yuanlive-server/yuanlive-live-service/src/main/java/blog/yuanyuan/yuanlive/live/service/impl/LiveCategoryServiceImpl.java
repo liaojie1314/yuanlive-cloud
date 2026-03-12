@@ -508,6 +508,22 @@ public class LiveCategoryServiceImpl extends ServiceImpl<LiveCategoryMapper, Liv
         return liveCategoryMapper.getHotCategories(ids);
     }
 
+    @Override
+    public Integer getCategoryIdBySearch(String keyword) {
+        List<LiveCategory> categories = this.lambdaQuery()
+                .select(LiveCategory::getId)
+                .like(LiveCategory::getName, keyword)
+                .or()
+                .like(LiveCategory::getValue, keyword)
+                .list();
+        // 返回最多的类型id
+        return categories.stream()
+                .collect(Collectors.groupingBy(LiveCategory::getId, Collectors.counting()))
+                .entrySet().stream()
+                .max(Map.Entry.comparingByValue())
+                .map(Map.Entry::getKey).orElse(null);
+    }
+
     /**
      * 获取指定分类ID及其所有子分类ID
      * @param categoryId 分类ID

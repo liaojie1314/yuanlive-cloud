@@ -77,7 +77,7 @@ public class UserFollowController {
                 .eq(UserFollow::getUserId, userId)
                 .eq(UserFollow::getFollowUserId, followUserId).list();
         if (CollUtil.isEmpty(userFollows)) {
-            return Result.success(0L);
+            return Result.success(-1L);
         }
         Long lastReadVideoId = userFollows.get(0).getLastReadVideoId();
         return Result.success(lastReadVideoId);

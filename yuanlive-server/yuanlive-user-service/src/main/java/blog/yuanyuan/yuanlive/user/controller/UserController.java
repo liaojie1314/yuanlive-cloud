@@ -6,6 +6,7 @@ import blog.yuanyuan.yuanlive.entity.live.dto.SearchQueryDTO;
 import blog.yuanyuan.yuanlive.entity.live.vo.SearchVO;
 import blog.yuanyuan.yuanlive.entity.user.entity.SysUser;
 import blog.yuanyuan.yuanlive.user.domain.vo.SearchHotVO;
+import blog.yuanyuan.yuanlive.user.domain.vo.SearchRecommendVO;
 import blog.yuanyuan.yuanlive.user.domain.vo.SearchResponseVO;
 import blog.yuanyuan.yuanlive.user.domain.vo.UserVO;
 import blog.yuanyuan.yuanlive.user.service.SysUserService;
@@ -57,6 +58,13 @@ public class UserController {
     @Operation(summary = "获取5条热搜条目")
     @GetMapping("/hotSearch")
     public Result<List<SearchHotVO>> getHotSearch() {
-         return Result.success(userService.getHotSearch());
+         return Result.success(userService.getHotSearch(5));
     }
+
+    @Operation(summary = "获取8条搜索推荐")
+    @GetMapping("/recommend")
+    public Result<List<SearchRecommendVO>> getRecommend() {
+        return Result.success(userService.getRecommend(8));
+    }
+
 }

@@ -4,7 +4,6 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 import java.time.LocalDateTime;
-import java.util.Date;
 
 @Data
 public class VideoSearchVO {
@@ -24,6 +23,14 @@ public class VideoSearchVO {
     private String videoUrl;
     @Schema(description="视频封面")
     private String coverUrl;
+    @Schema(description="点赞总数")
+    private Integer likeCount;
+    @Schema(description="评论总数")
+    private Integer commentCount;
+    @Schema(description="分享数")
+    private Integer shareCount;
+    @Schema(description="收藏数")
+    private Integer collectCount;
     @Schema(description="上传时间")
     private LocalDateTime createTime;
     @Schema(description="视频描述信息")

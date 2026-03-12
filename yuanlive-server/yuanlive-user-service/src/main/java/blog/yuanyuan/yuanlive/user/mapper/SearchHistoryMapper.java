@@ -1,7 +1,12 @@
 package blog.yuanyuan.yuanlive.user.mapper;
 
 import blog.yuanyuan.yuanlive.entity.user.entity.SearchHistory;
+import blog.yuanyuan.yuanlive.user.domain.dto.KeywordCategoryDTO;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import org.apache.ibatis.annotations.Param;
+
+import java.util.List;
+import java.util.Map;
 
 /**
 * @author frodepu
@@ -11,6 +16,7 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 */
 public interface SearchHistoryMapper extends BaseMapper<SearchHistory> {
 
+    List<KeywordCategoryDTO> selectTopCategoryForKeywords(@Param("hot") List<String> hot);
 }
 
 

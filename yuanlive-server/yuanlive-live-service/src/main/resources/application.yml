@@ -100,6 +100,23 @@ redis-key:
     category-rank: "yuanlive:live:category_ranking" # 直播间类别人气榜单(zset)
     category-rooms-prefix: "yuanlive:live:category_rooms:" # 每个类别的房间id集合
     chat-buffer-prefix: "yuanlive:live:chat_buffer:" # 直播间聊天缓冲区
+  video-interact:
+    prefix: "yuanlive:live:video:interact:"
+    ttl: 7d
+  search:
+    # 个人搜索历史
+    history:
+      prefix: "yuanlive:search:user:history:"
+      ttl: 30d
+      max-count: 10
+      interest-prefix: "yuanlive:search:user:interest:"
+    # 全站热搜
+    hot:
+      rank-key: "yuanlive:search:hot:total:rank" # 总热搜榜单
+      hour-rank-prefix: "yuanlive:search:hot:hour:rank:" # 小时热搜榜单
+      agg-Key: "yuanlive:search:hot:aggregate" # 48小时热搜榜单聚合
+      ttl: 48h # 小时级热搜榜单过期时间
+      category-hot-prefix: "yuanlive:search:hot:category:" # 分类热搜榜单
 
 cosid:
   namespace: ${spring.application.name}
@@ -114,6 +131,9 @@ cosid:
     zone-id: Asia/Shanghai
     provider:
       safe-js:
+        machine-bit: 4
+        sequence-bit: 8
+      interact:
         machine-bit: 4
         sequence-bit: 8
     epoch: 1577203200000

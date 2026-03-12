@@ -1,4 +1,4 @@
-package blog.yuanyuan.yuanlive.user.properties;
+package blog.yuanyuan.yuanlive.common.properties;
 
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -17,6 +17,7 @@ public class SearchProperties {
     public static class History {
         private String prefix;
         private Duration ttl;
+        private String interestPrefix;
         private int maxCount;
     }
 
@@ -24,6 +25,7 @@ public class SearchProperties {
     public static class Hot {
         private String rankKey;
         private String hourRankPrefix;
+        private String categoryHotPrefix;
         private String aggKey;
         private Duration ttl;
     }

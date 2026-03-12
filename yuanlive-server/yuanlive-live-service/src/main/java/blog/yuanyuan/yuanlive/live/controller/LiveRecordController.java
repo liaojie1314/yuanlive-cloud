@@ -1,12 +1,13 @@
 package blog.yuanyuan.yuanlive.live.controller;
 
+import blog.yuanyuan.yuanlive.common.enums.BehaviorType;
 import blog.yuanyuan.yuanlive.common.result.Result;
 import blog.yuanyuan.yuanlive.common.result.ResultPage;
-import blog.yuanyuan.yuanlive.entity.live.entity.VideoResource;
 import blog.yuanyuan.yuanlive.entity.live.vo.UnseenVO;
 import blog.yuanyuan.yuanlive.live.domain.dto.VideoPageQueryDTO;
 import blog.yuanyuan.yuanlive.entity.live.vo.VideoVO;
 import blog.yuanyuan.yuanlive.live.service.VideoResourceService;
+import cn.dev33.satoken.stp.StpUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
@@ -35,5 +36,12 @@ public class LiveRecordController {
     public Result<List<UnseenVO>> getUnseenCount(@RequestParam("followingIds") List<Long> followingIds,
                                                  @RequestParam("lastReadVideoIds") List<Long> lastReadVideoIds) {
         return Result.success(videoResourceService.getUnseenCount(followingIds, lastReadVideoIds));
+    }
+
+    @GetMapping("/recommendVideo/{id}")
+    @Operation(summary = "用户推荐视频")
+    public Result<String> recommendVideo(@PathVariable("id") Long id) {
+        long uid = StpUtil.getLoginIdAsLong();
+        return videoResourceService.operateVideo(id, uid, BehaviorType.RECOMMEND);
     }
 }
