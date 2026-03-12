@@ -22,4 +22,10 @@
         on duplicate key update
                          ${column} = 1
     </insert>
+    <update id="undoAction">
+        update user_video_interact
+        set ${column} = 0
+        where user_id = #{uid}
+          and video_id = #{vid}
+    </update>
 </mapper>

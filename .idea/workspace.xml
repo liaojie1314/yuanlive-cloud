@@ -4,38 +4,16 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="2c950775-72d2-474b-801f-8670ad3e3905" name="更改" comment=":sparkles: 使用xxl-job实现48小时热搜榜单合并任务">
-      <change beforePath="$PROJECT_DIR$/.idea/dataSources/77a91b57-2946-40a7-ad5e-26ee38621679.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dataSources/77a91b57-2946-40a7-ad5e-26ee38621679.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/mybatisx/templates.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/mybatisx/templates.xml" afterDir="false" />
+    <list default="true" id="2c950775-72d2-474b-801f-8670ad3e3905" name="更改" comment=":bug: 实现8条热搜推荐、推荐视频功能">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/docker/docker-compose.yml" beforeDir="false" afterPath="$PROJECT_DIR$/docker/docker-compose.yml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/docker/flink/conf/flink-conf.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/docker/flink/conf/flink-conf.yaml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/docker/start/start.md" beforeDir="false" afterPath="$PROJECT_DIR$/docker/start/start.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/yuanlive-entity/live-entity/src/main/java/blog/yuanyuan/yuanlive/entity/live/entity/VideoResource.java" beforeDir="false" afterPath="$PROJECT_DIR$/yuanlive-entity/live-entity/src/main/java/blog/yuanyuan/yuanlive/entity/live/entity/VideoResource.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/yuanlive-entity/live-entity/src/main/java/blog/yuanyuan/yuanlive/entity/live/vo/VideoSearchVO.java" beforeDir="false" afterPath="$PROJECT_DIR$/yuanlive-entity/live-entity/src/main/java/blog/yuanyuan/yuanlive/entity/live/vo/VideoSearchVO.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/yuanlive-gateway/src/main/java/blog/yuanyuan/yuanlive/gateway/config/SaTokenConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/yuanlive-gateway/src/main/java/blog/yuanyuan/yuanlive/gateway/config/SaTokenConfig.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/yuanlive-server-client/yuanlive-live-client/src/main/java/blog/yuanyuan/yuanlive/feign/live/LiveFeignClient.java" beforeDir="false" afterPath="$PROJECT_DIR$/yuanlive-server-client/yuanlive-live-client/src/main/java/blog/yuanyuan/yuanlive/feign/live/LiveFeignClient.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/yuanlive-server/yuanlive-live-service/src/main/java/blog/yuanyuan/yuanlive/live/config/FlinkSyncConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/yuanlive-server/yuanlive-live-service/src/main/java/blog/yuanyuan/yuanlive/live/config/FlinkSyncConfig.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/yuanlive-server/yuanlive-live-service/src/main/java/blog/yuanyuan/yuanlive/live/controller/LiveCategoryController.java" beforeDir="false" afterPath="$PROJECT_DIR$/yuanlive-server/yuanlive-live-service/src/main/java/blog/yuanyuan/yuanlive/live/controller/LiveCategoryController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/yuanlive-common/src/main/java/blog/yuanyuan/yuanlive/common/util/InterestUtil.java" beforeDir="false" afterPath="$PROJECT_DIR$/yuanlive-common/src/main/java/blog/yuanyuan/yuanlive/common/util/InterestUtil.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/yuanlive-server/yuanlive-live-service/src/main/java/blog/yuanyuan/yuanlive/live/controller/LiveRecordController.java" beforeDir="false" afterPath="$PROJECT_DIR$/yuanlive-server/yuanlive-live-service/src/main/java/blog/yuanyuan/yuanlive/live/controller/LiveRecordController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/yuanlive-server/yuanlive-live-service/src/main/java/blog/yuanyuan/yuanlive/live/domain/document/SearchDoc.java" beforeDir="false" afterPath="$PROJECT_DIR$/yuanlive-server/yuanlive-live-service/src/main/java/blog/yuanyuan/yuanlive/live/domain/document/SearchDoc.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/yuanlive-server/yuanlive-live-service/src/main/java/blog/yuanyuan/yuanlive/live/service/LiveCategoryService.java" beforeDir="false" afterPath="$PROJECT_DIR$/yuanlive-server/yuanlive-live-service/src/main/java/blog/yuanyuan/yuanlive/live/service/LiveCategoryService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/yuanlive-server/yuanlive-live-service/src/main/java/blog/yuanyuan/yuanlive/live/mapper/UserVideoInteractMapper.java" beforeDir="false" afterPath="$PROJECT_DIR$/yuanlive-server/yuanlive-live-service/src/main/java/blog/yuanyuan/yuanlive/live/mapper/UserVideoInteractMapper.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/yuanlive-server/yuanlive-live-service/src/main/java/blog/yuanyuan/yuanlive/live/service/VideoResourceService.java" beforeDir="false" afterPath="$PROJECT_DIR$/yuanlive-server/yuanlive-live-service/src/main/java/blog/yuanyuan/yuanlive/live/service/VideoResourceService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/yuanlive-server/yuanlive-live-service/src/main/java/blog/yuanyuan/yuanlive/live/service/impl/LiveCategoryServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/yuanlive-server/yuanlive-live-service/src/main/java/blog/yuanyuan/yuanlive/live/service/impl/LiveCategoryServiceImpl.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/yuanlive-server/yuanlive-live-service/src/main/java/blog/yuanyuan/yuanlive/live/service/impl/LiveRoomServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/yuanlive-server/yuanlive-live-service/src/main/java/blog/yuanyuan/yuanlive/live/service/impl/LiveRoomServiceImpl.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/yuanlive-server/yuanlive-live-service/src/main/java/blog/yuanyuan/yuanlive/live/service/impl/VideoResourceServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/yuanlive-server/yuanlive-live-service/src/main/java/blog/yuanyuan/yuanlive/live/service/impl/VideoResourceServiceImpl.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/yuanlive-server/yuanlive-live-service/src/main/resources/application.yml" beforeDir="false" afterPath="$PROJECT_DIR$/yuanlive-server/yuanlive-live-service/src/main/resources/application.yml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/yuanlive-server/yuanlive-live-service/src/main/resources/mapper/VideoResourceMapper.xml" beforeDir="false" afterPath="$PROJECT_DIR$/yuanlive-server/yuanlive-live-service/src/main/resources/mapper/VideoResourceMapper.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/yuanlive-server/yuanlive-user-service/src/main/java/blog/yuanyuan/yuanlive/user/controller/UserController.java" beforeDir="false" afterPath="$PROJECT_DIR$/yuanlive-server/yuanlive-user-service/src/main/java/blog/yuanyuan/yuanlive/user/controller/UserController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/yuanlive-server/yuanlive-user-service/src/main/java/blog/yuanyuan/yuanlive/user/controller/UserFollowController.java" beforeDir="false" afterPath="$PROJECT_DIR$/yuanlive-server/yuanlive-user-service/src/main/java/blog/yuanyuan/yuanlive/user/controller/UserFollowController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/yuanlive-server/yuanlive-user-service/src/main/java/blog/yuanyuan/yuanlive/user/job/SearchHotJobHandler.java" beforeDir="false" afterPath="$PROJECT_DIR$/yuanlive-server/yuanlive-user-service/src/main/java/blog/yuanyuan/yuanlive/user/job/SearchHotJobHandler.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/yuanlive-server/yuanlive-user-service/src/main/java/blog/yuanyuan/yuanlive/user/mapper/SearchHistoryMapper.java" beforeDir="false" afterPath="$PROJECT_DIR$/yuanlive-server/yuanlive-user-service/src/main/java/blog/yuanyuan/yuanlive/user/mapper/SearchHistoryMapper.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/yuanlive-server/yuanlive-user-service/src/main/java/blog/yuanyuan/yuanlive/user/properties/SearchProperties.java" beforeDir="false" afterPath="$PROJECT_DIR$/yuanlive-common/src/main/java/blog/yuanyuan/yuanlive/common/properties/SearchProperties.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/yuanlive-server/yuanlive-user-service/src/main/java/blog/yuanyuan/yuanlive/user/service/SearchHistoryService.java" beforeDir="false" afterPath="$PROJECT_DIR$/yuanlive-server/yuanlive-user-service/src/main/java/blog/yuanyuan/yuanlive/user/service/SearchHistoryService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/yuanlive-server/yuanlive-user-service/src/main/java/blog/yuanyuan/yuanlive/user/service/SysUserService.java" beforeDir="false" afterPath="$PROJECT_DIR$/yuanlive-server/yuanlive-user-service/src/main/java/blog/yuanyuan/yuanlive/user/service/SysUserService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/yuanlive-server/yuanlive-user-service/src/main/java/blog/yuanyuan/yuanlive/user/service/impl/SearchHistoryServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/yuanlive-server/yuanlive-user-service/src/main/java/blog/yuanyuan/yuanlive/user/service/impl/SearchHistoryServiceImpl.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/yuanlive-server/yuanlive-user-service/src/main/java/blog/yuanyuan/yuanlive/user/service/impl/SysUserServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/yuanlive-server/yuanlive-user-service/src/main/java/blog/yuanyuan/yuanlive/user/service/impl/SysUserServiceImpl.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/yuanlive-server/yuanlive-user-service/src/main/resources/application.yml" beforeDir="false" afterPath="$PROJECT_DIR$/yuanlive-server/yuanlive-user-service/src/main/resources/application.yml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/yuanlive-server/yuanlive-user-service/src/main/resources/mapper/SearchHistoryMapper.xml" beforeDir="false" afterPath="$PROJECT_DIR$/yuanlive-server/yuanlive-user-service/src/main/resources/mapper/SearchHistoryMapper.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/yuanlive-server/yuanlive-live-service/src/main/resources/mapper/UserVideoInteractMapper.xml" beforeDir="false" afterPath="$PROJECT_DIR$/yuanlive-server/yuanlive-live-service/src/main/resources/mapper/UserVideoInteractMapper.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -288,8 +266,8 @@
     <recent_temporary>
       <list>
         <item itemvalue="Spring Boot.LiveApplication" />
-        <item itemvalue="Spring Boot.GatewayApplication" />
         <item itemvalue="Spring Boot.UserApplication" />
+        <item itemvalue="Spring Boot.GatewayApplication" />
         <item itemvalue="Spring Boot.AiApplication" />
         <item itemvalue="Spring Boot.LiveApplication (1)" />
       </list>
@@ -449,23 +427,7 @@
       <workItem from="1773118791688" duration="7000" />
       <workItem from="1773121256055" duration="21751000" />
       <workItem from="1773193322535" duration="18724000" />
-      <workItem from="1773292845367" duration="10878000" />
-    </task>
-    <task id="LOCAL-00025" summary=":bug: 创建es索引模版，删除冗余字段">
-      <option name="closed" value="true" />
-      <created>1769433349731</created>
-      <option name="number" value="00025" />
-      <option name="presentableId" value="LOCAL-00025" />
-      <option name="project" value="LOCAL" />
-      <updated>1769433349731</updated>
-    </task>
-    <task id="LOCAL-00026" summary=":sparkles: 获取当前用户信息">
-      <option name="closed" value="true" />
-      <created>1769484235032</created>
-      <option name="number" value="00026" />
-      <option name="presentableId" value="LOCAL-00026" />
-      <option name="project" value="LOCAL" />
-      <updated>1769484235032</updated>
+      <workItem from="1773292845367" duration="15406000" />
     </task>
     <task id="LOCAL-00027" summary=":sparkles: 实现直播分类相关接口、并设置相应权限校验">
       <option name="closed" value="true" />
@@ -843,7 +805,23 @@
       <option name="project" value="LOCAL" />
       <updated>1773060540386</updated>
     </task>
-    <option name="localTasksCounter" value="74" />
+    <task id="LOCAL-00074" summary=":sparkles: 实现8条热搜推荐、推荐视频功能">
+      <option name="closed" value="true" />
+      <created>1773305644257</created>
+      <option name="number" value="00074" />
+      <option name="presentableId" value="LOCAL-00074" />
+      <option name="project" value="LOCAL" />
+      <updated>1773305644257</updated>
+    </task>
+    <task id="LOCAL-00075" summary=":bug: 实现8条热搜推荐、推荐视频功能">
+      <option name="closed" value="true" />
+      <created>1773305735304</created>
+      <option name="number" value="00075" />
+      <option name="presentableId" value="LOCAL-00075" />
+      <option name="project" value="LOCAL" />
+      <updated>1773305735304</updated>
+    </task>
+    <option name="localTasksCounter" value="76" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -891,8 +869,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value=":bug: 修改sql文件" />
-    <MESSAGE value=":sparkles: 使用ffmpeg自动截取图片作为录播视频封面" />
     <MESSAGE value=":sparkles: 完善接口文档中用户信息获取功能" />
     <MESSAGE value=":bug: 按文档修改接口" />
     <MESSAGE value=":memo: 更新sql" />
@@ -916,7 +892,9 @@
     <MESSAGE value=":sparkles: 实现用户综合搜索视频与直播间" />
     <MESSAGE value=":sparkles: 使用flink将视频与直播间信息同步至es进行查询" />
     <MESSAGE value=":sparkles: 使用xxl-job实现48小时热搜榜单合并任务" />
-    <option name="LAST_COMMIT_MESSAGE" value=":sparkles: 使用xxl-job实现48小时热搜榜单合并任务" />
+    <MESSAGE value=":sparkles: 实现8条热搜推荐、推荐视频功能" />
+    <MESSAGE value=":bug: 实现8条热搜推荐、推荐视频功能" />
+    <option name="LAST_COMMIT_MESSAGE" value=":bug: 实现8条热搜推荐、推荐视频功能" />
   </component>
   <component name="XSLT-Support.FileAssociations.UIState">
     <expand />

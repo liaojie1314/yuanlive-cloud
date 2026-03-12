@@ -14,6 +14,9 @@ public interface UserVideoInteractMapper extends BaseMapper<UserVideoInteract> {
 
     void upsertAction(@Param("id") long id, @Param("uid") Long uid,
                       @Param("vid") Long vid, @Param("column") String column);
+
+    void undoAction(@Param("uid") Long uid, @Param("vid") Long vid,
+                    @Param("column") String column);
 }
 
 

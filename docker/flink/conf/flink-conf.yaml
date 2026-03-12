@@ -64,4 +64,3 @@ classloader.resolve-order: child-first
 
 blob.server.port: 6124
 query.server.port: 6125
-

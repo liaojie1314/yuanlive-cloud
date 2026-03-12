@@ -282,7 +282,7 @@ services:
       - ./flink/flink-lib/flink-sql-connector-elasticsearch7-3.1.0-1.18.jar:/opt/flink/lib/flink-sql-connector-elasticsearch7-3.1.0-1.18.jar
       - ./flink/flink-lib/flink-sql-connector-mysql-cdc-3.1.0.jar:/opt/flink/lib/flink-sql-connector-mysql-cdc-3.1.0.jar
       - ./flink/flink-lib/mysql-connector-j-8.0.33.jar:/opt/flink/lib/mysql-connector-j-8.0.33.jar
-      - ./flink/conf/flink-conf.yaml:/opt/flink/conf/flink-conf.yaml
+      - ./flink/conf/flink-conf.yaml:/opt/flink/conf/flink-conf.yaml:ro
       - ./flink/checkpoints:/opt/flink/checkpoints
     command: >
       /bin/bash -c "
@@ -304,7 +304,7 @@ services:
       - ./flink/flink-lib/flink-sql-connector-elasticsearch7-3.1.0-1.18.jar:/opt/flink/lib/flink-sql-connector-elasticsearch7-3.1.0-1.18.jar
       - ./flink/flink-lib/flink-sql-connector-mysql-cdc-3.1.0.jar:/opt/flink/lib/flink-sql-connector-mysql-cdc-3.1.0.jar
       - ./flink/flink-lib/mysql-connector-j-8.0.33.jar:/opt/flink/lib/mysql-connector-j-8.0.33.jar
-      - ./flink/conf/flink-conf.yaml:/opt/flink/conf/flink-conf.yaml
+      - ./flink/conf/flink-conf.yaml:/opt/flink/conf/flink-conf.yaml:ro
       - ./flink/checkpoints:/opt/flink/checkpoints
     depends_on:
       - flink-jobmanager

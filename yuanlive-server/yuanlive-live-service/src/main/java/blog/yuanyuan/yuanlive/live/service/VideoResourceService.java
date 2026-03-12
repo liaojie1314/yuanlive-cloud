@@ -23,4 +23,6 @@ public interface VideoResourceService extends IService<VideoResource> {
     ResultPage<VideoVO> getVideoByUidWithPaging(VideoPageQueryDTO queryDTO);
 
     Result<String> operateVideo(Long id, Long uid, BehaviorType type);
+
+    Result<String> undoVideo(Long id, Long uid, BehaviorType type);
 }

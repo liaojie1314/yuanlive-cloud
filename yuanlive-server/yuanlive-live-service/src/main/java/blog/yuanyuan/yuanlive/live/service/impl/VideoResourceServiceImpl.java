@@ -124,26 +124,7 @@ public class VideoResourceServiceImpl extends ServiceImpl<VideoResourceMapper, V
             String interactKey = videoInteractPrefix + uid + ":" + id;
             if (!stringRedisTemplate.hasKey(interactKey)) {
                 // 没有找到key可能是过期了，去mysql中获取
-                Optional<UserVideoInteract> optional = interactService.lambdaQuery()
-                        .eq(UserVideoInteract::getUserId, uid)
-                        .eq(UserVideoInteract::getVideoId, id).oneOpt();
-                if (optional.isPresent()) {
-                    UserVideoInteract interact = optional.get();
-                    boolean index0 = interact.getHasLiked() == 1;
-                    boolean index1 = interact.getHasShared() == 1;
-                    boolean index2 = interact.getHasRecommended() == 1;
-                    boolean index3 = interact.getHasUnliked() == 1;
-                    stringRedisTemplate.executePipelined(new SessionCallback<Object>() {
-                        @Override
-                        public <K, V> Object execute(RedisOperations<K, V> operations) throws DataAccessException {
-                            operations.opsForValue().setBit((K) interactKey, 0, index0);
-                            operations.opsForValue().setBit((K) interactKey, 1, index1);
-                            operations.opsForValue().setBit((K) interactKey, 2, index2);
-                            operations.opsForValue().setBit((K) interactKey, 3, index3);
-                            return null;
-                        }
-                    });
-                }
+                rebuildCache(id, uid, interactKey);
             }
             Boolean isSuccess = stringRedisTemplate.opsForValue()
                     .setBit(interactKey, type.getBitOffset(), true);
@@ -160,6 +141,66 @@ public class VideoResourceServiceImpl extends ServiceImpl<VideoResourceMapper, V
             return Result.success("操作成功");
         }
         return Result.failed("操作失败");
+    }
+
+    @Override
+    public Result<String> undoVideo(Long id, Long uid, BehaviorType type) {
+        if (type != BehaviorType.LIKE) {
+            return Result.failed("不支持的状态行为");
+        }
+
+        Optional<VideoResource> resource = lambdaQuery().eq(VideoResource::getId, id).oneOpt();
+        if (resource.isEmpty()) {
+            return Result.failed("视频不存在");
+        }
+
+        String interactKey = videoInteractPrefix + uid + ":" + id;
+
+        // 缓存重建
+        if (Boolean.FALSE.equals(stringRedisTemplate.hasKey(interactKey))) {
+            rebuildCache(uid, id, interactKey);
+        }
+        // 执行位图撤回操作：将对应位设为 false (0)
+        // 返回值 isWasDone 是该位操作前的旧值
+        Boolean isWasDone = stringRedisTemplate.opsForValue()
+                .setBit(interactKey, type.getBitOffset(), false);
+        // 如果旧值就是 false (0)，说明之前没操作过或已撤回
+        if (Boolean.FALSE.equals(isWasDone)) {
+            return Result.success("未执行过该行为，无需撤回");
+        }
+        // 刷新过期时间
+        stringRedisTemplate.expire(interactKey, videoInteractTtl);
+
+        // 执行撤回后的业务逻辑（扣减兴趣分、热度等）
+        VideoResource videoResource = resource.get();
+        // 注意：这里需要传入负权重或调用专门的扣减方法
+        interestUtil.reduceUserInterest(uid, videoResource.getCategoryId(), type);
+        interestUtil.reduceSearch(videoResource.getTitle(), type);
+        interactMapper.undoAction(uid, id, type.getSqlColumn());
+        return Result.success("撤回操作成功");
+    }
+
+    private void rebuildCache(Long id, Long uid, String interactKey) {
+        Optional<UserVideoInteract> optional = interactService.lambdaQuery()
+                .eq(UserVideoInteract::getUserId, uid)
+                .eq(UserVideoInteract::getVideoId, id).oneOpt();
+        if (optional.isPresent()) {
+            UserVideoInteract interact = optional.get();
+            boolean index0 = interact.getHasLiked() == 1;
+            boolean index1 = interact.getHasShared() == 1;
+            boolean index2 = interact.getHasRecommended() == 1;
+            boolean index3 = interact.getHasUnliked() == 1;
+            stringRedisTemplate.executePipelined(new SessionCallback<Object>() {
+                @Override
+                public <K, V> Object execute(RedisOperations<K, V> operations) throws DataAccessException {
+                    operations.opsForValue().setBit((K) interactKey, 0, index0);
+                    operations.opsForValue().setBit((K) interactKey, 1, index1);
+                    operations.opsForValue().setBit((K) interactKey, 2, index2);
+                    operations.opsForValue().setBit((K) interactKey, 3, index3);
+                    return null;
+                }
+            });
+        }
     }
 }
 

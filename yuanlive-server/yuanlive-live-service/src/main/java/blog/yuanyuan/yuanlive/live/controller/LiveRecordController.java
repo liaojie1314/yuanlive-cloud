@@ -44,4 +44,25 @@ public class LiveRecordController {
         long uid = StpUtil.getLoginIdAsLong();
         return videoResourceService.operateVideo(id, uid, BehaviorType.RECOMMEND);
     }
+
+    @GetMapping("/likeVideo/{id}")
+    @Operation(summary = "用户点赞视频")
+    public Result<String> likeVideo(@PathVariable("id") Long id) {
+        long uid = StpUtil.getLoginIdAsLong();
+        return videoResourceService.operateVideo(id, uid, BehaviorType.LIKE);
+    }
+
+    @GetMapping("/cancelLikeVideo/{id}")
+    @Operation(summary = "用户取消点赞视频")
+    public Result<String> cancelLikeVideo(@PathVariable("id") Long id) {
+        long uid = StpUtil.getLoginIdAsLong();
+        return videoResourceService.undoVideo(id, uid, BehaviorType.LIKE);
+    }
+
+    @GetMapping("/unlikeVideo/{id}")
+    @Operation(summary = "用户不喜欢视频")
+    public Result<String> unlikeVideo(@PathVariable("id") Long id) {
+        long uid = StpUtil.getLoginIdAsLong();
+        return videoResourceService.operateVideo(id, uid, BehaviorType.UNLIKE);
+    }
 }
