@@ -4,16 +4,18 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="2c950775-72d2-474b-801f-8670ad3e3905" name="更改" comment=":bug: 实现8条热搜推荐、推荐视频功能">
+    <list default="true" id="2c950775-72d2-474b-801f-8670ad3e3905" name="更改" comment=":sparkles: 实现点赞、取消点赞、不喜欢视频功能">
+      <change beforePath="$PROJECT_DIR$/.idea/dataSources.local.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dataSources.local.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/docker/docker-compose.yml" beforeDir="false" afterPath="$PROJECT_DIR$/docker/docker-compose.yml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/docker/flink/conf/flink-conf.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/docker/flink/conf/flink-conf.yaml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/yuanlive-common/src/main/java/blog/yuanyuan/yuanlive/common/util/InterestUtil.java" beforeDir="false" afterPath="$PROJECT_DIR$/yuanlive-common/src/main/java/blog/yuanyuan/yuanlive/common/util/InterestUtil.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/docker/start/start.md" beforeDir="false" afterPath="$PROJECT_DIR$/docker/start/start.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/yuanlive-common/src/main/java/blog/yuanyuan/yuanlive/common/util/MinioTemplate.java" beforeDir="false" afterPath="$PROJECT_DIR$/yuanlive-common/src/main/java/blog/yuanyuan/yuanlive/common/util/MinioTemplate.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/yuanlive-server/yuanlive-live-service/src/main/java/blog/yuanyuan/yuanlive/live/controller/LiveRecordController.java" beforeDir="false" afterPath="$PROJECT_DIR$/yuanlive-server/yuanlive-live-service/src/main/java/blog/yuanyuan/yuanlive/live/controller/LiveRecordController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/yuanlive-server/yuanlive-live-service/src/main/java/blog/yuanyuan/yuanlive/live/mapper/UserVideoInteractMapper.java" beforeDir="false" afterPath="$PROJECT_DIR$/yuanlive-server/yuanlive-live-service/src/main/java/blog/yuanyuan/yuanlive/live/mapper/UserVideoInteractMapper.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/yuanlive-server/yuanlive-live-service/src/main/java/blog/yuanyuan/yuanlive/live/service/VideoResourceService.java" beforeDir="false" afterPath="$PROJECT_DIR$/yuanlive-server/yuanlive-live-service/src/main/java/blog/yuanyuan/yuanlive/live/service/VideoResourceService.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/yuanlive-server/yuanlive-live-service/src/main/java/blog/yuanyuan/yuanlive/live/service/impl/VideoResourceServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/yuanlive-server/yuanlive-live-service/src/main/java/blog/yuanyuan/yuanlive/live/service/impl/VideoResourceServiceImpl.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/yuanlive-server/yuanlive-live-service/src/main/resources/mapper/UserVideoInteractMapper.xml" beforeDir="false" afterPath="$PROJECT_DIR$/yuanlive-server/yuanlive-live-service/src/main/resources/mapper/UserVideoInteractMapper.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/yuanlive-server/yuanlive-user-service/src/main/java/blog/yuanyuan/yuanlive/user/controller/MinioController.java" beforeDir="false" afterPath="$PROJECT_DIR$/yuanlive-server/yuanlive-user-service/src/main/java/blog/yuanyuan/yuanlive/user/controller/MinioController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/yuanlive-server/yuanlive-user-service/src/main/java/blog/yuanyuan/yuanlive/user/service/MinioService.java" beforeDir="false" afterPath="$PROJECT_DIR$/yuanlive-server/yuanlive-user-service/src/main/java/blog/yuanyuan/yuanlive/user/service/MinioService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/yuanlive-server/yuanlive-user-service/src/main/java/blog/yuanyuan/yuanlive/user/service/impl/MinioServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/yuanlive-server/yuanlive-user-service/src/main/java/blog/yuanyuan/yuanlive/user/service/impl/MinioServiceImpl.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/yuanlive-server/yuanlive-user-service/src/main/resources/application.yml" beforeDir="false" afterPath="$PROJECT_DIR$/yuanlive-server/yuanlive-user-service/src/main/resources/application.yml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -427,15 +429,8 @@
       <workItem from="1773118791688" duration="7000" />
       <workItem from="1773121256055" duration="21751000" />
       <workItem from="1773193322535" duration="18724000" />
-      <workItem from="1773292845367" duration="15406000" />
-    </task>
-    <task id="LOCAL-00027" summary=":sparkles: 实现直播分类相关接口、并设置相应权限校验">
-      <option name="closed" value="true" />
-      <created>1769502857654</created>
-      <option name="number" value="00027" />
-      <option name="presentableId" value="LOCAL-00027" />
-      <option name="project" value="LOCAL" />
-      <updated>1769502857654</updated>
+      <workItem from="1773292845367" duration="15616000" />
+      <workItem from="1773377698696" duration="14052000" />
     </task>
     <task id="LOCAL-00028" summary=":tada: 添加直播表结构&#10;房间表、分类表、记录表">
       <option name="closed" value="true" />
@@ -821,7 +816,15 @@
       <option name="project" value="LOCAL" />
       <updated>1773305735304</updated>
     </task>
-    <option name="localTasksCounter" value="76" />
+    <task id="LOCAL-00076" summary=":sparkles: 实现点赞、取消点赞、不喜欢视频功能">
+      <option name="closed" value="true" />
+      <created>1773309252532</created>
+      <option name="number" value="00076" />
+      <option name="presentableId" value="LOCAL-00076" />
+      <option name="project" value="LOCAL" />
+      <updated>1773309252532</updated>
+    </task>
+    <option name="localTasksCounter" value="77" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -869,7 +872,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value=":sparkles: 完善接口文档中用户信息获取功能" />
     <MESSAGE value=":bug: 按文档修改接口" />
     <MESSAGE value=":memo: 更新sql" />
     <MESSAGE value=":sparkles: 使用zset记录人气指数" />
@@ -894,7 +896,8 @@
     <MESSAGE value=":sparkles: 使用xxl-job实现48小时热搜榜单合并任务" />
     <MESSAGE value=":sparkles: 实现8条热搜推荐、推荐视频功能" />
     <MESSAGE value=":bug: 实现8条热搜推荐、推荐视频功能" />
-    <option name="LAST_COMMIT_MESSAGE" value=":bug: 实现8条热搜推荐、推荐视频功能" />
+    <MESSAGE value=":sparkles: 实现点赞、取消点赞、不喜欢视频功能" />
+    <option name="LAST_COMMIT_MESSAGE" value=":sparkles: 实现点赞、取消点赞、不喜欢视频功能" />
   </component>
   <component name="XSLT-Support.FileAssociations.UIState">
     <expand />

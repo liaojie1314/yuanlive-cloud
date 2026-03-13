@@ -7,6 +7,7 @@ import blog.yuanyuan.yuanlive.entity.live.entity.VideoResource;
 import blog.yuanyuan.yuanlive.entity.live.vo.UnseenVO;
 import blog.yuanyuan.yuanlive.live.domain.dto.VideoPageQueryDTO;
 import blog.yuanyuan.yuanlive.entity.live.vo.VideoVO;
+import blog.yuanyuan.yuanlive.live.domain.vo.LikeVO;
 import com.baomidou.mybatisplus.extension.service.IService;
 
 import java.util.List;
@@ -24,5 +25,7 @@ public interface VideoResourceService extends IService<VideoResource> {
 
     Result<String> operateVideo(Long id, Long uid, BehaviorType type);
 
-    Result<String> undoVideo(Long id, Long uid, BehaviorType type);
+    Result<LikeVO> cancelLike(Long id, Long uid, BehaviorType type);
+
+    Result<LikeVO> likeVideo(Long id, long uid, BehaviorType behaviorType);
 }

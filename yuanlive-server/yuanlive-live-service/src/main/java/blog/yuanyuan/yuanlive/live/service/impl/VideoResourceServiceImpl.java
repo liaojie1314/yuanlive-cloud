@@ -1,8 +1,10 @@
 package blog.yuanyuan.yuanlive.live.service.impl;
 
 import blog.yuanyuan.yuanlive.common.enums.BehaviorType;
+import blog.yuanyuan.yuanlive.common.exception.ApiException;
 import blog.yuanyuan.yuanlive.common.result.Result;
 import blog.yuanyuan.yuanlive.common.result.ResultPage;
+import blog.yuanyuan.yuanlive.common.util.CacheUtil;
 import blog.yuanyuan.yuanlive.common.util.InterestUtil;
 import blog.yuanyuan.yuanlive.entity.live.dto.FollowUnseenQueryDTO;
 import blog.yuanyuan.yuanlive.entity.live.entity.UserVideoInteract;
@@ -10,6 +12,7 @@ import blog.yuanyuan.yuanlive.entity.live.vo.UnseenVO;
 import blog.yuanyuan.yuanlive.feign.user.UserFeignClient;
 import blog.yuanyuan.yuanlive.live.domain.dto.VideoPageQueryDTO;
 import blog.yuanyuan.yuanlive.entity.live.vo.VideoVO;
+import blog.yuanyuan.yuanlive.live.domain.vo.LikeVO;
 import blog.yuanyuan.yuanlive.live.mapper.UserVideoInteractMapper;
 import blog.yuanyuan.yuanlive.live.service.UserVideoInteractService;
 import cn.hutool.core.bean.BeanUtil;
@@ -32,6 +35,7 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 
 /**
 * @author frodepu
@@ -55,6 +59,8 @@ public class VideoResourceServiceImpl extends ServiceImpl<VideoResourceMapper, V
     private IdGeneratorProvider idGeneratorProvider;
     @Resource
     private StringRedisTemplate stringRedisTemplate;
+    @Resource
+    private CacheUtil cacheUtil;
 
     @Value("${redis-key.video-interact.prefix}")
     private String videoInteractPrefix;
@@ -144,7 +150,7 @@ public class VideoResourceServiceImpl extends ServiceImpl<VideoResourceMapper, V
     }
 
     @Override
-    public Result<String> undoVideo(Long id, Long uid, BehaviorType type) {
+    public Result<LikeVO> cancelLike(Long id, Long uid, BehaviorType type) {
         if (type != BehaviorType.LIKE) {
             return Result.failed("不支持的状态行为");
         }
@@ -155,29 +161,87 @@ public class VideoResourceServiceImpl extends ServiceImpl<VideoResourceMapper, V
         }
 
         String interactKey = videoInteractPrefix + uid + ":" + id;
+        String countKey = "yuanlive:video:likeCount:" + id;
 
-        // 缓存重建
+        // 2. 缓存重建：如果位图 Key 不存在，从 DB 恢复
         if (Boolean.FALSE.equals(stringRedisTemplate.hasKey(interactKey))) {
-            rebuildCache(uid, id, interactKey);
+            rebuildCache(id, uid, interactKey);
         }
-        // 执行位图撤回操作：将对应位设为 false (0)
-        // 返回值 isWasDone 是该位操作前的旧值
-        Boolean isWasDone = stringRedisTemplate.opsForValue()
-                .setBit(interactKey, type.getBitOffset(), false);
-        // 如果旧值就是 false (0)，说明之前没操作过或已撤回
-        if (Boolean.FALSE.equals(isWasDone)) {
-            return Result.success("未执行过该行为，无需撤回");
-        }
-        // 刷新过期时间
+
+        // 3. 执行位图操作：原子性地将对应位设为 0，并获取旧值
+        // isWasDone 为 true 表示之前确实点过赞
+        Boolean isWasDone = stringRedisTemplate.opsForValue().setBit(interactKey, type.getBitOffset(), false);
+
+        // 刷新位图过期时间
         stringRedisTemplate.expire(interactKey, videoInteractTtl);
 
-        // 执行撤回后的业务逻辑（扣减兴趣分、热度等）
-        VideoResource videoResource = resource.get();
-        // 注意：这里需要传入负权重或调用专门的扣减方法
-        interestUtil.reduceUserInterest(uid, videoResource.getCategoryId(), type);
-        interestUtil.reduceSearch(videoResource.getTitle(), type);
-        interactMapper.undoAction(uid, id, type.getSqlColumn());
-        return Result.success("撤回操作成功");
+        // 4. 判断是否需要执行后续撤回逻辑（幂等判断）
+        if (Boolean.TRUE.equals(isWasDone)) {
+            // --- 确有其赞，执行撤回逻辑 ---
+
+            // A. 兴趣权重与搜索记录扣减
+            VideoResource videoResource = resource.get();
+            interestUtil.reduceUserInterest(uid, videoResource.getCategoryId(), type);
+            interestUtil.reduceSearch(videoResource.getTitle(), type);
+
+            // B. MySQL 持久化：将 has_liked 设为 0
+            interactMapper.undoAction(uid, id, type.getSqlColumn());
+
+            // C. 计数器处理：如果 Redis 中存在计数缓存，执行递减
+            String countStr = stringRedisTemplate.opsForValue().get(countKey);
+            if (countStr != null) {
+                stringRedisTemplate.opsForValue().decrement(countKey);
+            }
+        }
+
+        // 5. 获取并返回最新的点赞数（手动实现缓存旁路逻辑）
+        Long count;
+        String countStr = stringRedisTemplate.opsForValue().get(countKey);
+
+        if (countStr != null) {
+            count = Long.parseLong(countStr);
+        } else {
+            // 缓存失效，查库回填
+            // 由于上面已经执行了 undoAction，此时库里的数据是最新的
+            count = interactService.lambdaQuery()
+                    .eq(UserVideoInteract::getVideoId, id)
+                    .eq(UserVideoInteract::getHasLiked, 1)
+                    .count();
+            stringRedisTemplate.opsForValue().set(countKey, String.valueOf(count), 1, TimeUnit.DAYS);
+        }
+
+        return Result.success(LikeVO.builder()
+                .isLiked(false) // 撤回成功，当前状态肯定为 false
+                .count(count)
+                .build());
+    }
+
+    @Override
+    public Result<LikeVO> likeVideo(Long id, long uid, BehaviorType behaviorType) {
+        Result<String> result = operateVideo(id, uid, behaviorType);
+        if (!result.isSuccess()) {
+            throw new ApiException(result.getMsg());
+        }
+        String countKey = "yuanlive:video:likeCount:" + id;
+        String countStr = stringRedisTemplate.opsForValue().get(countKey);
+        Long count;
+        boolean isNewAction = "操作成功".equals(result.getData());
+        if (countStr != null) {
+            count = Long.parseLong(countStr);
+            if (isNewAction) {
+                count = stringRedisTemplate.opsForValue().increment(countKey);
+            }
+        } else {
+            count = interactService.lambdaQuery()
+                    .eq(UserVideoInteract::getVideoId, id)
+                    .eq(UserVideoInteract::getHasLiked, 1)
+                    .count();
+            stringRedisTemplate.opsForValue().set(countKey, String.valueOf(count), 1, TimeUnit.DAYS);
+        }
+        LikeVO likeVO = LikeVO.builder()
+                .isLiked(true)
+                .count(count).build();
+        return Result.success(likeVO);
     }
 
     private void rebuildCache(Long id, Long uid, String interactKey) {

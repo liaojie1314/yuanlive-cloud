@@ -283,6 +283,9 @@
     - 将`yuanlive-live-service`微服务下`application.yml`中的`file-preifx.host-prefix`修改为自己的`SrsConfig`实际存储目录
     
     - 重新构建运行一下`srs`容器，否则有可能因为目录权限问题导致无法迁移录播视频，可以选择使用`docker compose up -d --force-recreate srs`指令
+    - 执行以下两条指令设置存储桶的`chunks`目录过期时间
+      - `mc alias set minio http://127.0.0.1:9000 yuanlive yuanlive`
+      - `mc ilm add --expiry-days 1 --prefix "chunks/" minio/yuanlive`
   
   - rabbitmq统一配置项
     

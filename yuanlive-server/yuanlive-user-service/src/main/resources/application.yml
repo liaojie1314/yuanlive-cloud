@@ -94,6 +94,9 @@ redis-key:
       agg-Key: "yuanlive:search:hot:aggregate" # 48小时热搜榜单聚合
       ttl: 48h # 小时级热搜榜单过期时间
       category-hot-prefix: "yuanlive:search:hot:category:" # 分类热搜榜单
+  chunk:
+    prefix: "yuanlive:file:chunk:"
+    ttl: 10m
 
 xxl:
   job:

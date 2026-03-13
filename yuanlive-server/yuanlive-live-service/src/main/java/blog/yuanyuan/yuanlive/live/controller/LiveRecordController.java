@@ -6,6 +6,7 @@ import blog.yuanyuan.yuanlive.common.result.ResultPage;
 import blog.yuanyuan.yuanlive.entity.live.vo.UnseenVO;
 import blog.yuanyuan.yuanlive.live.domain.dto.VideoPageQueryDTO;
 import blog.yuanyuan.yuanlive.entity.live.vo.VideoVO;
+import blog.yuanyuan.yuanlive.live.domain.vo.LikeVO;
 import blog.yuanyuan.yuanlive.live.service.VideoResourceService;
 import cn.dev33.satoken.stp.StpUtil;
 import io.swagger.v3.oas.annotations.Operation;
@@ -47,16 +48,16 @@ public class LiveRecordController {
 
     @GetMapping("/likeVideo/{id}")
     @Operation(summary = "用户点赞视频")
-    public Result<String> likeVideo(@PathVariable("id") Long id) {
+    public Result<LikeVO> likeVideo(@PathVariable("id") Long id) {
         long uid = StpUtil.getLoginIdAsLong();
-        return videoResourceService.operateVideo(id, uid, BehaviorType.LIKE);
+        return videoResourceService.likeVideo(id, uid, BehaviorType.LIKE);
     }
 
     @GetMapping("/cancelLikeVideo/{id}")
     @Operation(summary = "用户取消点赞视频")
-    public Result<String> cancelLikeVideo(@PathVariable("id") Long id) {
+    public Result<LikeVO> cancelLikeVideo(@PathVariable("id") Long id) {
         long uid = StpUtil.getLoginIdAsLong();
-        return videoResourceService.undoVideo(id, uid, BehaviorType.LIKE);
+        return videoResourceService.cancelLike(id, uid, BehaviorType.LIKE);
     }
 
     @GetMapping("/unlikeVideo/{id}")

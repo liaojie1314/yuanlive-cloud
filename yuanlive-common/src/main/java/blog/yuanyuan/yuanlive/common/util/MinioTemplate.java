@@ -7,6 +7,7 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.json.JSONUtil;
 import io.minio.*;
 import io.minio.errors.*;
+import io.minio.messages.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -18,6 +19,7 @@ import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
@@ -47,6 +49,27 @@ public class MinioTemplate {
                     .config(JSONUtil.toJsonStr(configDto))
                     .build();
             minioClient.setBucketPolicy(policyArgs);
+            // 在创建时设置chunk分片目录过期时间
+            if (properties.getBucketName().equals(bucketName)) {
+                List<LifecycleRule> rules = new ArrayList<>();
+                rules.add(new LifecycleRule(
+                        Status.ENABLED,
+                        null,
+                        new Expiration((ResponseDate) null, 1, (Boolean) null), // 2天后过期
+                        new RuleFilter("chunks/"), // 只针对分片目录
+                        "delete-temp-chunks",
+                        null,
+                        null,
+                        null
+                ));
+                LifecycleConfiguration config = new LifecycleConfiguration(rules);
+                minioClient.setBucketLifecycle(
+                        SetBucketLifecycleArgs.builder()
+                                .bucket(bucketName)
+                                .config(config)
+                                .build()
+                );
+            }
         }
     }
 
@@ -99,12 +122,26 @@ public class MinioTemplate {
         return getFileUrl(objectName);
     }
 
-    public String composeChunks(String business, List<String> chunkNames, String targetName) {
+    public String uploadChunkFile(String business, String fileName, InputStream inputStream, long size) throws Exception {
+        makeBucket(properties.getBucketName());
+        String objectName = business + "/" + fileName;
+        minioClient.putObject(
+                PutObjectArgs.builder()
+                        .bucket(properties.getBucketName())
+                        .object(objectName)
+                        .stream(inputStream, size, -1)
+                        .contentType(getContentType(fileName))
+                        .build()
+        );
+        return objectName;
+    }
+
+    public String composeChunks(String business, List<String> chunkObjects, String targetName) {
         try {
-            List<ComposeSource> sources = chunkNames.stream()
+            List<ComposeSource> sources = chunkObjects.stream()
                     .map(chunk -> ComposeSource.builder()
                             .bucket(properties.getBucketName())
-                            .object(getFullObjectName(business, chunk))
+                            .object(chunk)
                             .build()).toList();
             String target = getFullObjectName(business, targetName);
             minioClient.composeObject(
@@ -115,9 +152,7 @@ public class MinioTemplate {
                             .build()
             );
             // 清空临时分片
-            chunkNames.forEach(chunk -> {
-                removeFile(getFullObjectName(business, chunk));
-            });
+            chunkObjects.forEach(this::removeFile);
             return getFileUrl(target);
         } catch (Exception e) {
             throw new ApiException("文件合并失败:" + e.getMessage());
