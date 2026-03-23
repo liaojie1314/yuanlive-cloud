@@ -79,6 +79,12 @@ public class LiveCategoryController {
         return Result.success(categoryService.getFirstLevelCategories());
     }
 
+    @GetMapping("/children")
+    @Operation(summary = "获取所有子分区列表")
+    public Result<List<LiveCategoryVO>> children() {
+        return Result.success(categoryService.getChildren());
+    }
+
     @GetMapping("/listByCategory")
     @Operation(summary = "获取当前直播分类类别的所有直播")
     public Result<List<LiveRoomRankVO>> listByCategory(@RequestParam(value = "categoryValue", required = false) String categoryValue) {

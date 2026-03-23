@@ -71,4 +71,6 @@ public interface LiveCategoryService extends IService<LiveCategory> {
     List<HotCategoryVO> getHotCategory();
 
     Integer getCategoryIdBySearch(String keyword);
+
+    List<LiveCategoryVO> getChildren();
 }

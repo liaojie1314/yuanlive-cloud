@@ -11,7 +11,7 @@ public class FileChunkDTO {
     @NotBlank(message = "文件哈希值不能为空")
     private String fileHash;
     @NotNull(message = "场景不能为空")
-    @Pattern(regexp = "^(avatar|file|cover)$", message = "场景错误, 只能为avatar或file")
+    @Pattern(regexp = "^(avatar|liveCover|videoCover|comment|video)$", message = "场景错误, 只能为avatar或file")
     private String scene;
     @NotBlank(message = "文件名不能为空")
     private String fileName;

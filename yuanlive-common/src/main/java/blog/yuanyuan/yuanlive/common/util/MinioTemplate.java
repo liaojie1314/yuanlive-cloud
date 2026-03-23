@@ -15,11 +15,14 @@ import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.SequenceInputStream;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Enumeration;
 import java.util.List;
 
 @Slf4j
@@ -156,6 +159,44 @@ public class MinioTemplate {
             return getFileUrl(target);
         } catch (Exception e) {
             throw new ApiException("文件合并失败:" + e.getMessage());
+        }
+    }
+
+    public String manualStreamMerge(String business, List<String> chunkObjects, String targetName) {
+        try {
+            List<InputStream> inputStreams = new ArrayList<>();
+            long totalSize = 0;
+            for (String objectName : chunkObjects) {
+                // 获取对象状态以取得准确大小
+                StatObjectResponse stat = minioClient.statObject(
+                        StatObjectArgs.builder().bucket(properties.getBucketName()).object(objectName).build()
+                );
+                totalSize += stat.size();
+                InputStream stream = minioClient.getObject(
+                        GetObjectArgs.builder().bucket(properties.getBucketName()).object(objectName).build()
+                );
+                inputStreams.add(stream);
+            }
+            Enumeration<InputStream> en = Collections.enumeration(inputStreams);
+            SequenceInputStream sis = new SequenceInputStream(en);
+
+            // 重新上传完整文件
+            String targetPath = getFullObjectName(business, targetName);
+            minioClient.putObject(
+                    PutObjectArgs.builder()
+                            .bucket(properties.getBucketName())
+                            .object(targetPath)
+                            .stream(sis, totalSize, -1)
+                            .contentType(getContentType(targetName))
+                            .build()
+            );
+
+            // 清理分片并关闭流
+            sis.close();
+            chunkObjects.forEach(this::removeFile);
+            return getFileUrl(targetPath);
+        } catch (Exception e) {
+            throw new ApiException("流式合并异常: " + e.getMessage());
         }
     }
 

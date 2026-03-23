@@ -7,6 +7,7 @@ import blog.yuanyuan.yuanlive.user.domain.dto.FileCheckDTO;
 import blog.yuanyuan.yuanlive.user.domain.dto.FileChunkDTO;
 import blog.yuanyuan.yuanlive.user.domain.dto.FileMergeChunkDTO;
 import blog.yuanyuan.yuanlive.user.domain.dto.FileUploadDTO;
+import blog.yuanyuan.yuanlive.user.domain.enums.UploadScene;
 import blog.yuanyuan.yuanlive.user.service.MinioService;
 import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.util.IdUtil;
@@ -19,6 +20,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.InputStream;
 import java.time.Duration;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.IntStream;
@@ -52,6 +54,12 @@ public class MinioServiceImpl implements MinioService {
 
     @Override
     public Result<String> chunk(FileChunkDTO fileChunkDTO, MultipartFile file) {
+        UploadScene scene = UploadScene.of(fileChunkDTO.getScene());
+        long currentChunkSize = file.getSize();
+        boolean isLastChunk = fileChunkDTO.getChunkIndex().equals(fileChunkDTO.getTotalChunks() - 1);
+        if (isLastChunk && (currentChunkSize < scene.getMinChunkSize() || currentChunkSize > scene.getMaxChunkSize())) {
+            throw new ApiException("分片大小不满足要求");
+        }
         try {
             String business = "chunks/" + fileChunkDTO.getScene() + "/" + fileChunkDTO.getFileHash();
             InputStream inputStream = file.getInputStream();
@@ -69,7 +77,7 @@ public class MinioServiceImpl implements MinioService {
     public List<Integer> check(FileCheckDTO checkDTO) {
         String redisKey = chunkPrefix + checkDTO.getFileHash();
         if (!stringRedisTemplate.hasKey(redisKey)) {
-            throw new ApiException("未开始上传该文件分片或上传已超时");
+            return Collections.emptyList();
         }
         return stringRedisTemplate.opsForHash().keys(redisKey).stream()
                 .map(key -> Integer.parseInt((String) key))
@@ -78,6 +86,7 @@ public class MinioServiceImpl implements MinioService {
 
     @Override
     public Result<String> merge(FileMergeChunkDTO mergeChunkDTO) {
+        UploadScene scene = UploadScene.of(mergeChunkDTO.getScene());
         String redisKey = chunkPrefix + mergeChunkDTO.getFileHash();
         if (!stringRedisTemplate.hasKey(redisKey)) {
             throw new ApiException("未开始上传该文件分片或上传已超时");
@@ -94,8 +103,13 @@ public class MinioServiceImpl implements MinioService {
                     }
                     return (String) o;
                 }).toList();
-        String url = minioTemplate
-                .composeChunks(mergeChunkDTO.getScene(), objects, mergeChunkDTO.getFileName());
+        String url;
+        if (scene.isUseMinioCompose()) {
+            url = minioTemplate.composeChunks(scene.getCode(), objects, mergeChunkDTO.getFileName());
+        } else {
+            // 走后端手动流式合并 (兼容小分片)
+            url = minioTemplate.manualStreamMerge(scene.getCode(), objects, mergeChunkDTO.getFileName());
+        }
         return Result.success(url);
     }
 }

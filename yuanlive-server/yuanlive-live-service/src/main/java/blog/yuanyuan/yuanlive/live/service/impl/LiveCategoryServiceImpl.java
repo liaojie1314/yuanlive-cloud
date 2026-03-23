@@ -524,6 +524,51 @@ public class LiveCategoryServiceImpl extends ServiceImpl<LiveCategoryMapper, Liv
                 .map(Map.Entry::getKey).orElse(null);
     }
 
+    @Override
+    public List<LiveCategoryVO> getChildren() {
+        // 获取所有有关联关系的分类（即有父分类的分类）
+        List<Integer> ids = liveCategoryRelationService.lambdaQuery()
+                .ne(LiveCategoryRelation::getParentId, 0)
+                .list()
+                .stream()
+                .map(LiveCategoryRelation::getCategoryId)
+                .distinct()
+                .toList();
+        
+        if (ids.isEmpty()) {
+            return new ArrayList<>();
+        }
+        
+        // 获取这些分类的详细信息
+        List<LiveCategory> allCategories = this.listByIds(ids);
+        
+        // 转换为 VO
+        List<LiveCategoryVO> categoryVOs = allCategories.stream()
+                .map(category -> {
+                    LiveCategoryVO vo = new LiveCategoryVO();
+                    vo.setId(category.getId());
+                    vo.setName(category.getName());
+                    vo.setIconUrl(category.getIconUrl());
+                    vo.setValue(category.getValue());
+                    return vo;
+                })
+                .toList();
+        
+        // 获取所有关联关系
+        List<LiveCategoryRelation> allRelations = liveCategoryRelationService.list();
+        
+        // 为每个分类设置 parentIds
+        for (LiveCategoryVO vo : categoryVOs) {
+            List<Integer> parentIds = allRelations.stream()
+                    .filter(r -> r.getCategoryId().equals(vo.getId()))
+                    .map(LiveCategoryRelation::getParentId)
+                    .toList();
+            vo.setParentIds(parentIds);
+        }
+        
+        return categoryVOs;
+    }
+
     /**
      * 获取指定分类ID及其所有子分类ID
      * @param categoryId 分类ID
