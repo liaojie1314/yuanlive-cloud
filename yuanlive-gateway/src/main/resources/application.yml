@@ -45,6 +45,13 @@ spring:
               uri: lb:ws://live-service
               predicates:
                 - Path=/ws/**
+
+            - id: ai-service
+              uri: lb://ai-service
+              predicates:
+                - Path=/ai/**
+              filters:
+                - StripPrefix=1
   config:
     import:
       - nacos:sa-token.yaml?group=SA_TOKEN_GROUP&refresh-enabled=true

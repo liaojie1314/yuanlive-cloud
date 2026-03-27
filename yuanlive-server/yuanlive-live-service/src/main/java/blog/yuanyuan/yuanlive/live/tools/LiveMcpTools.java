@@ -5,6 +5,7 @@ import blog.yuanyuan.yuanlive.live.message.notification.SystemNotification;
 import blog.yuanyuan.yuanlive.live.properties.LiveRoomProperties;
 import blog.yuanyuan.yuanlive.live.server.SessionManager;
 import blog.yuanyuan.yuanlive.live.service.LiveRoomService;
+import cn.dev33.satoken.stp.StpUtil;
 import cn.hutool.json.JSONUtil;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
@@ -17,6 +18,8 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
 import java.util.Map;
 

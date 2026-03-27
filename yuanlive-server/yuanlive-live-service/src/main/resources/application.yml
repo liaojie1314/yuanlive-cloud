@@ -9,7 +9,7 @@ spring:
         name: live-service-mcp-server
         version: 1.0.0
         instructions: "提供直播间管理相关MCP"
-        type: ASYNC
+        type: sync
         sse-message-endpoint: /mcp/message
         sse-endpoint: /sse
         capabilities:
@@ -17,6 +17,7 @@ spring:
           resource: true
           prompt: true
           completion: true
+        protocol: sse
     alibaba:
       mcp:
         nacos:

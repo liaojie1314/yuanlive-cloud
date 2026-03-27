@@ -4,15 +4,26 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="2c950775-72d2-474b-801f-8670ad3e3905" name="更改" comment=":sparkles: 实现点赞、取消点赞、不喜欢视频功能">
+    <list default="true" id="2c950775-72d2-474b-801f-8670ad3e3905" name="更改" comment=":sparkles: 获取子分区列表、控制分片上传大小">
+      <change afterPath="$PROJECT_DIR$/yuanlive-server/yuanlive-ai-service/src/main/java/blog/yuanyuan/yuanlive/ai/service/impl/AiChatServiceImpl.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/yuanlive-common/src/main/java/blog/yuanyuan/yuanlive/common/util/MinioTemplate.java" beforeDir="false" afterPath="$PROJECT_DIR$/yuanlive-common/src/main/java/blog/yuanyuan/yuanlive/common/util/MinioTemplate.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/docker/docker-compose.yml" beforeDir="false" afterPath="$PROJECT_DIR$/docker/docker-compose.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/docker/searxng/searxng-mcp/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/docker/searxng/searxng-mcp/package-lock.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/docker/start/start.md" beforeDir="false" afterPath="$PROJECT_DIR$/docker/start/start.md" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/yuanlive-gateway/src/main/java/blog/yuanyuan/yuanlive/gateway/config/SaTokenConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/yuanlive-gateway/src/main/java/blog/yuanyuan/yuanlive/gateway/config/SaTokenConfig.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/yuanlive-server/yuanlive-live-service/src/main/java/blog/yuanyuan/yuanlive/live/controller/LiveCategoryController.java" beforeDir="false" afterPath="$PROJECT_DIR$/yuanlive-server/yuanlive-live-service/src/main/java/blog/yuanyuan/yuanlive/live/controller/LiveCategoryController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/yuanlive-server/yuanlive-live-service/src/main/java/blog/yuanyuan/yuanlive/live/service/LiveCategoryService.java" beforeDir="false" afterPath="$PROJECT_DIR$/yuanlive-server/yuanlive-live-service/src/main/java/blog/yuanyuan/yuanlive/live/service/LiveCategoryService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/yuanlive-server/yuanlive-live-service/src/main/java/blog/yuanyuan/yuanlive/live/service/impl/LiveCategoryServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/yuanlive-server/yuanlive-live-service/src/main/java/blog/yuanyuan/yuanlive/live/service/impl/LiveCategoryServiceImpl.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/yuanlive-server/yuanlive-user-service/src/main/java/blog/yuanyuan/yuanlive/user/domain/dto/FileChunkDTO.java" beforeDir="false" afterPath="$PROJECT_DIR$/yuanlive-server/yuanlive-user-service/src/main/java/blog/yuanyuan/yuanlive/user/domain/dto/FileChunkDTO.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/yuanlive-server/yuanlive-user-service/src/main/java/blog/yuanyuan/yuanlive/user/service/impl/MinioServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/yuanlive-server/yuanlive-user-service/src/main/java/blog/yuanyuan/yuanlive/user/service/impl/MinioServiceImpl.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/yuanlive-gateway/src/main/resources/application.yml" beforeDir="false" afterPath="$PROJECT_DIR$/yuanlive-gateway/src/main/resources/application.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/yuanlive-server/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/yuanlive-server/pom.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/yuanlive-server/yuanlive-ai-service/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/yuanlive-server/yuanlive-ai-service/pom.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/yuanlive-server/yuanlive-ai-service/src/main/java/blog/yuanyuan/yuanlive/ai/nodes/RiskActionNodes.java" beforeDir="false" afterPath="$PROJECT_DIR$/yuanlive-server/yuanlive-ai-service/src/main/java/blog/yuanyuan/yuanlive/ai/nodes/RiskActionNodes.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/yuanlive-server/yuanlive-ai-service/src/main/resources/application.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/yuanlive-server/yuanlive-ai-service/src/main/resources/application.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/yuanlive-server/yuanlive-live-service/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/yuanlive-server/yuanlive-live-service/pom.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/yuanlive-server/yuanlive-live-service/src/main/java/blog/yuanyuan/yuanlive/live/controller/LiveRoomController.java" beforeDir="false" afterPath="$PROJECT_DIR$/yuanlive-server/yuanlive-live-service/src/main/java/blog/yuanyuan/yuanlive/live/controller/LiveRoomController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/yuanlive-server/yuanlive-live-service/src/main/java/blog/yuanyuan/yuanlive/live/tools/LiveMcpTools.java" beforeDir="false" afterPath="$PROJECT_DIR$/yuanlive-server/yuanlive-live-service/src/main/java/blog/yuanyuan/yuanlive/live/tools/LiveMcpTools.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/yuanlive-server/yuanlive-live-service/src/main/resources/application.yml" beforeDir="false" afterPath="$PROJECT_DIR$/yuanlive-server/yuanlive-live-service/src/main/resources/application.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/yuanlive-server/yuanlive-user-service/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/yuanlive-server/yuanlive-user-service/pom.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/yuanlive-server/yuanlive-wallet-service/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/yuanlive-server/yuanlive-wallet-service/pom.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -24,9 +35,9 @@
       <list>
         <option value="Mybatis Mapper" />
         <option value="JUnit5 Test Class" />
+        <option value="Enum" />
         <option value="Interface" />
         <option value="Class" />
-        <option value="Enum" />
       </list>
     </option>
   </component>
@@ -69,6 +80,8 @@
     &quot;Docker.docker.higress-ai: Compose 部署.executor&quot;: &quot;Run&quot;,
     &quot;JUnit.AuthServiceImplTest.testCosID.executor&quot;: &quot;Run&quot;,
     &quot;JUnit.LoginLimitPropertiesTest.test.executor&quot;: &quot;Run&quot;,
+    &quot;Maven.yuanlive-ai-service [clean].executor&quot;: &quot;Run&quot;,
+    &quot;Maven.yuanlive-ai-service [install].executor&quot;: &quot;Run&quot;,
     &quot;Maven.yuanlive-cloud [clean].executor&quot;: &quot;Run&quot;,
     &quot;Maven.yuanlive-cloud [install].executor&quot;: &quot;Run&quot;,
     &quot;Maven.yuanlive-common [clean].executor&quot;: &quot;Run&quot;,
@@ -110,7 +123,7 @@
     &quot;project.structure.proportion&quot;: &quot;0.15&quot;,
     &quot;project.structure.side.proportion&quot;: &quot;0.2&quot;,
     &quot;run.configurations.included.in.services&quot;: &quot;true&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;http.proxy&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;MavenSettings&quot;,
     &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   },
   &quot;keyToStringList&quot;: {
@@ -166,7 +179,12 @@
   <component name="RunManager" selected="Spring Boot.AiApplication">
     <configuration name="AiApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" temporary="true" nameIsGenerated="true">
       <envs>
-        <env name="NVIDIA_API_KEY" value="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" />
+        <env name="AMAP_API_KEY" value="43f7df3386694e8037c923f40f3085e5" />
+        <env name="NODE_EXECUTABLE" value="$USER_HOME$/.nvm/versions/node/v22.13.1/bin/node" />
+        <env name="NODE_MODULES_ROOT" value="$USER_HOME$/.nvm/versions/node/v22.13.1/lib/node_modules" />
+        <env name="NVIDIA_API_KEY" value="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" />
+        <env name="UVX_EXECUTABLE" value="$USER_HOME$/.local/bin/uvx" />
+        <env name="SEARXNG_PATH" value="$PROJECT_DIR$/docker/searxng/searxng-mcp/build/index.js" />
       </envs>
       <module name="yuanlive-ai-service" />
       <option name="SPRING_BOOT_MAIN_CLASS" value="blog.yuanyuan.yuanlive.ai.AiApplication" />
@@ -264,10 +282,10 @@
     </list>
     <recent_temporary>
       <list>
-        <item itemvalue="Spring Boot.GatewayApplication" />
-        <item itemvalue="Spring Boot.LiveApplication" />
-        <item itemvalue="Spring Boot.UserApplication" />
         <item itemvalue="Spring Boot.AiApplication" />
+        <item itemvalue="Spring Boot.GatewayApplication" />
+        <item itemvalue="Spring Boot.UserApplication" />
+        <item itemvalue="Spring Boot.LiveApplication" />
         <item itemvalue="Spring Boot.LiveApplication (1)" />
       </list>
     </recent_temporary>
@@ -430,15 +448,14 @@
       <workItem from="1773377698696" duration="14052000" />
       <workItem from="1773993106553" duration="9627000" />
       <workItem from="1774011255087" duration="119000" />
-      <workItem from="1774241897578" duration="3160000" />
-    </task>
-    <task id="LOCAL-00028" summary=":tada: 添加直播表结构&#10;房间表、分类表、记录表">
-      <option name="closed" value="true" />
-      <created>1769503138458</created>
-      <option name="number" value="00028" />
-      <option name="presentableId" value="LOCAL-00028" />
-      <option name="project" value="LOCAL" />
-      <updated>1769503138458</updated>
+      <workItem from="1774241897578" duration="12592000" />
+      <workItem from="1774327619664" duration="23271000" />
+      <workItem from="1774400698528" duration="25780000" />
+      <workItem from="1774451026536" duration="4555000" />
+      <workItem from="1774456009631" duration="922000" />
+      <workItem from="1774500600938" duration="9052000" />
+      <workItem from="1774509735195" duration="23873000" />
+      <workItem from="1774587035120" duration="18288000" />
     </task>
     <task id="LOCAL-00029" summary=":sparkles: 实现srs开播下播回调接口以及直播间相关功能接口">
       <option name="closed" value="true" />
@@ -824,7 +841,15 @@
       <option name="project" value="LOCAL" />
       <updated>1773309252532</updated>
     </task>
-    <option name="localTasksCounter" value="77" />
+    <task id="LOCAL-00077" summary=":sparkles: 获取子分区列表、控制分片上传大小">
+      <option name="closed" value="true" />
+      <created>1774246801315</created>
+      <option name="number" value="00077" />
+      <option name="presentableId" value="LOCAL-00077" />
+      <option name="project" value="LOCAL" />
+      <updated>1774246801315</updated>
+    </task>
+    <option name="localTasksCounter" value="78" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -872,7 +897,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value=":bug: 按文档修改接口" />
     <MESSAGE value=":memo: 更新sql" />
     <MESSAGE value=":sparkles: 使用zset记录人气指数" />
     <MESSAGE value=":bug: 修改接口" />
@@ -897,7 +921,8 @@
     <MESSAGE value=":sparkles: 实现8条热搜推荐、推荐视频功能" />
     <MESSAGE value=":bug: 实现8条热搜推荐、推荐视频功能" />
     <MESSAGE value=":sparkles: 实现点赞、取消点赞、不喜欢视频功能" />
-    <option name="LAST_COMMIT_MESSAGE" value=":sparkles: 实现点赞、取消点赞、不喜欢视频功能" />
+    <MESSAGE value=":sparkles: 获取子分区列表、控制分片上传大小" />
+    <option name="LAST_COMMIT_MESSAGE" value=":sparkles: 获取子分区列表、控制分片上传大小" />
   </component>
   <component name="XSLT-Support.FileAssociations.UIState">
     <expand />

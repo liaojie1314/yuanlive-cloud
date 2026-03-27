@@ -283,7 +283,9 @@
     - 将`yuanlive-live-service`微服务下`application.yml`中的`file-preifx.host-prefix`修改为自己的`SrsConfig`实际存储目录
     
     - 重新构建运行一下`srs`容器，否则有可能因为目录权限问题导致无法迁移录播视频，可以选择使用`docker compose up -d --force-recreate srs`指令
+    
     - 执行以下两条指令设置存储桶的`chunks`目录过期时间
+      
       - `mc alias set minio http://127.0.0.1:9000 yuanlive yuanlive`
       - `mc ilm add --expiry-days 1 --prefix "chunks/" minio/yuanlive`
   
@@ -361,7 +363,222 @@
     
     ![榜单衰减](./pic/xxljob3.png)
 
-## 11. 账号管理
+## 11. MCP相关配置
+
+- STDIO MCP配置
+  
+  - 环境变量配置
+    
+    - 确保电脑环境中有`node`,使用指令`which node`,获取`node`的安装地址，并将其设置在`ai-service`中的`NODE_EXECUTABLE`环境变量中
+    
+    - 使用指令`npm root -g`,并将内容设置为`ai-service`中的`NODE_MODULES_ROOT`环境变量
+    
+    - 使用指令`curl -LsSf https://astral.sh/uv/install.sh | sh`安装`uvx`,安装后执行指令`source $HOME/.local/bin/env`,运行指令`which uvx`并将内容设置为`ai-service`中的环境变量`UVX_EXECUTABLE`
+  
+  - MCP server下载
+    
+    - 高德地图 MCP
+      
+      - 使用指令`npm install -g @amap/amap-maps-mcp-server`安装
+      
+      - 进入[高德地图网站](https://lbs.amap.com/)注册后进入应用管理，创建一个新应用并添加Key
+      
+      - 将得到的Api Key设置为`ai-service`中的`AMAP_API_KEY`环境变量
+    
+    - ElasticSearch  MCP
+      
+      - 使用指令`npm install -g @octodet/elasticsearch-mcp`安装即可
+    
+    - Searxng MCP
+      
+      - 按照[这个](https://langdb.ai/app/mcp-servers/searxng-mcp-server-2309b745-9f6f-4b8a-aff6-dd6e396a5926)教程的`Readme`进行安装
+      
+      - 注意在`git clone`时选择在本项目的`docker`目录中新建一个`searxng`目录进行克隆
+      
+      - 安装完成后，进入克隆后的目录，将`build`目录中的`index.js`文件的全路径地址设置为`ai-service`中`SEARXNG_PATH`环境变量
+
+- SSE MCP配置
+  
+  - Higress配置
+    
+    - 进入[Higress](http://127.0.0.1:8002)网址，账号密码均为`nacos`
+    
+    - 点击服务来源，按图片创建服务来源
+      
+      ![](./pic/higress-nacos.png)
+    
+    - 点击路由配置，按图片创建路由
+      
+      ![](./pic/higress-router.png)
+    
+    - 创建完成路由后，点击路由的策略，选择`MCP 服务器`插件进行配置，开启状态设置为打开，YAML视图配置代码如下(后续此处可能会修改添加新的Tools)
+      
+      ```yaml
+      server:
+        name: "live-tools-server"
+      tools:
+      - args:
+        - description: "认证 Token (必填)"
+          name: "token"
+          position: "query"
+          required: true
+          type: "string"
+        description: "获取当前全站人气最高的前5个直播间列表，用于推荐或展示热门内容"
+        name: "get-popular-rooms"
+        requestTemplate:
+          headers:
+          - key: "token"
+            value: "{{.args.token}}"
+          method: "GET"
+          url: "http://127.0.0.1:8080/live/room/popularRooms"
+        responseTemplate:
+          body: |-
+            # 热门直播间榜单
+            {{- range .data }}
+            - **{{.title}}** (主播: {{.anchorName}})
+              - 房间ID: {{.id}}
+              - 人气指数: {{.hotScore}}
+              - 分类ID: {{.categoryId}}
+            {{- end }}
+      - args:
+        - description: "直播间主键ID"
+          name: "roomId"
+          position: "path"
+          required: true
+          type: "integer"
+        - description: "认证 Token"
+          name: "token"
+          position: "query"
+          required: true
+          type: "string"
+        description: "根据房间ID获取直播间的详细信息，包括推流/拉流地址和主播头像"
+        name: "get-room-detail"
+        requestTemplate:
+          headers:
+          - key: "token"
+            value: "{{.args.token}}"
+          method: "GET"
+          url: "http://127.0.0.1:8080/live/room/detail/{{.args.roomId}}"
+        responseTemplate:
+          body: |-
+            # 房间详情: {{.data.title}}
+            - 主播名: {{.data.anchorName}}
+            - 当前状态: {{if eq .data.roomStatus 1}}正在直播{{else}}未开播{{end}}
+            - 在线人数: {{.data.viewCount}}
+            - 封面图: {{.data.coverImg}}
+            - 拉流地址: {{.data.pullUrl}}
+      - args:
+        - description: "搜索关键词"
+          name: "query"
+          position: "body"
+          required: true
+          type: "string"
+        - description: "页码"
+          name: "pageNum"
+          position: "body"
+          required: false
+          type: "integer"
+        - description: "认证 Token"
+          name: "token"
+          position: "query"
+          required: true
+          type: "string"
+        description: "综合搜索平台内的视频记录和直播间，支持分页"
+        name: "search-live-content"
+        requestTemplate:
+          body: |
+            {
+              "query": "{{.args.query}}",
+              "pageNum": {{if .args.pageNum}}{{.args.pageNum}}{{else}}1{{end}},
+              "pageSize": 10
+            }
+          headers:
+          - key: "token"
+            value: "{{.args.token}}"
+          method: "POST"
+          url: "http://127.0.0.1:8080/live/room/search"
+        responseTemplate:
+          body: |-
+            # 搜索结果 (共 {{.total}} 条)
+            {{- if .list }}
+            {{- range .list }}
+            {{- if .checkRoom }}
+            - [直播间] **{{.liveRoom.title}}** (主播: {{.liveRoom.anchorName}}) ID: {{.liveRoom.id}}
+            {{- else }}
+            - [视频] **{{.video.title}}** (点赞: {{.video.likeCount}}) ID: {{.video.id}}
+            {{- end }}
+            {{- end }}
+            {{- else }}
+            未找到相关直播或视频。
+            {{- end }}
+      ```
+    
+    - 点击系统配置，编辑全局配置，代码如下，**注意其中的`resourceVersion`为版本号，根据自己的加1**
+      
+      ```yaml
+      apiVersion: v1
+      kind: ConfigMap
+      metadata:
+        name: higress-config
+        namespace: higress-system
+        resourceVersion: '16'
+      data:
+        higress: |-
+          mcpServer:
+            enable: true
+            sse_path_suffix: "/sse"
+            redis:
+              address: "redis:6379"
+              username: ""
+              password: ""
+              db: 0
+            match_list:
+              - match_rule_domain: "*"
+                match_rule_path: /gateway
+                match_rule_type: "prefix"
+            servers: []
+          downstream:
+            connectionBufferLimits: 32768
+            http2:
+              initialConnectionWindowSize: 1048576
+              initialStreamWindowSize: 65535
+              maxConcurrentStreams: 100
+            idleTimeout: 180
+            maxRequestHeadersKb: 60
+            routeTimeout: 0
+          upstream:
+            connectionBufferLimits: 10485760
+            idleTimeout: 10
+        mesh: |-
+          accessLogEncoding: TEXT
+          accessLogFile: /dev/stdout
+          accessLogFormat: |
+            {"ai_log":"%FILTER_STATE(wasm.ai_log:PLAIN)%","authority":"%REQ(X-ENVOY-ORIGINAL-HOST?:AUTHORITY)%","bytes_received":"%BYTES_RECEIVED%","bytes_sent":"%BYTES_SENT%","downstream_local_address":"%DOWNSTREAM_LOCAL_ADDRESS%","downstream_remote_address":"%DOWNSTREAM_REMOTE_ADDRESS%","duration":"%DURATION%","istio_policy_status":"%DYNAMIC_METADATA(istio.mixer:status)%","method":"%REQ(:METHOD)%","path":"%REQ(X-ENVOY-ORIGINAL-PATH?:PATH)%","protocol":"%PROTOCOL%","request_id":"%REQ(X-REQUEST-ID)%","requested_server_name":"%REQUESTED_SERVER_NAME%","response_code":"%RESPONSE_CODE%","response_flags":"%RESPONSE_FLAGS%","route_name":"%ROUTE_NAME%","start_time":"%START_TIME%","trace_id":"%REQ(X-B3-TRACEID)%","upstream_cluster":"%UPSTREAM_CLUSTER%","upstream_host":"%UPSTREAM_HOST%","upstream_local_address":"%UPSTREAM_LOCAL_ADDRESS%","upstream_service_time":"%RESP(X-ENVOY-UPSTREAM-SERVICE-TIME)%","upstream_transport_failure_reason":"%UPSTREAM_TRANSPORT_FAILURE_REASON%","user_agent":"%REQ(USER-AGENT)%","x_forwarded_for":"%REQ(X-FORWARDED-FOR)%","response_code_details":"%RESPONSE_CODE_DETAILS%"}
+          configSources:
+          - address: xds://127.0.0.1:15051
+          - address: k8s://
+          defaultConfig:
+            disableAlpnH2: true
+            discoveryAddress: 127.0.0.1:15012
+            controlPlaneAuthPolicy: MUTUAL_TLS
+            proxyStatsMatcher:
+              inclusionRegexps:
+              - .*
+          dnsRefreshRate: 200s
+          enableAutoMtls: false
+          enablePrometheusMerge: true
+          ingressControllerMode: "OFF"
+          mseIngressGlobalConfig:
+            enableH3: false
+            enableProxyProtocol: false
+          protocolDetectionTimeout: 100ms
+          rootNamespace: higress-system
+          trustDomain: cluster.local
+        meshNetworks: 'networks: {}'
+      
+      ```
+
+## 12. 账号管理
 
 - 管理员
   - 账号: fordepu  

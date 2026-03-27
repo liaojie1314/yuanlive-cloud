@@ -18,11 +18,14 @@ import cn.dev33.satoken.stp.StpUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.annotations.Update;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
 import java.util.List;
 
@@ -97,6 +100,8 @@ public class LiveRoomController {
     @GetMapping("/detail/{roomId}")
     @Operation(summary = "获取直播间详情")
     public Result<LiveRoomDetailVO> getRoomDetail(@PathVariable("roomId") Long roomId) {
+        ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+        log.debug("token为: {}", attributes.getRequest().getHeader("token"));
         LiveRoomDetailVO detail = liveRoomService.getRoomDetail(roomId);
         return Result.success(detail);
     }

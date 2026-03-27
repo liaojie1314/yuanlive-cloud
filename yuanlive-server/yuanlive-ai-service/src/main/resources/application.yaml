@@ -9,36 +9,54 @@ spring:
       base-url: https://integrate.api.nvidia.com # 注意此处路径不能带/v1
       chat:
         options:
-          model: qwen/qwen3-next-80b-a3b-instruct # 模型可以自行选择
+          model: qwen/qwen3-next-80b-a3b-thinking # 模型可以自行选择
     mcp:
       client:
         enabled: true
         name: ai-service-mcp-client
         type: async
         version: 1.0.0
-        request-timeout: 200s
-# 在 spring.ai中配置(无法负载均衡)
-#        sse:
-#          connections:
-#            server1:
+        request-timeout: 30s
+# 在 spring.ai中配置
+        sse:
+          connections:
+            # 取名时最好不要携带'-',避免过滤client出错
+            liveMcp:
 #              # 直接连接mcp server
 #              url: http://localhost:8082
 #              # higress 网关
-#              url: http://127.0.0.1:8075/mcp/live-service-mcp-server
+              url: http://localhost:8075/gateway
               # nacos mcp router
 #              url: http://127.0.0.1:8001
-#              sse-endpoint: /sse
+              sse-endpoint: /sse
 #        # 测试 stdio mcp server
 #        stdio:
 #          servers-configuration: classpath:amap.json
         stdio:
           connections:
             amap:
-              command: "/home/frodepu/.nvm/versions/node/v22.13.1/bin/node" # 直接用 node 解释器
+              command: ${NODE_EXECUTABLE}
               args:
-                - "/home/frodepu/.nvm/versions/node/v22.13.1/lib/node_modules/@amap/amap-maps-mcp-server/build/index.js" # 这里填入你查到的绝对路径
+                - "${NODE_MODULES_ROOT}/@amap/amap-maps-mcp-server/build/index.js"
               env:
-                AMAP_MAPS_API_KEY: "api-key"
+                AMAP_MAPS_API_KEY: ${AMAP_API_KEY}
+            es:
+              command: ${NODE_EXECUTABLE}
+              args:
+                - "${NODE_MODULES_ROOT}/@octodet/elasticsearch-mcp/build/index.js"
+              env:
+                - "ES_URL": "http://localhost:9200"
+                - "ES_VERSION": "8"
+            searxng:
+              command: ${NODE_EXECUTABLE}
+              args:
+                - ${SEARXNG_PATH}
+              env:
+                "SEARXNG_URL": "http://localhost:8060"
+            calculator:
+              command: ${UVX_EXECUTABLE}
+              args:
+                - "mcp-server-calculator"
 
     alibaba:
       mcp:
@@ -66,7 +84,6 @@ spring:
                 server-addr: ${spring.cloud.nacos.server-addr}
                 username: nacos
                 password: nacos
-
 
   cloud:
     nacos:
@@ -108,3 +125,20 @@ risk:
   low: 20
   medium: 50
   high: 80
+
+cosid:
+  namespace: ${spring.application.name}
+  machine:
+    enabled: true
+    distributor:
+      type: redis
+  snowflake:
+    enabled: true
+    share:
+      clock-sync: true
+    zone-id: Asia/Shanghai
+    provider:
+      ai-chat-msg:
+        machine-bit: 4
+        sequence-bit: 8
+    epoch: 1577203200000

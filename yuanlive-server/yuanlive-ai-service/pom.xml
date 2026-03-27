@@ -21,9 +21,14 @@
         <dependency>
             <groupId>blog.yuanyuan</groupId>
             <artifactId>yuanlive-common</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>cn.dev33</groupId>
+                    <artifactId>sa-token-spring-boot3-starter</artifactId>
+                </exclusion>
+            </exclusions>
             <version>${revision}</version>
         </dependency>
-
         <dependency>
             <groupId>com.alibaba.cloud.ai</groupId>
             <artifactId>spring-ai-alibaba-agent-framework</artifactId>
@@ -51,6 +56,11 @@
         <dependency>
             <groupId>org.redisson</groupId>
             <artifactId>redisson</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>blog.yuanyuan</groupId>
+            <artifactId>common-security</artifactId>
+            <version>${revision}</version>
         </dependency>
     </dependencies>
 

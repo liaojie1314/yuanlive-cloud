@@ -50,6 +50,7 @@ docker/elasticsearch/data
 docker/higress/data
 docker/flink/checkpoints
 docker/xxl-job
+docker/searxng/searxng-mcp
 
 .idea
 
