@@ -363,7 +363,24 @@
     
     ![榜单衰减](./pic/xxljob3.png)
 
-## 11. MCP相关配置
+## 11. MongoDB配置
+
+- 输入指令`docker exec -it yuanlive-mongodb mongosh`进入容器
+
+- 输入以下指令初始化
+  
+  ```shell
+  rs.initiate({
+    _id: "rs0",
+    members: [
+      { _id: 0, host: "localhost:27017" }
+    ]
+  })
+  ```
+  
+  
+
+## 12. MCP相关配置
 
 - STDIO MCP配置
   
@@ -575,10 +592,9 @@
           rootNamespace: higress-system
           trustDomain: cluster.local
         meshNetworks: 'networks: {}'
-      
       ```
 
-## 12. 账号管理
+## 13. 账号管理
 
 - 管理员
   - 账号: fordepu  

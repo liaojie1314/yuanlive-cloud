@@ -48,6 +48,19 @@ services:
       retries: 20
       start_period: 10s
     restart: unless-stopped
+  mongodb:
+    image: mongodb/mongodb-community-server:8.0-ubi8-slim
+    container_name: yuanlive-mongodb
+    command: ["mongod", "--replSet", "rs0", "--bind_ip_all"]
+    environment:
+      - TZ=Asia/Shanghai
+    ports:
+      - "27017:27017"
+    volumes:
+      - ./mongodb/data:/data/db
+    networks:
+      - live-net
+    restart: unless-stopped
   # 定时任务 xxl-job
   xxl-job-admin:
     image: xuxueli/xxl-job-admin:3.3.2

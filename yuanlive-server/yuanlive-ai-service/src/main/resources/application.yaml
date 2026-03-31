@@ -9,7 +9,7 @@ spring:
       base-url: https://integrate.api.nvidia.com # 注意此处路径不能带/v1
       chat:
         options:
-          model: qwen/qwen3-next-80b-a3b-thinking # 模型可以自行选择
+          model: qwen/qwen3-next-80b-a3b-instruct # 模型可以自行选择
     mcp:
       client:
         enabled: true
@@ -107,6 +107,10 @@ spring:
     username: root
     password: yuanlive
     driver-class-name: com.mysql.cj.jdbc.Driver
+
+  data:
+    mongodb:
+      uri: mongodb://localhost:27017/yuanlive?replicaSet=rs0&serverSelectionTimeoutMS=5000
 
 mybatis-plus:
   mapper-locations: classpath*:mapper/*.xml

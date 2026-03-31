@@ -6,7 +6,9 @@ import blog.yuanyuan.yuanlive.ai.service.AiChatService;
 import blog.yuanyuan.yuanlive.common.exception.ApiException;
 import cn.dev33.satoken.SaManager;
 import cn.dev33.satoken.stp.StpUtil;
+import com.alibaba.cloud.ai.graph.RunnableConfig;
 import com.alibaba.cloud.ai.graph.agent.ReactAgent;
+import com.alibaba.cloud.ai.graph.checkpoint.BaseCheckpointSaver;
 import com.alibaba.cloud.ai.graph.exception.GraphRunnerException;
 import com.alibaba.cloud.ai.graph.streaming.OutputType;
 import com.alibaba.cloud.ai.graph.streaming.StreamingOutput;
@@ -18,6 +20,8 @@ import me.ahoo.cosid.provider.IdGeneratorProvider;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.ai.chat.messages.AssistantMessage;
 import org.springframework.ai.chat.messages.Message;
+import org.springframework.ai.chat.messages.SystemMessage;
+import org.springframework.ai.chat.messages.UserMessage;
 import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.chat.prompt.ChatOptions;
 import org.springframework.ai.mcp.AsyncMcpToolCallbackProvider;
@@ -27,10 +31,7 @@ import org.springframework.ai.tool.definition.ToolDefinition;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -38,6 +39,8 @@ import java.util.stream.Collectors;
 public class AiChatServiceImpl implements AiChatService {
     @Resource
     private IdGeneratorProvider idGeneratorProvider;
+    @Resource(name = "mongodbSaver")
+    private BaseCheckpointSaver checkpointSaver;
 
     private final ChatModel chatModel;
     private final List<McpAsyncClient> allMcpClients;
@@ -60,10 +63,13 @@ public class AiChatServiceImpl implements AiChatService {
         String clientId = request.getClientMsgId();
         String userId = String.valueOf(idGeneratorProvider.getRequired("ai-chat-msg").generate());
         String aiId = String.valueOf(idGeneratorProvider.getRequired("ai-chat-msg").generate());
+        String conversationId = request.getConversationId();
 
         // 2. 获取 Token (在进入 Flux 之前获取，避免 ThreadLocal 丢失)
         String identityPrompt = getIdentitySystemPrompt();
-        String combinedPrompt = identityPrompt + request.getContent();
+        List<Message> messages = new ArrayList<>();
+        messages.add(new SystemMessage(identityPrompt));
+        messages.add(new UserMessage(request.getContent()));
 
         // 3. 动态配置选项
         ChatRequest.ChatOptions options = request.getOptions() != null ?
@@ -84,10 +90,18 @@ public class AiChatServiceImpl implements AiChatService {
                     .tools(dynamicTools)
                     .chatOptions(chatOptions)
                     .model(chatModel)
+                    .saver(checkpointSaver)
+                    .build();
+            RunnableConfig runnableConfig = RunnableConfig.builder()
+                    .addMetadata("clientId", clientId)
+                    .addMetadata("userId", userId)
+                    .addMetadata("aiId", aiId)
+                    .addMetadata("conversationId", conversationId)
+                    .threadId(conversationId)
                     .build();
 
             // 6. 执行流式响应并转换格式
-            return dynamicAgent.stream(combinedPrompt)
+            return dynamicAgent.stream(messages, runnableConfig)
                     .flatMap(nodeOutput -> {
                         if (!(nodeOutput instanceof StreamingOutput streamingOutput)) {
                             return Flux.empty();
