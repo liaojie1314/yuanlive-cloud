@@ -27,7 +27,7 @@ import java.util.stream.Collectors;
 @Component
 @Slf4j
 public class RiskActionNodes {
-    @Resource
+    @Resource(name = "openAiChatModel")
     private ChatModel nvidiaModel;
     @Resource
     private DistributedAsyncMcpToolCallbackProvider distributedAsyncMcpToolCallbackProvider;

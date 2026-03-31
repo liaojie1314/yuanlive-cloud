@@ -27,9 +27,7 @@ import org.springframework.ai.chat.messages.*;
 import java.io.*;
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
-import static java.lang.String.format;
 
 public class AiChatMongoSaver implements BaseCheckpointSaver {
     private static final Logger logger = LoggerFactory.getLogger(MongoSaver.class);
@@ -102,7 +100,6 @@ public class AiChatMongoSaver implements BaseCheckpointSaver {
                         m.append("content", parseToBson(rawText));
 
                         // 注入业务 ID 和 思考过程
-                        m.append("thinking", msg.getMetadata().getOrDefault("reasoningContent", ""));
 
                         // 备份元数据 (关键：保留工具调用的 ID 对接)
                         Map<String, Object> meta = new HashMap<>(msg.getMetadata());
@@ -185,8 +182,10 @@ public class AiChatMongoSaver implements BaseCheckpointSaver {
                     if (msg.getMessageType() == MessageType.SYSTEM) {
                         continue;
                     }
+                    Object thinkStr = msg.getMetadata().get("reasoningContent");
                     boolean isToolCallPending = msg.getMessageType() == MessageType.ASSISTANT
                             && (msg.getText() == null || msg.getText().isBlank())
+                            && (thinkStr == null || thinkStr.toString().isBlank())
                             && "TOOL_CALLS".equals(msg.getMetadata().get("finishReason"));
 
                     if (isToolCallPending) {
@@ -199,13 +198,34 @@ public class AiChatMongoSaver implements BaseCheckpointSaver {
                         rawText = trm.getResponses().get(0).responseData();
                     }
                     m.append("content", parseToBson(rawText));
-                    m.append("thinking", msg.getMetadata().getOrDefault("reasoningContent", ""));
-                    m.append("clientId", runMeta.get("clientId"));
-                    m.append("userId", runMeta.get("userId"));
-                    m.append("aiId", runMeta.get("aiId"));
-                    m.append("timestamp", new Date());
+                    if (thinkStr != null && !thinkStr.toString().trim().isBlank()) {
+                        m.append("thinking", thinkStr);
+                    }
+                    m.append("clientId", msg.getMetadata().getOrDefault("clientId", runMeta.get("clientId")));
+                    m.append("userId", msg.getMetadata().getOrDefault("userId", runMeta.get("userId")));
+                    m.append("aiId", msg.getMetadata().getOrDefault("aiId", runMeta.get("aiId")));
+                    Object oldTimestamp = msg.getMetadata().get("timestamp");
+
+                    Date finalDate;
+                    if (oldTimestamp instanceof Date date) {
+                        finalDate = date;
+                    } else if (oldTimestamp instanceof Long ts) {
+                        finalDate = new Date(ts);
+                    } else if (oldTimestamp instanceof List<?> list && list.size() > 1) {
+                        // 专门处理那种 ['java.util.Date', 123456] 的奇葩情况
+                        finalDate = new Date(Long.parseLong(list.get(1).toString()));
+                    } else {
+                        // 如果真的是新消息，才生成当前时间
+                        finalDate = new Date();
+                    }
+                    m.append("timestamp", finalDate);
 
                     Map<String, Object> meta = new HashMap<>(msg.getMetadata());
+                    meta.remove("timestamp");
+                    meta.remove("clientId");
+                    meta.remove("userId");
+                    meta.remove("aiId");
+                    meta.remove("reasoningContent");
                     if (msg instanceof ToolResponseMessage trm && !trm.getResponses().isEmpty()) {
                         meta.put("toolCallId", trm.getResponses().get(0).id());
                         meta.put("toolName", trm.getResponses().get(0).name());
@@ -236,6 +256,18 @@ public class AiChatMongoSaver implements BaseCheckpointSaver {
                 String contentStr = bsonToJson(contentObj);
 
                 Map<String, Object> meta = (Map<String, Object>) m.get("metadata");
+                if (meta == null) meta = new HashMap<>();
+                Object dbThinking = m.get("thinking");
+                if (dbThinking != null) {
+                    meta.put("reasoningContent", dbThinking);
+                }
+                meta.put("aiId", m.get("aiId"));
+                meta.put("clientId", m.get("clientId"));
+                meta.put("userId", m.get("userId"));
+                Object dbTimestamp = m.get("timestamp");
+                if (dbTimestamp != null) {
+                    meta.put("timestamp", dbTimestamp);
+                }
 
                 Message springMsg = switch (role) {
                     case "USER" -> new UserMessage(contentStr);
@@ -262,6 +294,7 @@ public class AiChatMongoSaver implements BaseCheckpointSaver {
                 } else {
                     springMessages.add(springMsg);  // 其他消息按顺序放在后面
                 }
+                springMsg.getMetadata().putAll(meta);
             }
 
             Map<String, Object> state = new HashMap<>();
@@ -514,22 +547,18 @@ public class AiChatMongoSaver implements BaseCheckpointSaver {
             MongoCollection<Document> threadMetaCollection = database.getCollection(THREAD_META_COLLECTION);
             String metaId = THREAD_META_PREFIX + threadName;
 
-            Document metaDoc = threadMetaCollection.find(clientSession, new BasicDBObject("_id", metaId)).first();
+            // 1. 获取 ThreadId 并标记释放
+            Document metaDoc = threadMetaCollection.find(clientSession, Filters.eq("_id", metaId)).first();
             if (metaDoc == null) {
                 clientSession.abortTransaction();
                 throw new IllegalStateException("Thread not found: " + threadName);
             }
 
             String threadId = metaDoc.getString(FIELD_THREAD_ID);
-            if (threadId == null) {
-                clientSession.abortTransaction();
-                throw new IllegalStateException("Thread not found: " + threadName);
-            }
 
-            // Mark thread as released atomically
-            // Use findOneAndUpdate with condition to ensure we only release active threads
+            // 原子标记 thread 为已释放状态
             Document releaseFilter = new Document("_id", metaId)
-                    .append(FIELD_IS_RELEASED, false); // Only release if not already released
+                    .append(FIELD_IS_RELEASED, false);
 
             Document updatedDoc = threadMetaCollection.findOneAndUpdate(
                     clientSession,
@@ -539,22 +568,23 @@ public class AiChatMongoSaver implements BaseCheckpointSaver {
             );
 
             if (updatedDoc == null) {
-                // Thread was already released or doesn't exist
                 clientSession.abortTransaction();
                 throw new IllegalStateException("Thread is not active or already released: " + threadName);
             }
 
-            // Get checkpoints for Tag (using thread_id)
+            // 2. 💡 关键修改点：从 Checkpoint 集合获取并解析 BSON 列表
             MongoCollection<Document> checkpointCollection = database.getCollection(CHECKPOINT_COLLECTION);
             String checkpointDocId = CHECKPOINT_PREFIX + threadId;
-            Document checkpointDoc = checkpointCollection.find(clientSession, new BasicDBObject("_id", checkpointDocId))
+            Document checkpointDoc = checkpointCollection.find(clientSession, Filters.eq("_id", checkpointDocId))
                     .first();
 
             Collection<Checkpoint> checkpoints = Collections.emptyList();
             if (checkpointDoc != null) {
-                String checkpointsStr = checkpointDoc.getString(DOCUMENT_CONTENT_KEY);
-                if (checkpointsStr != null) {
-                    checkpoints = deserializeCheckpoints(checkpointsStr);
+                // 从 Document 中提取 List<Document> 格式的内容
+                List<Document> bsonList = checkpointDoc.getList(DOCUMENT_CONTENT_KEY, Document.class);
+                if (bsonList != null) {
+                    // 使用你已经写好的 convertFromBsonList 进行还原
+                    checkpoints = convertFromBsonList(bsonList);
                 }
             }
 
@@ -562,7 +592,10 @@ public class AiChatMongoSaver implements BaseCheckpointSaver {
             return new BaseCheckpointSaver.Tag(threadName, checkpoints);
 
         } catch (Exception e) {
-            clientSession.abortTransaction();
+            if (clientSession.hasActiveTransaction()) {
+                clientSession.abortTransaction();
+            }
+            logger.error("Release Checkpoint Failed", e);
             throw new RuntimeException(e);
         } finally {
             clientSession.close();

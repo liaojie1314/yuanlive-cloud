@@ -10,6 +10,7 @@ spring:
       chat:
         options:
           model: qwen/qwen3-next-80b-a3b-instruct # 模型可以自行选择
+
     mcp:
       client:
         enabled: true

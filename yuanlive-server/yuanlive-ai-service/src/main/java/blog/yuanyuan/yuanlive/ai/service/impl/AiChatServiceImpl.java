@@ -1,5 +1,6 @@
 package blog.yuanyuan.yuanlive.ai.service.impl;
 
+import blog.yuanyuan.yuanlive.ai.checkpointSaver.ThinkingModelWrapper;
 import blog.yuanyuan.yuanlive.ai.domain.dto.ChatRequest;
 import blog.yuanyuan.yuanlive.ai.domain.vo.ChatChunk;
 import blog.yuanyuan.yuanlive.ai.service.AiChatService;
@@ -26,6 +27,7 @@ import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.chat.prompt.ChatOptions;
 import org.springframework.ai.mcp.AsyncMcpToolCallbackProvider;
 import org.springframework.ai.model.tool.ToolCallingChatOptions;
+import org.springframework.ai.openai.OpenAiChatModel;
 import org.springframework.ai.tool.ToolCallback;
 import org.springframework.ai.tool.definition.ToolDefinition;
 import org.springframework.stereotype.Service;
@@ -41,8 +43,11 @@ public class AiChatServiceImpl implements AiChatService {
     private IdGeneratorProvider idGeneratorProvider;
     @Resource(name = "mongodbSaver")
     private BaseCheckpointSaver checkpointSaver;
+    @Resource(name = "openAiChatModel")
+    private ChatModel chatModel;
+    @Resource(name = "thinkModel")
+    private OpenAiChatModel thinkModel;
 
-    private final ChatModel chatModel;
     private final List<McpAsyncClient> allMcpClients;
 
     // 默认开启的基础工具
@@ -51,8 +56,7 @@ public class AiChatServiceImpl implements AiChatService {
     private static final Set<String> NETWORK_SERVERS = Set.of("searxng", "amap");
 
 
-    public AiChatServiceImpl(ChatModel chatModel, List<McpAsyncClient> mcpAsyncClients) {
-        this.chatModel = chatModel;
+    public AiChatServiceImpl(List<McpAsyncClient> mcpAsyncClients) {
         this.allMcpClients = mcpAsyncClients;
     }
 
@@ -70,10 +74,14 @@ public class AiChatServiceImpl implements AiChatService {
         List<Message> messages = new ArrayList<>();
         messages.add(new SystemMessage(identityPrompt));
         messages.add(new UserMessage(request.getContent()));
+        ChatModel selectedModel;
 
         // 3. 动态配置选项
         ChatRequest.ChatOptions options = request.getOptions() != null ?
                 request.getOptions() : new ChatRequest.ChatOptions();
+        selectedModel = options.isUseReasoning() ? thinkModel : chatModel;
+        ChatModel wrappedModel = new ThinkingModelWrapper(selectedModel);
+
         ChatOptions chatOptions = ToolCallingChatOptions.builder()
                 .temperature(options.getTemperature() != null ? options.getTemperature() : 0.7)
                 .maxTokens(options.getMaxTokens() != null ? options.getMaxTokens() : 4096)
@@ -89,7 +97,7 @@ public class AiChatServiceImpl implements AiChatService {
                     .name("YuanLive")
                     .tools(dynamicTools)
                     .chatOptions(chatOptions)
-                    .model(chatModel)
+                    .model(wrappedModel)
                     .saver(checkpointSaver)
                     .build();
             RunnableConfig runnableConfig = RunnableConfig.builder()
@@ -113,28 +121,32 @@ public class AiChatServiceImpl implements AiChatService {
                         // A. 处理模型输出 (思考 & 内容)
                         if (type == OutputType.AGENT_MODEL_STREAMING && message instanceof AssistantMessage assistantMessage) {
 
-                            // 处理推理/思考内容
-                            Object reasoning = assistantMessage.getMetadata().get("reasoningContent");
-                            if (reasoning != null && !reasoning.toString().isEmpty()) {
-                                log.info("AI 正在思考: {}", reasoning.toString());
-                                return Flux.just(ChatChunk.reasoning(reasoning.toString(), clientId, userId, aiId));
+                            List<ChatChunk> chunks = new ArrayList<>();
+
+                            // 1. 处理推理/思考内容（取增量 Delta 字段）
+                            Object reasoningDelta = assistantMessage.getMetadata().get("reasoningDelta");
+                            if (reasoningDelta != null && !reasoningDelta.toString().isEmpty()) {
+                                chunks.add(ChatChunk.reasoning(reasoningDelta.toString(), clientId, userId, aiId));
                             }
 
-                            // 处理正式回答文字
+                            // 2. 处理正式回答文字 (不再被 return 拦截)
                             String text = assistantMessage.getText();
-                            return (text != null) ? Flux.just(ChatChunk.text(text, clientId, userId, aiId)) : Flux.empty();
+                            if (text != null && !text.isEmpty()) {
+                                chunks.add(ChatChunk.text(text, clientId, userId, aiId));
+                            }
+
+                            // 3. 返回包含所有内容的 Flux
+                            return Flux.fromIterable(chunks);
                         }
 
                         // B. 处理工具调用 (状态反馈)
                         else if (type == OutputType.AGENT_TOOL_STREAMING) {
-                            // 暂时将工具状态放入 content 或自定义字段
                             log.info("AI 正在调用工具: {}", nodeOutput.node());
                             return Flux.empty();
                         }
 
                         // C. 处理结束
                         else if (type == OutputType.AGENT_MODEL_FINISHED) {
-                            // 返回 done 状态，此时 content 对象可以为空或携带最终汇总信息
                             log.info("AI 回答完毕");
                             return Flux.just(ChatChunk.done(clientId, userId, aiId, null, null));
                         }
