@@ -19,10 +19,14 @@ import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.*;
+import jakarta.annotation.Resource;
 import org.bson.Document;
+import org.bson.conversions.Bson;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.messages.*;
+import org.springframework.ai.chat.model.ChatModel;
 
 import java.io.*;
 import java.util.*;
@@ -46,6 +50,8 @@ public class AiChatMongoSaver implements BaseCheckpointSaver {
     private MongoDatabase database;
     private TransactionOptions txnOptions;
     private static final ObjectMapper jsonMapper = new ObjectMapper();
+    private final ChatClient titleClient;
+    private final ChatModel titleModel;
 
     /**
      * Protected constructor for MongoSaver.
@@ -54,13 +60,15 @@ public class AiChatMongoSaver implements BaseCheckpointSaver {
      * @param client          the client
      * @param stateSerializer the state serializer
      */
-    protected AiChatMongoSaver(MongoClient client, StateSerializer stateSerializer) {
+    protected AiChatMongoSaver(MongoClient client, StateSerializer stateSerializer, ChatModel titleModel) {
         Objects.requireNonNull(client, "client cannot be null");
         Objects.requireNonNull(stateSerializer, "stateSerializer cannot be null");
         this.client = client;
         this.database = client.getDatabase(DB_NAME);
         this.txnOptions = TransactionOptions.builder().writeConcern(WriteConcern.MAJORITY).build();
         this.checkpointSerializer = new CheckPointSerializer(stateSerializer);
+        this.titleModel = titleModel;
+        this.titleClient = titleModel != null ? ChatClient.builder(titleModel).build() : null;
         Runtime.getRuntime().addShutdownHook(new Thread(client::close));
     }
 
@@ -514,13 +522,35 @@ public class AiChatMongoSaver implements BaseCheckpointSaver {
             String checkpointDocId = CHECKPOINT_PREFIX + threadId;
             Map<String, Object> runMeta = config.metadata().orElse(Collections.emptyMap());
 
-            Document finalDoc = new Document()
-                    .append("_id", checkpointDocId)
-                    .append("conversationId", runMeta.get("conversationId"))
-                    .append(DOCUMENT_CONTENT_KEY, serializeLatestSnapshot(checkpoint, config));
+            // 1. 检查文档是否存在 (仅投影 _id 以优化性能)
+            Document existingDoc = database.getCollection(CHECKPOINT_COLLECTION)
+                    .find(clientSession, Filters.eq("_id", checkpointDocId))
+                    .projection(Projections.include("_id"))
+                    .first();
+            boolean isNewSession = (existingDoc == null);
 
-            database.getCollection(CHECKPOINT_COLLECTION).replaceOne(
-                    clientSession, Filters.eq("_id", checkpointDocId), finalDoc, new ReplaceOptions().upsert(true));
+            // 2. 构建更新操作
+            List<Bson> updates = new ArrayList<>();
+            // 基础字段：每次 put 都会更新
+            updates.add(Updates.set("conversationId", runMeta.get("conversationId")));
+            updates.add(Updates.set("uid", runMeta.get("uid")));
+            updates.add(Updates.set(DOCUMENT_CONTENT_KEY, serializeLatestSnapshot(checkpoint, config)));
+
+            // 3. 💡 仅在确定是新会话时，提取并设置 title
+            if (isNewSession) {
+                String title = extractTitle(checkpoint);
+                if (title != null) {
+                    updates.add(Updates.setOnInsert("title", title));
+                }
+            }
+
+            // 4. 将 replaceOne 改为 updateOne，配合 upsert 使用
+            database.getCollection(CHECKPOINT_COLLECTION).updateOne(
+                    clientSession,
+                    Filters.eq("_id", checkpointDocId),
+                    Updates.combine(updates),
+                    new UpdateOptions().upsert(true)
+            );
 
             clientSession.commitTransaction();
             return RunnableConfig.builder(config).checkPointId(checkpoint.getId()).build();
@@ -530,6 +560,46 @@ public class AiChatMongoSaver implements BaseCheckpointSaver {
         } finally {
             clientSession.close();
         }
+    }
+
+    private String extractTitle(Checkpoint checkpoint) {
+        String firstUserText = null;
+        Object messagesObj = checkpoint.getState().get("messages");
+
+        if (messagesObj instanceof List<?> msgList) {
+            for (Object obj : msgList) {
+                if (obj instanceof UserMessage userMsg) {
+                    firstUserText = userMsg.getText();
+                    if (firstUserText != null && !firstUserText.isBlank()) {
+                        break;
+                    }
+                }
+            }
+        }
+
+        if (firstUserText == null) {
+            return null;
+        }
+
+        if (titleClient == null) {
+            logger.warn("titleClient is null, fallback to truncation");
+            return fallbackTruncate(firstUserText);
+        }
+
+        try {
+            String generatedTitle = titleClient.prompt()
+                    .user("你是一个助手。请根据用户的第一条提问，总结一个10字以内的会话标题。要求：简练、准确，不要包含引号或“标题：”字样。\n用户提问：" + firstUserText)
+                    .call()
+                    .content();
+            return (generatedTitle != null) ? generatedTitle.trim() : fallbackTruncate(firstUserText);
+        } catch (Exception e) {
+            logger.error("AI 提取标题失败: {}", e.getMessage());
+            return fallbackTruncate(firstUserText); // 出错时回退，保证流程不中断
+        }
+    }
+    private String fallbackTruncate(String text) {
+        String clean = text.trim().replaceAll("[\\n\\r]+", " ");
+        return clean.length() > 30 ? clean.substring(0, 30) + "..." : clean;
     }
 
     @Override
@@ -608,6 +678,7 @@ public class AiChatMongoSaver implements BaseCheckpointSaver {
     public static class Builder {
         private MongoClient client;
         private StateSerializer stateSerializer;
+        private ChatModel titleModel;
 
         public AiChatMongoSaver.Builder client(MongoClient client) {
             this.client = client;
@@ -616,6 +687,11 @@ public class AiChatMongoSaver implements BaseCheckpointSaver {
 
         public AiChatMongoSaver.Builder stateSerializer(StateSerializer stateSerializer) {
             this.stateSerializer = stateSerializer;
+            return this;
+        }
+
+        public AiChatMongoSaver.Builder titleModel(ChatModel titleModel) {
+            this.titleModel = titleModel;
             return this;
         }
 
@@ -632,7 +708,7 @@ public class AiChatMongoSaver implements BaseCheckpointSaver {
             if (stateSerializer == null) {
                 this.stateSerializer = StateGraph.DEFAULT_JACKSON_SERIALIZER;
             }
-            return new AiChatMongoSaver(client, stateSerializer);
+            return new AiChatMongoSaver(client, stateSerializer, titleModel);
         }
     }
 }

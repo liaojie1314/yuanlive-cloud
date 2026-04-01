@@ -63,6 +63,7 @@ public class AiChatServiceImpl implements AiChatService {
 
     @Override
     public Flux<ChatChunk> streamChat(ChatRequest request) {
+        String uid = StpUtil.getLoginIdAsString();
         // 1. 初始化消息 ID 组
         String clientId = request.getClientMsgId();
         String userId = String.valueOf(idGeneratorProvider.getRequired("ai-chat-msg").generate());
@@ -105,6 +106,7 @@ public class AiChatServiceImpl implements AiChatService {
                     .addMetadata("userId", userId)
                     .addMetadata("aiId", aiId)
                     .addMetadata("conversationId", conversationId)
+                    .addMetadata("uid", uid)
                     .threadId(conversationId)
                     .build();
 

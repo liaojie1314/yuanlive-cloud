@@ -45,4 +45,13 @@ public class ChatModelConfig {
                 .defaultOptions(options).build();
     }
 
+    @Bean
+    public ChatModel titleModel(OpenAiApi openAiApi, OpenAiChatProperties chatProperties) {
+        OpenAiChatOptions options = chatProperties.getOptions().copy();
+        options.setModel("qwen/qwen2.5-coder-7b-instruct");
+        return OpenAiChatModel.builder()
+                .openAiApi(openAiApi)
+                .defaultOptions(options).build();
+    }
+
 }
