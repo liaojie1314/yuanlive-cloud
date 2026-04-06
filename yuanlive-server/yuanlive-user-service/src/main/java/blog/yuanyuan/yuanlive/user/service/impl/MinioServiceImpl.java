@@ -57,7 +57,7 @@ public class MinioServiceImpl implements MinioService {
         UploadScene scene = UploadScene.of(fileChunkDTO.getScene());
         long currentChunkSize = file.getSize();
         boolean isLastChunk = fileChunkDTO.getChunkIndex().equals(fileChunkDTO.getTotalChunks() - 1);
-        if (currentChunkSize > scene.getMaxChunkSize() || (!isLastChunk && currentChunkSize < scene.getMinChunkSize())) {
+        if (!isLastChunk && currentChunkSize != scene.getChunkSize()) {
             throw new ApiException("分片大小不符合规范");
         }
         try {
