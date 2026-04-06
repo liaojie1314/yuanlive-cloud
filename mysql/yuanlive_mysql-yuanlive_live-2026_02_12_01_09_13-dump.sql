@@ -138,6 +138,25 @@ CREATE TABLE `video_resource` (
 ) ENGINE=InnoDB AUTO_INCREMENT=621002 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='直播或视频记录表';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
+
+-- ----------------------------
+-- Table structure for table `danmu`
+-- ----------------------------
+DROP TABLE IF EXISTS `danmu`;
+CREATE TABLE `danmu` (
+                         `id` bigint NOT NULL AUTO_INCREMENT COMMENT '弹幕主键ID',
+                         `video_id` bigint NOT NULL COMMENT '关联的视频ID',
+                         `user_id` bigint NOT NULL COMMENT '发送弹幕的用户ID',
+                         `content` varchar(500) NOT NULL COMMENT '弹幕内容',
+                         `time_offset` int NOT NULL COMMENT '弹幕在视频中的时间点(单位:秒)',
+                         `position` varchar(20) DEFAULT 'scroll' COMMENT '弹幕位置: scroll, top, bottom',
+                         `like_count` int DEFAULT '0' COMMENT '弹幕点赞数',
+                         `status` tinyint DEFAULT '0' COMMENT '状态: 0正常, 1被举报隐藏',
+                         `create_time` datetime DEFAULT CURRENT_TIMESTAMP COMMENT '发送时间',
+                         PRIMARY KEY (`id`),
+                         KEY `idx_video_time` (`video_id`, `time_offset`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='视频弹幕表';
+
 --
 -- Dumping data for table `video_resource`
 --
