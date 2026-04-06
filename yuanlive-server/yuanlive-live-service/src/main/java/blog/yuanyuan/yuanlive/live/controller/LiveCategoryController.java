@@ -8,6 +8,7 @@ import blog.yuanyuan.yuanlive.live.domain.vo.HotCategoryVO;
 import blog.yuanyuan.yuanlive.live.domain.vo.LiveCategoryTreeVO;
 import blog.yuanyuan.yuanlive.live.domain.vo.LiveCategoryVO;
 import blog.yuanyuan.yuanlive.entity.live.vo.LiveRoomRankVO;
+import blog.yuanyuan.yuanlive.live.domain.vo.LiveChildVO;
 import blog.yuanyuan.yuanlive.live.service.LiveCategoryService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -81,7 +82,7 @@ public class LiveCategoryController {
 
     @GetMapping("/children")
     @Operation(summary = "获取所有子分区列表")
-    public Result<List<LiveCategoryVO>> children() {
+    public Result<List<LiveChildVO>> children() {
         return Result.success(categoryService.getChildren());
     }
 

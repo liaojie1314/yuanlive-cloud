@@ -10,6 +10,7 @@ import blog.yuanyuan.yuanlive.live.domain.vo.HotCategoryVO;
 import blog.yuanyuan.yuanlive.live.domain.vo.LiveCategoryTreeVO;
 import blog.yuanyuan.yuanlive.live.domain.vo.LiveCategoryVO;
 import blog.yuanyuan.yuanlive.entity.live.vo.LiveRoomRankVO;
+import blog.yuanyuan.yuanlive.live.domain.vo.LiveChildVO;
 import blog.yuanyuan.yuanlive.live.mapper.LiveCategoryMapper;
 import blog.yuanyuan.yuanlive.live.properties.LiveRoomProperties;
 import blog.yuanyuan.yuanlive.live.service.LiveCategoryRelationService;
@@ -525,7 +526,7 @@ public class LiveCategoryServiceImpl extends ServiceImpl<LiveCategoryMapper, Liv
     }
 
     @Override
-    public List<LiveCategoryVO> getChildren() {
+    public List<LiveChildVO> getChildren() {
         // 获取所有有关联关系的分类（即有父分类的分类）
         List<Integer> ids = liveCategoryRelationService.lambdaQuery()
                 .ne(LiveCategoryRelation::getParentId, 0)
@@ -543,28 +544,15 @@ public class LiveCategoryServiceImpl extends ServiceImpl<LiveCategoryMapper, Liv
         List<LiveCategory> allCategories = this.listByIds(ids);
         
         // 转换为 VO
-        List<LiveCategoryVO> categoryVOs = allCategories.stream()
+        List<LiveChildVO> categoryVOs = allCategories.stream()
                 .map(category -> {
-                    LiveCategoryVO vo = new LiveCategoryVO();
+                    LiveChildVO vo = new LiveChildVO();
                     vo.setId(category.getId());
-                    vo.setName(category.getName());
-                    vo.setIconUrl(category.getIconUrl());
+                    vo.setLabel(category.getName());
                     vo.setValue(category.getValue());
                     return vo;
                 })
                 .toList();
-        
-        // 获取所有关联关系
-        List<LiveCategoryRelation> allRelations = liveCategoryRelationService.list();
-        
-        // 为每个分类设置 parentIds
-        for (LiveCategoryVO vo : categoryVOs) {
-            List<Integer> parentIds = allRelations.stream()
-                    .filter(r -> r.getCategoryId().equals(vo.getId()))
-                    .map(LiveCategoryRelation::getParentId)
-                    .toList();
-            vo.setParentIds(parentIds);
-        }
         
         return categoryVOs;
     }
