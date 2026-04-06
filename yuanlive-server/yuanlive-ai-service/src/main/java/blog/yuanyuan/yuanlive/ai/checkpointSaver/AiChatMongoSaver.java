@@ -534,6 +534,7 @@ public class AiChatMongoSaver implements BaseCheckpointSaver {
             // 基础字段：每次 put 都会更新
             updates.add(Updates.set("conversationId", runMeta.get("conversationId")));
             updates.add(Updates.set("uid", runMeta.get("uid")));
+            updates.add(Updates.set("lastUpdateTime", new Date()));
             updates.add(Updates.set(DOCUMENT_CONTENT_KEY, serializeLatestSnapshot(checkpoint, config)));
 
             // 3. 💡 仅在确定是新会话时，提取并设置 title
@@ -542,6 +543,7 @@ public class AiChatMongoSaver implements BaseCheckpointSaver {
                 if (title != null) {
                     updates.add(Updates.setOnInsert("title", title));
                 }
+                updates.add(Updates.setOnInsert("isTop", false));
             }
 
             // 4. 将 replaceOne 改为 updateOne，配合 upsert 使用

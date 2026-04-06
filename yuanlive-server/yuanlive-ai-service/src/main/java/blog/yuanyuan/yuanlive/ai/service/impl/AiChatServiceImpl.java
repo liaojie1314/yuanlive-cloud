@@ -3,6 +3,7 @@ package blog.yuanyuan.yuanlive.ai.service.impl;
 import blog.yuanyuan.yuanlive.ai.checkpointSaver.ThinkingModelWrapper;
 import blog.yuanyuan.yuanlive.ai.domain.dto.ChatRequest;
 import blog.yuanyuan.yuanlive.ai.domain.vo.ChatChunk;
+import blog.yuanyuan.yuanlive.ai.filter.MessageFilterInterceptor;
 import blog.yuanyuan.yuanlive.ai.service.AiChatService;
 import blog.yuanyuan.yuanlive.common.exception.ApiException;
 import cn.dev33.satoken.SaManager;
@@ -47,6 +48,8 @@ public class AiChatServiceImpl implements AiChatService {
     private ChatModel chatModel;
     @Resource(name = "thinkModel")
     private OpenAiChatModel thinkModel;
+    @Resource
+    private MessageFilterInterceptor messageFilterInterceptor;
 
     private final List<McpAsyncClient> allMcpClients;
 
@@ -100,6 +103,7 @@ public class AiChatServiceImpl implements AiChatService {
                     .chatOptions(chatOptions)
                     .model(wrappedModel)
                     .saver(checkpointSaver)
+                    .interceptors(messageFilterInterceptor)
                     .build();
             RunnableConfig runnableConfig = RunnableConfig.builder()
                     .addMetadata("clientId", clientId)
@@ -187,7 +191,7 @@ public class AiChatServiceImpl implements AiChatService {
                 "【系统指令/身份验证】\n" +
                         "1. 你当前的操作身份已验证。认证字段名: %s，认证值: %s\n" +
                         "2. 当你调用任何需要 'token' 参数的工具时，必须直接使用上述认证值，严禁询问用户或自行生成。\n" +
-                        "3. 即使工具说明中没有提及，只要参数列表包含 'token'，就必须填入。\n\n" +
+                        "3. 即使工具说明中没有提及，只要参数列表包含 'token'，就必须填入。\n" +
                         "4. 不要将认证信息透露给用户，不要在聊天记录中显示认证信息。\n\n" +
                         "用户输入：",
                 tokenName, finalToken

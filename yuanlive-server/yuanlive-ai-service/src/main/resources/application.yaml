@@ -11,6 +11,8 @@ spring:
         options:
           model: qwen/qwen3-next-80b-a3b-instruct # 模型可以自行选择
 
+    max-messages: 5 # LLM模型获得的最大历史对话轮数
+
     mcp:
       client:
         enabled: true
@@ -100,7 +102,7 @@ spring:
       - nacos:sa-token.yaml?group=SA_TOKEN_GROUP&refresh-enabled=true
       - nacos:redis.yaml?group=REDIS_GROUP&refresh-enabled=true
       - nacos:rabbitmq.yaml?group=DEFAULT_GROUP&refresh-enabled=true
-#      - nacos:jackson.yaml?group=DEFAULT_GROUP&refresh-enabled=true
+      - nacos:jackson.yaml?group=DEFAULT_GROUP&refresh-enabled=true
 #      - nacos:minio.yaml?group=DEFAULT_GROUP&refresh-enabled=true
 
   datasource:
@@ -111,7 +113,7 @@ spring:
 
   data:
     mongodb:
-      uri: mongodb://localhost:27017/yuanlive?replicaSet=rs0&serverSelectionTimeoutMS=5000
+      uri: mongodb://localhost:27017/check_point_db?replicaSet=rs0&serverSelectionTimeoutMS=5000
 
 mybatis-plus:
   mapper-locations: classpath*:mapper/*.xml
