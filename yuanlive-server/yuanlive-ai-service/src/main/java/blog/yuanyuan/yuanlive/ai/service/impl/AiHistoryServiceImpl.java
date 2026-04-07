@@ -150,200 +150,74 @@ public class AiHistoryServiceImpl implements AiHistoryService {
     @Override
     public ChatHistoryResponseVO getChatHistory(String conversationId, HistoryRequestDTO dto) {
         String uid = StpUtil.getLoginIdAsString();
-        String cursor = dto.getCursor();
+        String cursor = dto.getCursor(); // 传入的是上一次返回的最老消息的 userId (msgId)
         int pageSize = dto.getPageSize();
 
-        // 1. 查询会话获取chatHistory
-        MatchOperation match = Aggregation.match(
-                Criteria.where("conversationId").is(conversationId).and("uid").is(uid)
-        );
+        // 1. 构建基础查询条件
+        Criteria criteria = Criteria.where("conversationId").is(conversationId).and("uid").is(uid);
 
-        ProjectionOperation project = Aggregation.project()
-                .and("checkpoint_content").arrayElementAt(-1).as("lastSnapshot");
-
-        ProjectionOperation finalProject = Aggregation.project()
-                .and("lastSnapshot.chatHistory").as("messages");
-
-        Aggregation aggregation = Aggregation.newAggregation(match, project, finalProject);
-
-        Document result = mongoTemplate.aggregate(aggregation, "checkpoint_collection", Document.class)
-                .getUniqueMappedResult();
-
-        if (result == null || !result.containsKey("messages")) {
-            return ChatHistoryResponseVO.builder()
-                    .hasMore(false)
-                    .nextCursor(null)
-                    .messages(Collections.emptyList())
-                    .build();
-        }
-
-        List<Document> allMessageDocs = result.getList("messages", Document.class);
-        if (allMessageDocs == null || allMessageDocs.isEmpty()) {
-            return ChatHistoryResponseVO.builder()
-                    .hasMore(false)
-                    .nextCursor(null)
-                    .messages(Collections.emptyList())
-                    .build();
-        }
-
-        // 2. 按时间倒序排列(最新的在前面)
-        allMessageDocs.sort((a, b) -> {
-            Date timeA = a.getDate("timestamp");
-            Date timeB = b.getDate("timestamp");
-            if (timeA == null && timeB == null) return 0;
-            if (timeA == null) return 1;
-            if (timeB == null) return -1;
-            return timeB.compareTo(timeA);
-        });
-
-        // 3. 如果有cursor,找到cursor位置,只取更老的消息
-        int startIndex = 0;
+        // 2. 处理游标分页逻辑
         if (cursor != null && !cursor.isEmpty()) {
-            for (int i = 0; i < allMessageDocs.size(); i++) {
-                // cursor是userId,获取userId进行匹配
-                String userId = allMessageDocs.get(i).getString("userId");
+            // 先找到游标对应的那条消息，获取它的时间戳
+            Query cursorQuery = new Query(Criteria.where("userId").is(cursor));
+            Document cursorDoc = mongoTemplate.findOne(cursorQuery, Document.class, "chat_history");
 
-                if (cursor.equals(userId)) {
-                    startIndex = i + 1;
-                    break;
-                }
+            if (cursorDoc != null) {
+                Date cursorTime = cursorDoc.getDate("time");
+                // 只查询时间早于（小于）游标消息的消息
+                criteria.and("time").lt(cursorTime);
             }
         }
 
-        // 4. 截取需要的消息(从startIndex开始取pageSize条)
-        List<Document> pageDocs;
-        boolean hasMore;
-        if (startIndex >= allMessageDocs.size()) {
-            pageDocs = Collections.emptyList();
-            hasMore = false;
-        } else {
-            int endIndex = Math.min(startIndex + pageSize, allMessageDocs.size());
-            pageDocs = allMessageDocs.subList(startIndex, endIndex);
-            hasMore = endIndex < allMessageDocs.size();
-        }
+        // 3. 执行查询：按时间倒序排列
+        Query query = new Query(criteria)
+                .with(Sort.by(Sort.Direction.DESC, "time"))
+                .limit(pageSize + 1); // 多取一条用来判断 hasMore
 
-        // 5. 转换为VO
-        List<ChatMessageVO> messages = pageDocs.stream()
+        List<Document> docs = mongoTemplate.find(query, Document.class, "chat_history");
+
+        // 4. 判断是否还有更多数据
+        boolean hasMore = docs.size() > pageSize;
+        List<Document> resultDocs = hasMore ? docs.subList(0, pageSize) : docs;
+
+        // 5. 转换为 VO
+        List<ChatMessageVO> messages = resultDocs.stream()
                 .map(this::mapToVO)
                 .collect(Collectors.toList());
 
-        // 确定nextCursor(本次返回数据中最老的一条消息ID)
+        // 6. 确定下一次查询的游标 (本次结果中最老的一条消息的 userId)
         String nextCursor = null;
-        if (!messages.isEmpty() && hasMore) {
-            ChatMessageVO oldestMessage = messages.get(messages.size() - 1);
-            nextCursor = oldestMessage.getUserId();
+        if (!messages.isEmpty()) {
+            nextCursor = messages.get(messages.size() - 1).getUserId();
         }
 
         return ChatHistoryResponseVO.builder()
                 .hasMore(hasMore)
-                .nextCursor(nextCursor)
+                .nextCursor(hasMore ? nextCursor : null) // 如果没有更多了，nextCursor 返回空
                 .messages(messages)
                 .build();
     }
 
     private ChatMessageVO mapToVO(Document doc) {
-        // 获取clientId作为消息ID
-        String clientId = null;
-        Document metadata = doc.get("metadata", Document.class);
-        if (metadata != null) {
-            clientId = metadata.getString("clientId");
-        }
-        if (clientId == null) {
-            clientId = doc.getString("clientId");
-        }
-
-        // 获取userId
-        String userId = null;
-        if (metadata != null) {
-            userId = metadata.getString("userId");
-        }
-        if (userId == null) {
-            userId = doc.getString("userId");
-        }
-
-        // 获取aiId
-        String aiId = null;
-        if (metadata != null) {
-            aiId = metadata.getString("aiId");
-        }
-        if (aiId == null) {
-            aiId = doc.getString("aiId");
-        }
-
-        // 获取角色并转换为用户友好的格式
-        String role = doc.getString("role");
-        String normalizedRole = normalizeRole(role);
-
-        // 获取发送者
-        String sender = determineSender(doc, normalizedRole, userId, aiId);
-
-        // 获取头像
-        String avatar = determineAvatar(doc, normalizedRole);
-
-
-        return ChatMessageVO.builder()
-                .clientId(clientId)
-                .userId(userId)
-                .aiId(aiId)
-                .role(normalizedRole)
-                .sender(sender)
-                .avatar(avatar)
-                .content(doc.get("content"))
-                .time(doc.getDate("timestamp"))
+        ChatMessageVO vo = ChatMessageVO.builder()
+                .userId(doc.getString("userId"))
+                .clientId(doc.getString("clientId"))
+                .aiId(doc.getString("aiId"))
+                .role(doc.getString("role"))
+                .content(doc.getString("content"))
+                .sender(doc.getString("sender"))
                 .thinking(doc.getString("thinking"))
                 .build();
+
+        Date date = doc.getDate("time");
+        if (date != null) {
+            // 返回秒时间戳
+            vo.setTime(date.getTime() / 1000);
+        }
+        if ("user".equals(vo.getRole())) {
+            vo.setAvatar(StpUtil.getSession().getString("avatar"));
+        }
+        return vo;
     }
 
-    /**
-     * 标准化角色名称
-     */
-    private String normalizeRole(String role) {
-        if (role == null) return "user";
-        switch (role.toUpperCase()) {
-            case "USER":
-                return "user";
-            case "ASSISTANT":
-                return "assistant";
-            case "SYSTEM":
-                return "system";
-            default:
-                return role.toLowerCase();
-        }
-    }
-
-    /**
-     * 确定发送者名称
-     */
-    private String determineSender(Document doc, String role, String userId, String aiId) {
-        if ("user".equals(role)) {
-            // 用户消息,可以使用userId或查询用户名
-            return userId != null ? userId : "user";
-        } else if ("assistant".equals(role)) {
-            // AI消息,可以使用aiId
-            return aiId != null ? aiId : "AI";
-        }
-        return "system";
-    }
-
-    /**
-     * 确定头像URL
-     */
-    private String determineAvatar(Document doc, String role) {
-        if ("user".equals(role)) {
-            // 用户头像,可以从metadata或单独的用户服务获取
-            Document metadata = doc.get("metadata", Document.class);
-            if (metadata != null && metadata.containsKey("userAvatar")) {
-                return metadata.getString("userAvatar");
-            }
-            return null; // 或使用默认用户头像
-        } else if ("assistant".equals(role)) {
-            // AI头像
-            Document metadata = doc.get("metadata", Document.class);
-            if (metadata != null && metadata.containsKey("aiAvatar")) {
-                return metadata.getString("aiAvatar");
-            }
-            return null; // 或使用默认AI头像
-        }
-        return null;
-    }
 }

@@ -36,8 +36,7 @@ public class ChatMessageVO {
     private Object content;
     
     @Schema(description = "时间")
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Shanghai")
-    private Date time;
+    private Long time;
     
     @Schema(description = "思考过程(AI专有)")
     private String thinking;
