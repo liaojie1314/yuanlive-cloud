@@ -12,7 +12,6 @@ public class AiSessionVO {
     private String title;
     // 格式：yyyy-MM-dd
     @Field("lastUpdateTime")
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Shanghai")
-    private LocalDateTime timestamp;
+    private Long timestamp;
     private Boolean isTop;
 }

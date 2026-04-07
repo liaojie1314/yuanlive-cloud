@@ -155,6 +155,10 @@ public class AuthServiceImpl implements AuthService {
         }
         clearOldRefreshToken(user.getUid(), loginDTO.getDevice());
         StpUtil.login(user.getUid(), loginDTO.getDevice());
+        // 将用户名与avatar放入session
+        SaSession session = StpUtil.getSession();
+        session.set("username", user.getUsername());
+        session.set("avatar", user.getAvatar());
         // 设置用户角色与权限 同时也可在session中存放用户名等信息
         setRoleAndPerms(user);
         StpUtil.getTokenSession().set("deviceID", loginDTO.getDeviceID());

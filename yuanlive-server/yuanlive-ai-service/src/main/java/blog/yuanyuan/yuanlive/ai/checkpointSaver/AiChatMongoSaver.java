@@ -19,7 +19,6 @@ import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.*;
-import jakarta.annotation.Resource;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.slf4j.Logger;
@@ -35,7 +34,7 @@ import java.util.stream.Collectors;
 
 public class AiChatMongoSaver implements BaseCheckpointSaver {
     private static final Logger logger = LoggerFactory.getLogger(MongoSaver.class);
-    private static final String DB_NAME = "check_point_db";
+    private static final String DB_NAME = "yuanlive";
     private static final String THREAD_META_COLLECTION = "thread_meta";
     private static final String CHECKPOINT_COLLECTION = "checkpoint_collection";
     private static final String THREAD_META_PREFIX = "mongo:thread:meta:";
@@ -50,8 +49,6 @@ public class AiChatMongoSaver implements BaseCheckpointSaver {
     private MongoDatabase database;
     private TransactionOptions txnOptions;
     private static final ObjectMapper jsonMapper = new ObjectMapper();
-    private final ChatClient titleClient;
-    private final ChatModel titleModel;
 
     /**
      * Protected constructor for MongoSaver.
@@ -60,15 +57,13 @@ public class AiChatMongoSaver implements BaseCheckpointSaver {
      * @param client          the client
      * @param stateSerializer the state serializer
      */
-    protected AiChatMongoSaver(MongoClient client, StateSerializer stateSerializer, ChatModel titleModel) {
+    protected AiChatMongoSaver(MongoClient client, StateSerializer stateSerializer) {
         Objects.requireNonNull(client, "client cannot be null");
         Objects.requireNonNull(stateSerializer, "stateSerializer cannot be null");
         this.client = client;
         this.database = client.getDatabase(DB_NAME);
         this.txnOptions = TransactionOptions.builder().writeConcern(WriteConcern.MAJORITY).build();
         this.checkpointSerializer = new CheckPointSerializer(stateSerializer);
-        this.titleModel = titleModel;
-        this.titleClient = titleModel != null ? ChatClient.builder(titleModel).build() : null;
         Runtime.getRuntime().addShutdownHook(new Thread(client::close));
     }
 
@@ -190,10 +185,8 @@ public class AiChatMongoSaver implements BaseCheckpointSaver {
                     if (msg.getMessageType() == MessageType.SYSTEM) {
                         continue;
                     }
-                    Object thinkStr = msg.getMetadata().get("reasoningContent");
                     boolean isToolCallPending = msg.getMessageType() == MessageType.ASSISTANT
                             && (msg.getText() == null || msg.getText().isBlank())
-                            && (thinkStr == null || thinkStr.toString().isBlank())
                             && "TOOL_CALLS".equals(msg.getMetadata().get("finishReason"));
 
                     if (isToolCallPending) {
@@ -201,29 +194,34 @@ public class AiChatMongoSaver implements BaseCheckpointSaver {
                     }
                     Document m = new Document().append("role", msg.getMessageType().name());
 
-                    String rawText = msg.getText();
+                    // --- 修改部分开始 ---
                     if (msg instanceof ToolResponseMessage trm && !trm.getResponses().isEmpty()) {
-                        rawText = trm.getResponses().get(0).responseData();
+                        // 处理所有的 ToolResponse 而不仅仅是第一个
+                        List<Document> toolResponses = trm.getResponses().stream()
+                                .map(res -> new Document()
+                                        .append("toolCallId", res.id())
+                                        .append("toolName", res.name())
+                                        .append("responseData", parseToBson(res.responseData())))
+                                .collect(Collectors.toList());
+                        m.append("content", toolResponses);
+                    } else {
+                        m.append("content", parseToBson(msg.getText()));
                     }
-                    m.append("content", parseToBson(rawText));
-                    if (thinkStr != null && !thinkStr.toString().trim().isBlank()) {
-                        m.append("thinking", thinkStr);
-                    }
+                    // --- 修改部分结束 ---
+
                     m.append("clientId", msg.getMetadata().getOrDefault("clientId", runMeta.get("clientId")));
                     m.append("userId", msg.getMetadata().getOrDefault("userId", runMeta.get("userId")));
                     m.append("aiId", msg.getMetadata().getOrDefault("aiId", runMeta.get("aiId")));
-                    Object oldTimestamp = msg.getMetadata().get("timestamp");
 
+                    Object oldTimestamp = msg.getMetadata().get("timestamp");
                     Date finalDate;
                     if (oldTimestamp instanceof Date date) {
                         finalDate = date;
                     } else if (oldTimestamp instanceof Long ts) {
                         finalDate = new Date(ts);
                     } else if (oldTimestamp instanceof List<?> list && list.size() > 1) {
-                        // 专门处理那种 ['java.util.Date', 123456] 的奇葩情况
                         finalDate = new Date(Long.parseLong(list.get(1).toString()));
                     } else {
-                        // 如果真的是新消息，才生成当前时间
                         finalDate = new Date();
                     }
                     m.append("timestamp", finalDate);
@@ -234,10 +232,13 @@ public class AiChatMongoSaver implements BaseCheckpointSaver {
                     meta.remove("userId");
                     meta.remove("aiId");
                     meta.remove("reasoningContent");
-                    if (msg instanceof ToolResponseMessage trm && !trm.getResponses().isEmpty()) {
+
+                    // 保持元数据兼容性：如果是单条工具，保留顶层 ID
+                    if (msg instanceof ToolResponseMessage trm && trm.getResponses().size() == 1) {
                         meta.put("toolCallId", trm.getResponses().get(0).id());
                         meta.put("toolName", trm.getResponses().get(0).name());
                     }
+
                     m.append("metadata", new Document(meta));
                     msgDocs.add(m);
                 }
@@ -259,16 +260,10 @@ public class AiChatMongoSaver implements BaseCheckpointSaver {
             for (Document m : chatHistory) {
                 String role = m.getString("role");
                 Object contentObj = m.get("content");
-
-                // 💡 修复点：调用 bsonToJson 确保还原出的 content 是标准的 JSON 字符串
                 String contentStr = bsonToJson(contentObj);
 
                 Map<String, Object> meta = (Map<String, Object>) m.get("metadata");
                 if (meta == null) meta = new HashMap<>();
-                Object dbThinking = m.get("thinking");
-                if (dbThinking != null) {
-                    meta.put("reasoningContent", dbThinking);
-                }
                 meta.put("aiId", m.get("aiId"));
                 meta.put("clientId", m.get("clientId"));
                 meta.put("userId", m.get("userId"));
@@ -286,21 +281,41 @@ public class AiChatMongoSaver implements BaseCheckpointSaver {
                         yield am;
                     }
                     case "TOOL" -> {
-                        String callId = (String) meta.getOrDefault("toolCallId", "unknown");
-                        String name = (String) meta.getOrDefault("toolName", "unknown");
-                        ToolResponseMessage.ToolResponse tr = new ToolResponseMessage.ToolResponse(callId, name, contentStr);
+                        // --- 修改部分开始 ---
+                        List<ToolResponseMessage.ToolResponse> responses = new ArrayList<>();
+
+                        if (contentObj instanceof List<?> list) {
+                            // 如果是新格式（列表）
+                            for (Object item : list) {
+                                if (item instanceof Document d) {
+                                    responses.add(new ToolResponseMessage.ToolResponse(
+                                            d.getString("toolCallId"),
+                                            d.getString("toolName"),
+                                            bsonToJson(d.get("responseData"))
+                                    ));
+                                }
+                            }
+                        } else {
+                            // 兼容旧格式（单条字符串）
+                            String callId = (String) meta.getOrDefault("toolCallId", "unknown");
+                            String name = (String) meta.getOrDefault("toolName", "unknown");
+                            responses.add(new ToolResponseMessage.ToolResponse(callId, name, contentStr));
+                        }
+
                         ToolResponseMessage tm = ToolResponseMessage.builder()
-                                .responses(List.of(tr))
+                                .responses(responses)
                                 .build();
+                        // --- 修改部分结束 ---
+
                         if (meta != null) tm.getMetadata().putAll(meta);
                         yield tm;
                     }
                     default -> new UserMessage(contentStr);
                 };
                 if (springMsg instanceof SystemMessage) {
-                    springMessages.add(0, springMsg); // 始终放在第一位
+                    springMessages.add(0, springMsg);
                 } else {
-                    springMessages.add(springMsg);  // 其他消息按顺序放在后面
+                    springMessages.add(springMsg);
                 }
                 springMsg.getMetadata().putAll(meta);
             }
@@ -318,22 +333,6 @@ public class AiChatMongoSaver implements BaseCheckpointSaver {
         return history;
     }
 
-    private String serializeCheckpoints(List<Checkpoint> checkpoints) throws IOException {
-        if (checkpoints == null || checkpoints.isEmpty()) {
-            return "[]";
-        }
-        // 直接将 List 转换为 JSON 字符串存入数据库
-        return jsonMapper.writeValueAsString(checkpoints);
-    }
-
-    private LinkedList<Checkpoint> deserializeCheckpoints(String content) throws IOException, ClassNotFoundException {
-        if (content == null || content.isEmpty() || "[]".equals(content)) {
-            return new LinkedList<>();
-        }
-        // 使用 TypeReference 确保正确反序列化为 LinkedList<Checkpoint>
-        return jsonMapper.readValue(content, new TypeReference<LinkedList<Checkpoint>>() {
-        });
-    }
 
     /**
      * Gets or creates a thread_id for the given thread_name.
@@ -522,13 +521,6 @@ public class AiChatMongoSaver implements BaseCheckpointSaver {
             String checkpointDocId = CHECKPOINT_PREFIX + threadId;
             Map<String, Object> runMeta = config.metadata().orElse(Collections.emptyMap());
 
-            // 1. 检查文档是否存在 (仅投影 _id 以优化性能)
-            Document existingDoc = database.getCollection(CHECKPOINT_COLLECTION)
-                    .find(clientSession, Filters.eq("_id", checkpointDocId))
-                    .projection(Projections.include("_id"))
-                    .first();
-            boolean isNewSession = (existingDoc == null);
-
             // 2. 构建更新操作
             List<Bson> updates = new ArrayList<>();
             // 基础字段：每次 put 都会更新
@@ -537,14 +529,6 @@ public class AiChatMongoSaver implements BaseCheckpointSaver {
             updates.add(Updates.set("lastUpdateTime", new Date()));
             updates.add(Updates.set(DOCUMENT_CONTENT_KEY, serializeLatestSnapshot(checkpoint, config)));
 
-            // 3. 💡 仅在确定是新会话时，提取并设置 title
-            if (isNewSession) {
-                String title = extractTitle(checkpoint);
-                if (title != null) {
-                    updates.add(Updates.setOnInsert("title", title));
-                }
-                updates.add(Updates.setOnInsert("isTop", false));
-            }
 
             // 4. 将 replaceOne 改为 updateOne，配合 upsert 使用
             database.getCollection(CHECKPOINT_COLLECTION).updateOne(
@@ -562,46 +546,6 @@ public class AiChatMongoSaver implements BaseCheckpointSaver {
         } finally {
             clientSession.close();
         }
-    }
-
-    private String extractTitle(Checkpoint checkpoint) {
-        String firstUserText = null;
-        Object messagesObj = checkpoint.getState().get("messages");
-
-        if (messagesObj instanceof List<?> msgList) {
-            for (Object obj : msgList) {
-                if (obj instanceof UserMessage userMsg) {
-                    firstUserText = userMsg.getText();
-                    if (firstUserText != null && !firstUserText.isBlank()) {
-                        break;
-                    }
-                }
-            }
-        }
-
-        if (firstUserText == null) {
-            return null;
-        }
-
-        if (titleClient == null) {
-            logger.warn("titleClient is null, fallback to truncation");
-            return fallbackTruncate(firstUserText);
-        }
-
-        try {
-            String generatedTitle = titleClient.prompt()
-                    .user("你是一个助手。请根据用户的第一条提问，总结一个10字以内的会话标题。要求：简练、准确，不要包含引号或“标题：”字样。\n用户提问：" + firstUserText)
-                    .call()
-                    .content();
-            return (generatedTitle != null) ? generatedTitle.trim() : fallbackTruncate(firstUserText);
-        } catch (Exception e) {
-            logger.error("AI 提取标题失败: {}", e.getMessage());
-            return fallbackTruncate(firstUserText); // 出错时回退，保证流程不中断
-        }
-    }
-    private String fallbackTruncate(String text) {
-        String clean = text.trim().replaceAll("[\\n\\r]+", " ");
-        return clean.length() > 30 ? clean.substring(0, 30) + "..." : clean;
     }
 
     @Override
@@ -680,7 +624,6 @@ public class AiChatMongoSaver implements BaseCheckpointSaver {
     public static class Builder {
         private MongoClient client;
         private StateSerializer stateSerializer;
-        private ChatModel titleModel;
 
         public AiChatMongoSaver.Builder client(MongoClient client) {
             this.client = client;
@@ -689,11 +632,6 @@ public class AiChatMongoSaver implements BaseCheckpointSaver {
 
         public AiChatMongoSaver.Builder stateSerializer(StateSerializer stateSerializer) {
             this.stateSerializer = stateSerializer;
-            return this;
-        }
-
-        public AiChatMongoSaver.Builder titleModel(ChatModel titleModel) {
-            this.titleModel = titleModel;
             return this;
         }
 
@@ -710,7 +648,7 @@ public class AiChatMongoSaver implements BaseCheckpointSaver {
             if (stateSerializer == null) {
                 this.stateSerializer = StateGraph.DEFAULT_JACKSON_SERIALIZER;
             }
-            return new AiChatMongoSaver(client, stateSerializer, titleModel);
+            return new AiChatMongoSaver(client, stateSerializer);
         }
     }
 }

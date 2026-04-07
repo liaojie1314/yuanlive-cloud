@@ -377,8 +377,6 @@
     ]
   })
   ```
-  
-  
 
 ## 12. MCP相关配置
 
@@ -527,6 +525,33 @@
             {{- end }}
             {{- else }}
             未找到相关直播或视频。
+            {{- end }}
+      - args:
+        - description: "认证 Token"
+          name: "token"
+          position: "query"
+          required: true
+          type: "string"
+        description: "获取当前正在直播的关注者房间列表，方便用户快速查看已关注主播的实时动态"
+        name: "get-following-live"
+        requestTemplate:
+          headers:
+          - key: "token"
+            value: "{{.args.token}}"
+          method: "GET"
+          url: "http://127.0.0.1:8080/user/follow/following/live"
+        responseTemplate:
+          body: |-
+            # 关注中的直播
+            {{- if .data }}
+            {{- range .data }}
+            - **{{.title}}** (主播: {{.anchorName}})
+              - 房间ID: {{.id}}
+              - 人气指数: {{.hotScore}}
+              - 分类ID: {{.categoryId}}
+            {{- end }}
+            {{- else }}
+            目前关注的主播均未开播。
             {{- end }}
       ```
     

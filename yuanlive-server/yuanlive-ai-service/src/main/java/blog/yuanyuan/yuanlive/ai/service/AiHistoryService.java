@@ -1,15 +1,14 @@
 package blog.yuanyuan.yuanlive.ai.service;
 
+import blog.yuanyuan.yuanlive.ai.domain.dto.HistoryRequestDTO;
 import blog.yuanyuan.yuanlive.ai.domain.dto.SessionDeleteDTO;
 import blog.yuanyuan.yuanlive.ai.domain.dto.SessionPageQueryDTO;
 import blog.yuanyuan.yuanlive.ai.domain.dto.TitleUpdateDTO;
 import blog.yuanyuan.yuanlive.ai.domain.vo.AiSessionVO;
-import blog.yuanyuan.yuanlive.ai.domain.vo.ChatMessageVO;
+import blog.yuanyuan.yuanlive.ai.domain.vo.ChatHistoryResponseVO;
 import blog.yuanyuan.yuanlive.ai.domain.vo.PinSessionVO;
 import blog.yuanyuan.yuanlive.common.result.Result;
 import blog.yuanyuan.yuanlive.common.result.ResultPage;
-
-import java.util.List;
 
 public interface AiHistoryService {
     ResultPage<AiSessionVO> getUserSessionList(SessionPageQueryDTO queryDTO);
@@ -24,5 +23,5 @@ public interface AiHistoryService {
 
     Result<String> deleteAllSessions();
 
-    List<ChatMessageVO> getChatHistory(String conversationId);
+    ChatHistoryResponseVO getChatHistory(String conversationId, HistoryRequestDTO dto);
 }

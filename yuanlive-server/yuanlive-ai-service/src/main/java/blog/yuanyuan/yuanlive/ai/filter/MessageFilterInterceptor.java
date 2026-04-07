@@ -60,8 +60,8 @@ public class MessageFilterInterceptor extends ModelInterceptor {
             messages.add(0, systemMessage);
         }
 
-        log.info("Filtered message size: {}", messages.size());
-        messages.forEach(m -> log.info("Message: {}", m));
+//        log.info("Filtered message size: {}", messages.size());
+//        messages.forEach(m -> log.info("Message: {}", m));
 
         ModelRequest enhanced = ModelRequest.builder(request)
                 .messages(messages)

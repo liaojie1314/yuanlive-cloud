@@ -1,6 +1,5 @@
 package blog.yuanyuan.yuanlive.ai.service.impl;
 
-import blog.yuanyuan.yuanlive.ai.checkpointSaver.ThinkingModelWrapper;
 import blog.yuanyuan.yuanlive.ai.domain.dto.ChatRequest;
 import blog.yuanyuan.yuanlive.ai.domain.vo.ChatChunk;
 import blog.yuanyuan.yuanlive.ai.filter.MessageFilterInterceptor;
@@ -11,19 +10,16 @@ import cn.dev33.satoken.stp.StpUtil;
 import com.alibaba.cloud.ai.graph.RunnableConfig;
 import com.alibaba.cloud.ai.graph.agent.ReactAgent;
 import com.alibaba.cloud.ai.graph.checkpoint.BaseCheckpointSaver;
-import com.alibaba.cloud.ai.graph.exception.GraphRunnerException;
 import com.alibaba.cloud.ai.graph.streaming.OutputType;
 import com.alibaba.cloud.ai.graph.streaming.StreamingOutput;
 import io.modelcontextprotocol.client.McpAsyncClient;
-import io.modelcontextprotocol.server.McpAsyncServer;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import me.ahoo.cosid.provider.IdGeneratorProvider;
+import org.bson.Document;
 import org.jetbrains.annotations.NotNull;
-import org.springframework.ai.chat.messages.AssistantMessage;
-import org.springframework.ai.chat.messages.Message;
-import org.springframework.ai.chat.messages.SystemMessage;
-import org.springframework.ai.chat.messages.UserMessage;
+import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.ai.chat.messages.*;
 import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.chat.prompt.ChatOptions;
 import org.springframework.ai.mcp.AsyncMcpToolCallbackProvider;
@@ -31,6 +27,11 @@ import org.springframework.ai.model.tool.ToolCallingChatOptions;
 import org.springframework.ai.openai.OpenAiChatModel;
 import org.springframework.ai.tool.ToolCallback;
 import org.springframework.ai.tool.definition.ToolDefinition;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 
@@ -47,11 +48,14 @@ public class AiChatServiceImpl implements AiChatService {
     @Resource(name = "openAiChatModel")
     private ChatModel chatModel;
     @Resource(name = "thinkModel")
-    private OpenAiChatModel thinkModel;
+    private ChatModel thinkModel;
+    @Resource
+    private MongoTemplate mongoTemplate;
     @Resource
     private MessageFilterInterceptor messageFilterInterceptor;
 
     private final List<McpAsyncClient> allMcpClients;
+    private final ChatClient titleClient;
 
     // 默认开启的基础工具
     private static final Set<String> BASE_SERVERS = Set.of("liveMcp", "calculator");
@@ -59,14 +63,17 @@ public class AiChatServiceImpl implements AiChatService {
     private static final Set<String> NETWORK_SERVERS = Set.of("searxng", "amap");
 
 
-    public AiChatServiceImpl(List<McpAsyncClient> mcpAsyncClients) {
+    public AiChatServiceImpl(List<McpAsyncClient> mcpAsyncClients,
+                             @Qualifier("titleModel") ChatModel titleModel) {
         this.allMcpClients = mcpAsyncClients;
+        this.titleClient = ChatClient.builder(titleModel).build();
     }
 
 
     @Override
     public Flux<ChatChunk> streamChat(ChatRequest request) {
         String uid = StpUtil.getLoginIdAsString();
+        String username = (String) StpUtil.getSession().get("username");
         // 1. 初始化消息 ID 组
         String clientId = request.getClientMsgId();
         String userId = String.valueOf(idGeneratorProvider.getRequired("ai-chat-msg").generate());
@@ -84,7 +91,6 @@ public class AiChatServiceImpl implements AiChatService {
         ChatRequest.ChatOptions options = request.getOptions() != null ?
                 request.getOptions() : new ChatRequest.ChatOptions();
         selectedModel = options.isUseReasoning() ? thinkModel : chatModel;
-        ChatModel wrappedModel = new ThinkingModelWrapper(selectedModel);
 
         ChatOptions chatOptions = ToolCallingChatOptions.builder()
                 .temperature(options.getTemperature() != null ? options.getTemperature() : 0.7)
@@ -101,7 +107,8 @@ public class AiChatServiceImpl implements AiChatService {
                     .name("YuanLive")
                     .tools(dynamicTools)
                     .chatOptions(chatOptions)
-                    .model(wrappedModel)
+                    .model(selectedModel)
+                    .returnReasoningContents(true)
                     .saver(checkpointSaver)
                     .interceptors(messageFilterInterceptor)
                     .build();
@@ -115,6 +122,8 @@ public class AiChatServiceImpl implements AiChatService {
                     .build();
 
             // 6. 执行流式响应并转换格式
+            StringBuilder content = new StringBuilder();
+            StringBuilder thinking = new StringBuilder();
             return dynamicAgent.stream(messages, runnableConfig)
                     .flatMap(nodeOutput -> {
                         if (!(nodeOutput instanceof StreamingOutput streamingOutput)) {
@@ -126,29 +135,29 @@ public class AiChatServiceImpl implements AiChatService {
 
                         // A. 处理模型输出 (思考 & 内容)
                         if (type == OutputType.AGENT_MODEL_STREAMING && message instanceof AssistantMessage assistantMessage) {
-
                             List<ChatChunk> chunks = new ArrayList<>();
 
                             // 1. 处理推理/思考内容（取增量 Delta 字段）
-                            Object reasoningDelta = assistantMessage.getMetadata().get("reasoningDelta");
+                            Object reasoningDelta = assistantMessage.getMetadata().get("reasoningContent");
                             if (reasoningDelta != null && !reasoningDelta.toString().isEmpty()) {
                                 chunks.add(ChatChunk.reasoning(reasoningDelta.toString(), clientId, userId, aiId));
+                                thinking.append(reasoningDelta);
                             }
 
                             // 2. 处理正式回答文字 (不再被 return 拦截)
                             String text = assistantMessage.getText();
                             if (text != null && !text.isEmpty()) {
                                 chunks.add(ChatChunk.text(text, clientId, userId, aiId));
+                                content.append(text);
                             }
 
                             // 3. 返回包含所有内容的 Flux
                             return Flux.fromIterable(chunks);
-                        }
-
-                        // B. 处理工具调用 (状态反馈)
-                        else if (type == OutputType.AGENT_TOOL_STREAMING) {
-                            log.info("AI 正在调用工具: {}", nodeOutput.node());
-                            return Flux.empty();
+                        } else if (type == OutputType.AGENT_TOOL_FINISHED) {
+                            if (message instanceof ToolResponseMessage trm && !trm.getResponses().isEmpty()) {
+                                trm.getResponses().forEach(res ->
+                                        thinking.append("TOOL: ").append(res.responseData()).append("\n"));
+                            }
                         }
 
                         // C. 处理结束
@@ -167,10 +176,72 @@ public class AiChatServiceImpl implements AiChatService {
                                 .aiMsgId(aiId)
                                 .status("error")
                                 .build());
+                    })
+                    .doOnComplete(() -> {
+                        Date date = new Date();
+                        saveToCustomMongo(conversationId, clientId, userId, aiId, uid,
+                                "user", username,
+                                request.getContent(), null, date);
+                        saveToCustomMongo(conversationId, clientId, userId, aiId, uid,
+                                "assistant", "综合AI助手",
+                                content.toString(), thinking.toString(), date);
                     });
 
         } catch (Exception e) {
             throw new ApiException("构建 AI Agent 失败: " + e.getMessage());
+        }
+    }
+
+    private void saveToCustomMongo(String conversationId, String clientId, String userId, String aiId, String uid,
+                                   String role, String sender,
+                                   String content, String thinking, Date time) {
+        Query query = new Query(Criteria.where("conversationId").is(conversationId));
+        Document one = mongoTemplate.findOne(query, Document.class, "chat_session");
+        // 第一次会话生成title
+        String title = "";
+        if ("user".equals(role)) {
+            // 第一次提问生成title，并插入会话表
+            if (one == null) {
+                title = extractTitle(content);
+                Document document = new Document()
+                        .append("conversationId", conversationId)
+                        .append("uid", uid)
+                        .append("title", title)
+                        .append("isTop", false)
+                        .append("lastUpdateTime", time);
+                mongoTemplate.insert(document, "chat_session");
+            } else {
+                // 更新会话表，设置 lastUpdateTime
+                Query select = new Query(Criteria
+                        .where("conversationId").is(conversationId)
+                        .and("uid").is(uid));
+                Update update = new Update().set("lastUpdateTime", time);
+                mongoTemplate.updateFirst(select, update, "chat_session");
+            }
+        }
+        Document document = new Document()
+                .append("conversationId", conversationId)
+                .append("role", role)
+                .append("clientId", clientId)
+                .append("userId", userId)
+                .append("aiId", aiId)
+                .append("uid", uid)
+                .append("content", content)
+                .append("thinking", thinking)
+                .append("time", time)
+                .append("sender", sender);
+        mongoTemplate.insert(document, "chat_history");
+    }
+
+    private String extractTitle(String userMessage) {
+        try {
+            return titleClient.prompt()
+                    .user("你是一个助手。请根据用户的第一条提问，总结一个10字以内的会话标题。要求：简练、准确，不要包含引号或“标题：”字样。\n用户提问：" + userMessage)
+                    .call()
+                    .content();
+        } catch (Exception e) {
+            log.error("AI 提取标题失败: {}", e.getMessage());
+            throw new ApiException("AI 提取标题失败: " + e.getMessage());
         }
     }
 

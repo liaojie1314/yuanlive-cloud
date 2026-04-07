@@ -1,10 +1,11 @@
 package blog.yuanyuan.yuanlive.ai.controller;
 
+import blog.yuanyuan.yuanlive.ai.domain.dto.HistoryRequestDTO;
 import blog.yuanyuan.yuanlive.ai.domain.dto.SessionDeleteDTO;
 import blog.yuanyuan.yuanlive.ai.domain.dto.SessionPageQueryDTO;
 import blog.yuanyuan.yuanlive.ai.domain.dto.TitleUpdateDTO;
 import blog.yuanyuan.yuanlive.ai.domain.vo.AiSessionVO;
-import blog.yuanyuan.yuanlive.ai.domain.vo.ChatMessageVO;
+import blog.yuanyuan.yuanlive.ai.domain.vo.ChatHistoryResponseVO;
 import blog.yuanyuan.yuanlive.ai.domain.vo.PinSessionVO;
 import blog.yuanyuan.yuanlive.ai.service.AiHistoryService;
 import blog.yuanyuan.yuanlive.common.result.Result;
@@ -17,8 +18,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @Slf4j
 @RestController
@@ -64,8 +63,10 @@ public class AiHistoryController {
         return aiHistoryService.deleteAllSessions();
     }
 
-    @GetMapping("/messages/{conversationId}")
-    public Result<List<ChatMessageVO>> getMessages(@PathVariable("conversationId") String conversationId) {
-        return Result.success(aiHistoryService.getChatHistory(conversationId));
+    @PostMapping("/messages/{conversationId}")
+    @Operation(summary = "获取会话消息列表")
+    public Result<ChatHistoryResponseVO> getMessages(@PathVariable("conversationId") String conversationId,
+                                                      @RequestBody @Validated HistoryRequestDTO historyRequestDTO) {
+        return Result.success(aiHistoryService.getChatHistory(conversationId, historyRequestDTO));
     }
 }

@@ -20,11 +20,9 @@ public class CheckpointSaver {
     }
 
     @Bean
-    public BaseCheckpointSaver mongodbSaver(MongoClient mongoClient,
-                                            @Qualifier("titleModel") ChatModel titleModel) {
+    public BaseCheckpointSaver mongodbSaver(MongoClient mongoClient) {
         return AiChatMongoSaver.builder()
                 .client(mongoClient)
-                .titleModel(titleModel)
                 .build();
     }
 }
