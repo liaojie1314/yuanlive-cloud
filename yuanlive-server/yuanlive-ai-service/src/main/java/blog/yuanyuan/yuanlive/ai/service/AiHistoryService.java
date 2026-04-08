@@ -10,6 +10,8 @@ import blog.yuanyuan.yuanlive.ai.domain.vo.PinSessionVO;
 import blog.yuanyuan.yuanlive.common.result.Result;
 import blog.yuanyuan.yuanlive.common.result.ResultPage;
 
+import java.util.List;
+
 public interface AiHistoryService {
     ResultPage<AiSessionVO> getUserSessionList(SessionPageQueryDTO queryDTO);
 
@@ -24,4 +26,6 @@ public interface AiHistoryService {
     Result<String> deleteAllSessions();
 
     ChatHistoryResponseVO getChatHistory(String conversationId, HistoryRequestDTO dto);
+
+    Result<List<String>> getRecommendations();
 }

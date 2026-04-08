@@ -362,6 +362,8 @@
   - 设置用户的兴趣榜单每日衰减定时任务, 内容如下图
     
     ![榜单衰减](./pic/xxljob3.png)
+    
+    
 
 ## 11. MongoDB配置
 
@@ -619,7 +621,68 @@
         meshNetworks: 'networks: {}'
       ```
 
-## 13. 账号管理
+## 13. 向量模型配置
+
+- 进入[百炼平台官网](https://bailian.console.aliyun.com/cn-beijing?tab=model#/model-market)，登录后点击左下角获取API Key，并将其设置为`ai-service`中的`EMBEDDED_KEY`环境变量
+
+- 实现ai搜索推荐聚合
+  
+  - 为了实现ai搜索推荐聚合这个功能，需要先在[Kibana](http://localhost:5601)中的`Dev Tools`定义一个索引，代码如下
+    
+    ```
+    PUT /user_queries
+    {
+      "settings": {
+        "index": {
+          "number_of_shards": 1,
+          "number_of_replicas": 0
+        },
+        "analysis": {
+          "analyzer": {
+            "default": {
+              "type": "ik_smart"
+            }
+          }
+        }
+      },
+      "mappings": {
+        "properties": {
+          "content": {
+            "type": "text",
+            "analyzer": "ik_smart",
+            "search_analyzer": "ik_smart",
+            "fields": {
+              "keyword": {
+                "type": "keyword",
+                "ignore_above": 256
+              }
+            }
+          },
+          "createTime": {
+            "type": "date"
+          },
+          "contentVector": {
+            "type": "dense_vector",
+            "dims": 1024,
+            "index": true,
+            "similarity": "cosine"
+          }
+        }
+      }
+    }
+    ```
+  
+  - 设置ai推荐搜索聚合定时任务
+    
+    - 按如下图片设置执行器，其中机器地址不需要手动填入，后续会自动生成
+      
+      ![](pic/xxljobai1.png)
+    
+    - 接下来按如下图片创建定时任务
+      
+      ![](pic/xxljobai2.png)
+
+## 14. 账号管理
 
 - 管理员
   - 账号: fordepu  

@@ -6,8 +6,15 @@ spring:
   ai:
     openai:
       api-key: ${NVIDIA_API_KEY}
-      base-url: https://integrate.api.nvidia.com # 注意此处路径不能带/v1
+      embedding:
+        api-key: ${EMBEDDED_KEY}
+        base-url: https://dashscope.aliyuncs.com/compatible-mode
+        options:
+          model: text-embedding-v4
+          dimensions: 1024
       chat:
+        api-key: ${NVIDIA_API_KEY}
+        base-url: https://integrate.api.nvidia.com # 注意此处路径不能带/v1
         options:
           model: qwen/qwen3-next-80b-a3b-instruct # 模型可以自行选择
 
@@ -114,6 +121,8 @@ spring:
   data:
     mongodb:
       uri: mongodb://localhost:27017/yuanlive?replicaSet=rs0&serverSelectionTimeoutMS=5000
+  elasticsearch:
+    uris: http://127.0.0.1:9200
 
 mybatis-plus:
   mapper-locations: classpath*:mapper/*.xml
@@ -149,3 +158,16 @@ cosid:
         machine-bit: 4
         sequence-bit: 8
     epoch: 1577203200000
+
+redis-key:
+  ai:
+    search-recommend-key: "yuanlive:search:ai:recommend"
+
+xxl:
+  job:
+    admin:
+      addresses: http://127.0.0.1:8062/xxl-job-admin
+    executor:
+      appname: yuanlive-ai-recommend
+      logpath: ./docker/xxl-job/log
+      port: 9998

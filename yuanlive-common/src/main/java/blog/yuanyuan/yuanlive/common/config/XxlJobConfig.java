@@ -1,12 +1,14 @@
-package blog.yuanyuan.yuanlive.user.config;
+package blog.yuanyuan.yuanlive.common.config;
 
 import com.xxl.job.core.executor.impl.XxlJobSpringExecutor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
+@ConditionalOnProperty(name = "xxl.job.admin.addresses")
 @Slf4j
 public class XxlJobConfig {
     @Value("${xxl.job.admin.addresses}")

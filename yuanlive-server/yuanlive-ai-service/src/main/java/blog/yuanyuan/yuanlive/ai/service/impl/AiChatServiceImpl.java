@@ -1,8 +1,10 @@
 package blog.yuanyuan.yuanlive.ai.service.impl;
 
+import blog.yuanyuan.yuanlive.ai.domain.doc.UserQueryDOC;
 import blog.yuanyuan.yuanlive.ai.domain.dto.ChatRequest;
 import blog.yuanyuan.yuanlive.ai.domain.vo.ChatChunk;
 import blog.yuanyuan.yuanlive.ai.filter.MessageFilterInterceptor;
+import blog.yuanyuan.yuanlive.ai.repository.UserQueryRepository;
 import blog.yuanyuan.yuanlive.ai.service.AiChatService;
 import blog.yuanyuan.yuanlive.common.exception.ApiException;
 import cn.dev33.satoken.SaManager;
@@ -22,6 +24,7 @@ import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.messages.*;
 import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.chat.prompt.ChatOptions;
+import org.springframework.ai.embedding.EmbeddingModel;
 import org.springframework.ai.mcp.AsyncMcpToolCallbackProvider;
 import org.springframework.ai.model.tool.ToolCallingChatOptions;
 import org.springframework.ai.openai.OpenAiChatModel;
@@ -32,6 +35,7 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 
@@ -49,10 +53,14 @@ public class AiChatServiceImpl implements AiChatService {
     private ChatModel chatModel;
     @Resource(name = "thinkModel")
     private ChatModel thinkModel;
+    @Resource(name = "openAiEmbeddingModel")
+    private EmbeddingModel embeddingModel;
     @Resource
     private MongoTemplate mongoTemplate;
     @Resource
     private MessageFilterInterceptor messageFilterInterceptor;
+    @Resource
+    private UserQueryRepository userQueryRepository;
 
     private final List<McpAsyncClient> allMcpClients;
     private final ChatClient titleClient;
@@ -218,6 +226,7 @@ public class AiChatServiceImpl implements AiChatService {
                 Update update = new Update().set("lastUpdateTime", time);
                 mongoTemplate.updateFirst(select, update, "chat_session");
             }
+            syncToEs(content, userId, time);
         }
         Document document = new Document()
                 .append("conversationId", conversationId)
@@ -231,6 +240,22 @@ public class AiChatServiceImpl implements AiChatService {
                 .append("time", time)
                 .append("sender", sender);
         mongoTemplate.insert(document, "chat_history");
+    }
+
+    @Async
+    public void syncToEs(String content, String userId, Date time) {
+        try {
+            UserQueryDOC doc = new UserQueryDOC();
+            doc.setId(userId);
+            doc.setContent(content);
+            doc.setCreateTime(time);
+            float[] vector = embeddingModel.embed(content);
+            doc.setContentVector(vector);
+
+            userQueryRepository.save(doc);
+        } catch (Exception e) {
+            log.error("AI Sync to ES Error: ", e);
+        }
     }
 
     private String extractTitle(String userMessage) {

@@ -12,31 +12,35 @@ import blog.yuanyuan.yuanlive.ai.service.AiHistoryService;
 import blog.yuanyuan.yuanlive.common.result.Result;
 import blog.yuanyuan.yuanlive.common.result.ResultPage;
 import cn.dev33.satoken.stp.StpUtil;
+import cn.hutool.core.util.StrUtil;
+import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.mongodb.client.result.DeleteResult;
 import com.mongodb.client.result.UpdateResult;
 import jakarta.annotation.Resource;
+import lombok.extern.slf4j.Slf4j;
 import org.bson.Document;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.mongodb.core.aggregation.Aggregation;
-import org.springframework.data.mongodb.core.aggregation.MatchOperation;
-import org.springframework.data.mongodb.core.aggregation.ProjectionOperation;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
+@Slf4j
 public class AiHistoryServiceImpl implements AiHistoryService {
     @Resource
     private MongoTemplate mongoTemplate;
+    @Resource
+    private StringRedisTemplate stringRedisTemplate;
+    @Value("${redis-key.ai.search-recommend-key}")
+    private String recommendKey;
 
     @Override
     public ResultPage<AiSessionVO> getUserSessionList(SessionPageQueryDTO queryDTO) {
@@ -196,6 +200,22 @@ public class AiHistoryServiceImpl implements AiHistoryService {
                 .nextCursor(hasMore ? nextCursor : null) // 如果没有更多了，nextCursor 返回空
                 .messages(messages)
                 .build();
+    }
+
+    @Override
+    public Result<List<String>> getRecommendations() {
+        String json = stringRedisTemplate.opsForValue().get(recommendKey);
+        if (StrUtil.isBlank(json)) {
+            return Result.success(new ArrayList<>());
+        }
+
+        try {
+            List<String> recommendations = JSONUtil.toList(json, String.class);
+            return Result.success(recommendations);
+        } catch (Exception e) {
+            log.error("解析 AI 推荐词失败: ", e);
+            return Result.success(new ArrayList<>());
+        }
     }
 
     private ChatMessageVO mapToVO(Document doc) {

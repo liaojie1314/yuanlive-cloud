@@ -50,8 +50,8 @@ public class UserController {
     }
 
     @Operation(summary = "用户搜索视频或直播间")
-    @GetMapping("/search")
-    public ResultPage<SearchVO> search(@ParameterObject @Validated SearchQueryDTO queryDTO) {
+    @PostMapping("/search")
+    public ResultPage<SearchVO> search(@RequestBody @Validated SearchQueryDTO queryDTO) {
         return userService.search(queryDTO);
     }
 

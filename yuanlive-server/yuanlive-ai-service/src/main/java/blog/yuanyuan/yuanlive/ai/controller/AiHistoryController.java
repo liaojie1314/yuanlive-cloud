@@ -19,6 +19,8 @@ import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @Slf4j
 @RestController
 @RequestMapping("/history")
@@ -68,5 +70,11 @@ public class AiHistoryController {
     public Result<ChatHistoryResponseVO> getMessages(@PathVariable("conversationId") String conversationId,
                                                       @RequestBody @Validated HistoryRequestDTO historyRequestDTO) {
         return Result.success(aiHistoryService.getChatHistory(conversationId, historyRequestDTO));
+    }
+
+    @GetMapping("/getRecommendations")
+    @Operation(summary = "推荐三条AI搜索提问")
+    public Result<List<String>> getRecommendations() {
+        return aiHistoryService.getRecommendations();
     }
 }
