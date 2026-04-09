@@ -24,7 +24,7 @@ public class LiveStartMessage extends Message {
 
 
     @Override
-    public MsgType getType() {
+    public MsgType getCmd() {
         return MsgType.LIVE_START;
     }
 }

@@ -8,10 +8,10 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class WsResult {
-    private String type;
+    private String cmd;
     private Object data;
 
     public static WsResult of(Message message) {
-        return new WsResult(message.getType().name(), message);
+        return new WsResult(message.getCmd().name(), message);
     }
 }

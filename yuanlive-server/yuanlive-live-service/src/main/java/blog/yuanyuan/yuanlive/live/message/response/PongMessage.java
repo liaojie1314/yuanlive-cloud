@@ -19,7 +19,7 @@ public class PongMessage extends Message {
     }
 
     @Override
-    public MsgType getType() {
+    public MsgType getCmd() {
         return MsgType.PONG;
     }
 }

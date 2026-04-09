@@ -59,37 +59,34 @@ public class ChatMessageConsumer {
                     for (UserFollowLivingVO follow : followers) {
                         Channel channel = sessionManager.getUserChannel(follow.getUserId());
                         if (channel != null && channel.isActive()) {
-                            WsResult live = WsResult.of(liveStart);
-                            channel.writeAndFlush(new TextWebSocketFrame(JSONUtil.toJsonStr(live)));
-                            log.info("关注者[{}]发送成功: {}", follow.getUserId(), liveStart.getType());
+                            channel.writeAndFlush(new TextWebSocketFrame(JSONUtil.toJsonStr(liveStart)));
+                            log.info("关注者[{}]发送成功: {}", follow.getUserId(), liveStart.getCmd());
                         }
                     }
                 }
             }
             // 广播消息
+            // 通知消息有roomId就广播，没有就私发
             if (StrUtil.isNotBlank(message.getRoomId())) {
                 ChannelGroup group = sessionManager.getRoomChannels(message.getRoomId());
                 if (group != null && !group.isEmpty()) {
-                    WsResult broadcast = WsResult.of(message);
-                    group.writeAndFlush(new TextWebSocketFrame(JSONUtil.toJsonStr(broadcast)));
-                    log.info("房间[{}]广播成功: {}", message.getRoomId(), message.getType());
+                    group.writeAndFlush(new TextWebSocketFrame(JSONUtil.toJsonStr(message)));
+                    log.info("房间[{}]广播成功: {}", message.getRoomId(), message.getCmd());
                 }
             } else if (message instanceof SystemNotification notification
-                    && notification.getToUserId() != null) {
-                Channel channel = sessionManager.getUserChannel(notification.getToUserId());
+                    && notification.getUserId() != null) {
+                Channel channel = sessionManager.getUserChannel(notification.getUserId());
                 if (channel != null && channel.isActive()) {
-                    WsResult single = WsResult.of(notification);
-                    channel.writeAndFlush(new TextWebSocketFrame(JSONUtil.toJsonStr(single)));
-                    log.info("警告[{}]发送成功: {}", notification.getToUserId(), message.getType());
+                    channel.writeAndFlush(new TextWebSocketFrame(JSONUtil.toJsonStr(notification)));
+                    log.info("系统消息[{}]发送成功: {}", notification.getUserId(), message.getCmd());
                 }
             }
             // 私聊消息
             else if (message instanceof SingleChatRequest singleMsg) {
-                Channel channel = sessionManager.getUserChannel(singleMsg.getToUserId());
+                Channel channel = sessionManager.getUserChannel(singleMsg.getData().getToUserId());
                 if (channel != null && channel.isActive()) {
-                    WsResult single = WsResult.of(singleMsg);
-                    channel.writeAndFlush(new TextWebSocketFrame(JSONUtil.toJsonStr(single)));
-                    log.info("私聊[{}]发送成功: {}", singleMsg.getToUserId(), message.getType());
+                    channel.writeAndFlush(new TextWebSocketFrame(JSONUtil.toJsonStr(singleMsg)));
+                    log.info("私聊[{}]发送成功: {}", singleMsg.getData().getToUserId(), message.getCmd());
                 }
             }
         } catch (Exception e) {

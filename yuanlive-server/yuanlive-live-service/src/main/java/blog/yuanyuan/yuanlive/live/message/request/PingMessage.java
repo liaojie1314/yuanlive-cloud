@@ -19,7 +19,7 @@ public class PingMessage extends Message {
     }
 
     @Override
-    public MsgType getType() {
+    public MsgType getCmd() {
         return MsgType.PING;
     }
 }

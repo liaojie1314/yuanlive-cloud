@@ -15,11 +15,19 @@ import lombok.experimental.SuperBuilder;
 public class JoinRequest extends Message {
     
     public JoinRequest() {
-        super(MsgType.JOIN);
+        super(MsgType.JOIN_ROOM);
+    }
+
+    private JoinData data;
+
+    @Data
+    public static class JoinData {
+        private String roomId;
+        private String device;
     }
 
     @Override
-    public MsgType getType() {
-        return MsgType.JOIN;
+    public MsgType getCmd() {
+        return MsgType.JOIN_ROOM;
     }
 }

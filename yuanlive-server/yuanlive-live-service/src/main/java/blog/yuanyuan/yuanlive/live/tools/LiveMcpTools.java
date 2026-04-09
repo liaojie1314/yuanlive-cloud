@@ -44,8 +44,16 @@ public class LiveMcpTools {
             return "直播间不存在";
         }
         String notice = "【系统公告】文明发言，共建和谐直播间。恶意违规者将被永久封禁。";
+        SystemNotification.SystemData systemData = new SystemNotification.SystemData();
+        systemData.setType("warning");
+        systemData.setUser("系统");
+        systemData.setUserid(0L);
+        systemData.setContent(notice);
+        systemData.setIsVip(false);
+        systemData.setLevel(0);
+        
         SystemNotification notification = SystemNotification.builder()
-                .content(notice)
+                .data(systemData)
                 .roomId(roomId)
                 .build();
         rabbitTemplate.convertAndSend(exchange, "", JSONUtil.toJsonStr(notification));
@@ -66,9 +74,17 @@ public class LiveMcpTools {
         }
         long uid = Long.parseLong(anchorId);
         String warningMsg = "【系统警告】检测到您的直播间弹幕存在违规倾向，请加强管理，否则将面临封禁。";
+        SystemNotification.SystemData systemData = new SystemNotification.SystemData();
+        systemData.setType("warning");
+        systemData.setUser("系统");
+        systemData.setUserid(uid);
+        systemData.setContent(warningMsg);
+        systemData.setIsVip(false);
+        systemData.setLevel(0);
+        
         SystemNotification notification = SystemNotification.builder()
-                .content(warningMsg)
-                .toUserId(uid)
+                .data(systemData)
+                .userId(uid)
                 .build();
         rabbitTemplate.convertAndSend(exchange, "", JSONUtil.toJsonStr(notification));
         return "警告已发送至主播: " + roomId;

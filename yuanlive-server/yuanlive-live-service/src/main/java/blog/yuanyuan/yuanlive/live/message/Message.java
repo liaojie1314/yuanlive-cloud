@@ -1,6 +1,7 @@
 package blog.yuanyuan.yuanlive.live.message;
 
 import blog.yuanyuan.yuanlive.live.constant.MsgType;
+import blog.yuanyuan.yuanlive.live.message.notification.EventMessage;
 import blog.yuanyuan.yuanlive.live.message.notification.GroupChatNotification;
 import blog.yuanyuan.yuanlive.live.message.notification.LiveEndMessage;
 import blog.yuanyuan.yuanlive.live.message.notification.LiveStartMessage;
@@ -24,11 +25,11 @@ import lombok.experimental.SuperBuilder;
 @NoArgsConstructor
 @AllArgsConstructor
 @SuperBuilder
-@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "cmd")
 @JsonSubTypes({
-        @JsonSubTypes.Type(value = JoinRequest.class, name = "JOIN"),
+        @JsonSubTypes.Type(value = JoinRequest.class, name = "JOIN_ROOM"),
         @JsonSubTypes.Type(value = JoinResponse.class, name = "JOIN_RESP"),
-        @JsonSubTypes.Type(value = LeaveRequest.class, name = "LEAVE"),
+        @JsonSubTypes.Type(value = LeaveRequest.class, name = "LEAVE_ROOM"),
         @JsonSubTypes.Type(value = PingMessage.class, name = "PING"),
         @JsonSubTypes.Type(value = PongMessage.class, name = "PONG"),
         @JsonSubTypes.Type(value = GroupChatRequest.class, name = "CHAT"),
@@ -37,18 +38,19 @@ import lombok.experimental.SuperBuilder;
         @JsonSubTypes.Type(value = AckMessage.class, name = "ACK"),
         @JsonSubTypes.Type(value = LiveStartMessage.class, name = "LIVE_START"),
         @JsonSubTypes.Type(value = LiveEndMessage.class, name = "LIVE_END"),
-        @JsonSubTypes.Type(value = SystemNotification.class, name = "SYSTEM_NOTIFY")
+        @JsonSubTypes.Type(value = SystemNotification.class, name = "SYSTEM_MSG"),
+        @JsonSubTypes.Type(value = EventMessage.class, name = "EVENT")
 })
 @Getter
 public abstract class Message {
-    private MsgType type;     // 消息类型
+    private MsgType cmd;     // 消息类型
     private String msgId;     // 消息ID (前端生成的UUID)
-    private String roomId;    // 房间ID
-    private Long userId;      // 用户ID
-    private Long timestamp;   // 时间戳
+    private String roomId;
+    private Long userId;
+    private Long timestamp;   // 时间戳(秒级)
 
-    public Message(MsgType type) {
-        this.type = type;
+    public Message(MsgType cmd) {
+        this.cmd = cmd;
         this.timestamp = System.currentTimeMillis();
     }
 

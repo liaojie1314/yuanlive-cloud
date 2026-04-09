@@ -22,7 +22,7 @@ public class LiveEndMessage extends Message {
     private Long duration; //直播时长 秒
 
     @Override
-    public MsgType getType() {
+    public MsgType getCmd() {
         return MsgType.LIVE_END;
     }
 }

@@ -2,36 +2,43 @@ package blog.yuanyuan.yuanlive.live.message.notification;
 
 import blog.yuanyuan.yuanlive.live.constant.MsgType;
 import blog.yuanyuan.yuanlive.live.message.Message;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
+/**
+ * 事件消息（进入房间、点赞、送礼等）
+ */
 @Data
 @SuperBuilder
 @EqualsAndHashCode(callSuper = true)
-public class GroupChatNotification extends Message {
-    private ChatData data;
+public class EventMessage extends Message {
+    private EventData data;
 
-    public GroupChatNotification() {
-        super(MsgType.CHAT_NOTIFY);
+    public EventMessage() {
+        super(MsgType.EVENT);
     }
 
     @Data
-    public static class ChatData {
-        private String type;          // 消息类型：text(普通), gift(礼物)
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class EventData {
+        private String type;          // 事件类型：enter_room, like, gift
         private String roomId;
         private String user;          // 用户名
         private Long userid;          // 用户ID
-        private String content;       // 普通消息内容
         private Boolean isVip;        // 是否VIP
         private Integer level;        // 用户等级
-        // 礼物相关字段
-        private String giftIcon;      // 礼物图标
+        // 礼物相关字段（type=gift时）
+        private String giftName;      // 礼物名称
         private Integer giftCount;    // 礼物数量
+        private String giftIcon;      // 礼物图标
     }
 
     @Override
     public MsgType getCmd() {
-        return MsgType.CHAT;
+        return MsgType.EVENT;
     }
 }

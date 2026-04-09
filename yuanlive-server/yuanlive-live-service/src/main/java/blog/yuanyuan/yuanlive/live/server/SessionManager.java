@@ -33,6 +33,7 @@ public class SessionManager {
     public static final AttributeKey<String> KEY_USER_NAME = AttributeKey.valueOf("name");
     public static final AttributeKey<String> KEY_ROOM_ID = AttributeKey.valueOf("roomId");
     public static final AttributeKey<String> KEY_DEVICE_ID = AttributeKey.valueOf("deviceId");
+    public static final AttributeKey<String> KEY_DEVICE_TYPE = AttributeKey.valueOf("deviceType");
     public static final AttributeKey<String> KEY_TOKEN = AttributeKey.valueOf("token");
     public static final AttributeKey<String> KEY_TRACE_ID = AttributeKey.valueOf("traceId");
 
@@ -57,9 +58,10 @@ public class SessionManager {
     /**
      * 2. 用户加入房间 (收到 LOGIN/JOIN 消息时调用)
      */
-    public void joinRoom(String roomId, Channel channel) {
+    public void joinRoom(String roomId, String device,Channel channel) {
         // 将 roomId 绑定到 Channel，方便退出时识别
         channel.attr(KEY_ROOM_ID).set(roomId);
+        channel.attr(KEY_DEVICE_TYPE).set(device);
 
         ChannelGroup group = ROOM_MAP.computeIfAbsent(roomId, k ->
                 new DefaultChannelGroup(GlobalEventExecutor.INSTANCE)

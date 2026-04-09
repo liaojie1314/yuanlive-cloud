@@ -29,7 +29,7 @@ public class AckMessage extends BaseResponse {
     private Boolean success;
 
     @Override
-    public MsgType getType() {
+    public MsgType getCmd() {
         return MsgType.ACK;
     }
 }

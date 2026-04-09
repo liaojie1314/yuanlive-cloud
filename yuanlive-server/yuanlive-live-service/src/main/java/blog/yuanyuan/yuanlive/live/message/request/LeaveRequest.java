@@ -14,11 +14,19 @@ import lombok.experimental.SuperBuilder;
 @EqualsAndHashCode(callSuper = true)
 public class LeaveRequest extends Message {
     public LeaveRequest() {
-        super(MsgType.LEAVE);
+        super(MsgType.LEAVE_ROOM);
+    }
+
+    private LeaveData data;
+
+    @Data
+    public static class LeaveData {
+        private String roomId;
+        private String device;
     }
 
     @Override
-    public MsgType getType() {
-        return MsgType.LEAVE;
+    public MsgType getCmd() {
+        return MsgType.LEAVE_ROOM;
     }
 }
