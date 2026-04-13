@@ -1,10 +1,14 @@
 package blog.yuanyuan.yuanlive.user.service.impl;
 
 import blog.yuanyuan.yuanlive.common.exception.ApiException;
+import blog.yuanyuan.yuanlive.common.result.Result;
 import blog.yuanyuan.yuanlive.common.result.ResultPage;
+import blog.yuanyuan.yuanlive.common.util.IdCardUtil;
 import blog.yuanyuan.yuanlive.common.util.InterestUtil;
+import blog.yuanyuan.yuanlive.entity.live.dto.LiveRoomDTO;
 import blog.yuanyuan.yuanlive.entity.live.dto.SearchQueryDTO;
 import blog.yuanyuan.yuanlive.entity.live.vo.SearchVO;
+import blog.yuanyuan.yuanlive.entity.user.dto.AnchorApplyDTO;
 import blog.yuanyuan.yuanlive.entity.user.entity.*;
 import blog.yuanyuan.yuanlive.feign.live.LiveFeignClient;
 import blog.yuanyuan.yuanlive.user.domain.dto.PasswordDTO;
@@ -60,6 +64,8 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
     @Resource
     private SysUserRoleService userRoleService;
     @Resource
+    private AnchorApplyService anchorApplyService;
+    @Resource
     private SysRoleService roleService;
     @Resource
     private UserStatsService userStatsService;
@@ -81,6 +87,8 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
     private LiveFeignClient liveFeignClient;
     @Resource
     private InterestUtil interestUtil;
+    @Resource
+    private IdCardUtil idCardUtil;
     @Value("${redis-key.anchor-map.key}")
     private String anchorMap;
 
@@ -313,6 +321,46 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
         return result;
     }
 
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public String applyAnchor(AnchorApplyDTO anchorApplyDTO) {
+        if (!idCardUtil.isValidIdCard(anchorApplyDTO.getIdCard())) {
+            throw new ApiException("身份证号无效");
+        }
+        long uid = StpUtil.getLoginIdAsLong();
+        long id = idGeneratorProvider.getRequired("anchor-apply").generate();
+        AnchorApply apply = BeanUtil.copyProperties(anchorApplyDTO, AnchorApply.class);
+        apply.setId(id);
+        apply.setUid(uid);
+        // 这里暂且直接审核通过，实际应用中应管理员进行审核
+        apply.setAuditRemark("审核通过");
+        apply.setStatus(1);
+        boolean saved = anchorApplyService.save(apply);
+        if (!saved) {
+            throw new ApiException("申请提交失败");
+        }
+
+        boolean updated = lambdaUpdate()
+                .eq(SysUser::getUid, uid)
+                .set(SysUser::getRole, 1)
+                .set(SysUser::getDefaultCategoryId, anchorApplyDTO.getCategoryId())
+                .update();
+        if (!updated) {
+            throw new ApiException("更新用户信息失败");
+        }
+
+        LiveRoomDTO liveRoomDTO = new LiveRoomDTO();
+        liveRoomDTO.setCategoryId(anchorApplyDTO.getCategoryId());
+
+        // 更新用户role与perms
+        setRoleAndPerms(getById(uid));
+        Result<String> result = liveFeignClient.createRoom(liveRoomDTO);
+        if (result.getCode() != 200) {
+            throw new ApiException(result.getMsg());
+        }
+        return result.getData();
+    }
+
 
     @Async
     public void asyncRecordHistory(Long uid, String keyword, Integer categoryId) {
@@ -450,6 +498,23 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
                 .opsForHash().multiGet(anchorMap, ids);
         values = values.stream().filter(Objects::nonNull).collect(Collectors.toList());
         return values.size();
+    }
+
+    private void setRoleAndPerms(SysUser user) {
+        UserVO userVO = getUserById(user.getUid());
+        List<String> roles = new ArrayList<>(userVO.getRoles().stream().map(SysRole::getRoleKey).toList());
+        roles.add(user.getRole().name());
+        String join = String.join(",", roles);
+        StpUtil.getSession().set("role", join);
+        List<Long> roleIds = userVO.getRoles().stream().map(SysRole::getRoleId).toList();
+        List<SysMenu> menus = roleService.getRolesMenus(roleIds);
+        List<String> perms = menus.stream()
+                .map(menu -> StrUtil.isNotBlank(menu.getPerms()) ? menu.getPerms() : null)
+                .filter(Objects::nonNull).toList();
+        String permsJoin = String.join(",", perms);
+        StpUtil.getSession().set("perms", permsJoin);
+        StpUtil.getSession().set("username", user.getUsername());
+        StpUtil.getSession().set("avatar", user.getAvatar() != null ? user.getAvatar() : "");
     }
 }
 

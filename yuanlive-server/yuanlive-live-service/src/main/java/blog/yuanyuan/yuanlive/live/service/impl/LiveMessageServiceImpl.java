@@ -1,5 +1,6 @@
 package blog.yuanyuan.yuanlive.live.service.impl;
 
+import blog.yuanyuan.yuanlive.entity.live.entity.LiveRoom;
 import blog.yuanyuan.yuanlive.live.message.Message;
 import blog.yuanyuan.yuanlive.live.message.WsResult;
 import blog.yuanyuan.yuanlive.live.message.notification.EventMessage;
@@ -14,6 +15,7 @@ import blog.yuanyuan.yuanlive.live.properties.LiveRoomProperties;
 import blog.yuanyuan.yuanlive.live.properties.LiveWeightsProperties;
 import blog.yuanyuan.yuanlive.live.server.SessionManager;
 import blog.yuanyuan.yuanlive.live.service.LiveMessageService;
+import blog.yuanyuan.yuanlive.live.service.LiveRoomService;
 import blog.yuanyuan.yuanlive.live.util.PopularityUtil;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
@@ -28,10 +30,7 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.script.DefaultRedisScript;
 import org.springframework.stereotype.Service;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Service
 @Slf4j
@@ -50,6 +49,8 @@ public class LiveMessageServiceImpl implements LiveMessageService {
     private AiDetectProperties aiDetectProperties;
     @Resource
     private PopularityUtil popularityUtil;
+    @Resource
+    private LiveRoomService roomService;
 
     @Resource(name = "joinRoomScript")
     private DefaultRedisScript<Long> joinRoomScript;
@@ -151,12 +152,17 @@ public class LiveMessageServiceImpl implements LiveMessageService {
                     .build();
             sendMsg(ctx, response);
             // 构建直播间欢迎通知(私发)
+            Optional<LiveRoom> opt = roomService.lambdaQuery()
+                    .select(LiveRoom::getNotification)
+                    .eq(LiveRoom::getId, roomId)
+                    .oneOpt();
+            String message = opt.get().getNotification();
             String username = ctx.channel().attr(SessionManager.KEY_USER_NAME).get();
             SystemNotification.SystemData systemData = new SystemNotification.SystemData();
             systemData.setType("announcement");
             systemData.setUser(username);
             systemData.setUserid(userId);
-            systemData.setContent("欢迎来到直播间！请文明发言。");
+            systemData.setContent(message);
             systemData.setIsVip(false);
             systemData.setLevel(0);
             

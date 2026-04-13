@@ -5,7 +5,7 @@ import blog.yuanyuan.yuanlive.entity.live.dto.SearchQueryDTO;
 import blog.yuanyuan.yuanlive.entity.live.entity.LiveRoom;
 import blog.yuanyuan.yuanlive.entity.live.entity.VideoResource;
 import blog.yuanyuan.yuanlive.entity.live.vo.SearchVO;
-import blog.yuanyuan.yuanlive.live.domain.dto.LiveRoomDTO;
+import blog.yuanyuan.yuanlive.entity.live.dto.LiveRoomDTO;
 import blog.yuanyuan.yuanlive.live.domain.dto.LiveRoomQueryDTO;
 import blog.yuanyuan.yuanlive.live.domain.dto.SrsCallBackDTO;
 import blog.yuanyuan.yuanlive.live.domain.vo.LiveRoomDetailVO;
@@ -26,17 +26,16 @@ public interface LiveRoomService extends IService<LiveRoom> {
      * 创建直播间
      * @param roomDTO 直播间信息
      * @param anchorId 主播ID
-     * @return 是否成功
+     * @return roomId
      */
-    boolean createRoom(LiveRoomDTO roomDTO, Long anchorId);
+    long createRoom(LiveRoomDTO roomDTO, Long anchorId);
 
     /**
      * 修改直播间信息
      * @param roomDTO 直播间信息
-     * @param anchorId 主播ID
      * @return 是否成功
      */
-    boolean updateRoom(LiveRoomDTO roomDTO, Long anchorId);
+    String apply(LiveRoomDTO roomDTO);
 
     /**
      * 开始直播

@@ -13,7 +13,7 @@ import blog.yuanyuan.yuanlive.entity.live.vo.VideoSearchVO;
 import blog.yuanyuan.yuanlive.entity.user.entity.SysUser;
 import blog.yuanyuan.yuanlive.feign.user.UserFeignClient;
 import blog.yuanyuan.yuanlive.live.domain.document.SearchDoc;
-import blog.yuanyuan.yuanlive.live.domain.dto.LiveRoomDTO;
+import blog.yuanyuan.yuanlive.entity.live.dto.LiveRoomDTO;
 import blog.yuanyuan.yuanlive.live.domain.dto.LiveRoomQueryDTO;
 import blog.yuanyuan.yuanlive.live.domain.dto.SrsCallBackDTO;
 import blog.yuanyuan.yuanlive.live.domain.vo.LiveRoomDetailVO;
@@ -47,7 +47,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.elasticsearch.client.elc.ElasticsearchTemplate;
 import org.springframework.data.elasticsearch.client.elc.NativeQuery;
-import org.springframework.data.elasticsearch.client.elc.NativeQueryBuilder;
 import org.springframework.data.elasticsearch.core.SearchHits;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
@@ -119,7 +118,7 @@ public class LiveRoomServiceImpl extends ServiceImpl<LiveRoomMapper, LiveRoom>
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public boolean createRoom(LiveRoomDTO roomDTO, Long anchorId) {
+    public long createRoom(LiveRoomDTO roomDTO, Long anchorId) {
         // 检查该主播是否已有直播间
         LiveRoom existRoom = lambdaQuery()
                 .eq(LiveRoom::getAnchorId, anchorId)
@@ -131,37 +130,39 @@ public class LiveRoomServiceImpl extends ServiceImpl<LiveRoomMapper, LiveRoom>
         // 验证分类是否存在
         validateCategory(roomDTO.getCategoryId());
 
+        long roomId = idGeneratorProvider.getRequired("safe-js").generate();
+        String title = "直播间" + roomId;
         LiveRoom liveRoom = new LiveRoom();
         BeanUtils.copyProperties(roomDTO, liveRoom);
+        liveRoom.setTitle(title);
         liveRoom.setAnchorId(anchorId);
         liveRoom.setRoomStatus(0);
         liveRoom.setViewCount(0);
         liveRoom.setAnchorName(userFeignClient.getInfo(anchorId).getData().getUsername());
-        liveRoom.setId(idGeneratorProvider.getRequired("safe-js").generate());
+        liveRoom.setId(roomId);
 
         boolean saved = save(liveRoom);
         if (saved) {
             log.info("创建直播间成功 | 主播ID: {} | 房间ID: {}", anchorId, liveRoom.getId());
+            return roomId;
         }
-        return saved;
+        else {
+            throw new ApiException("创建直播间失败");
+        }
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public boolean updateRoom(LiveRoomDTO roomDTO, Long anchorId) {
+    public String apply(LiveRoomDTO roomDTO) {
         // 获取直播间
-        LiveRoom liveRoom = getById(roomDTO.getId());
-        if (liveRoom == null) {
+        long uid = StpUtil.getLoginIdAsLong();
+        Optional<LiveRoom> optional = lambdaQuery()
+                .eq(LiveRoom::getAnchorId, uid).oneOpt();
+        if (optional.isEmpty()) {
             throw new ApiException("直播间不存在");
         }
-        // 验证是否为主播本人
-        if (!liveRoom.getAnchorId().equals(anchorId)) {
-            throw new ApiException("无权修改他人的直播间");
-        }
-        // 正在直播中不允许修改
-        if (liveRoom.getRoomStatus() == 1) {
-            throw new ApiException("直播中无法修改房间信息");
-        }
+        LiveRoom liveRoom = optional.get();
+        liveRoom.setUpdateTime(new Date());
         // 验证分类是否存在
         if (roomDTO.getCategoryId() != null) {
             validateCategory(roomDTO.getCategoryId());
@@ -170,10 +171,12 @@ public class LiveRoomServiceImpl extends ServiceImpl<LiveRoomMapper, LiveRoom>
         BeanUtils.copyProperties(roomDTO, liveRoom);
 
         boolean updated = updateById(liveRoom);
+        String pushUrl = "";
         if (updated) {
-            log.info("修改直播间成功 | 房间ID: {} | 主播ID: {}", roomDTO.getId(), anchorId);
+            log.info("修改直播间成功 | 房间ID: {} | 主播ID: {}", liveRoom.getId(), liveRoom.getAnchorId());
+            pushUrl = generatePushUrl(liveRoom.getId());
         }
-        return updated;
+        return pushUrl;
     }
 
     @Override

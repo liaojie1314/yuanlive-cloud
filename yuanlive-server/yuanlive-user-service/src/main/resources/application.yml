@@ -132,6 +132,9 @@ cosid:
       search-history:
         machine-bit: 4
         sequence-bit: 8
+      anchor-apply:
+        machine-bit: 4
+        sequence-bit: 8
     epoch: 1577203200000
   segment:
     enabled: true

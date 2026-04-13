@@ -4,6 +4,7 @@ import blog.yuanyuan.yuanlive.common.result.Result;
 import blog.yuanyuan.yuanlive.common.result.ResultPage;
 import blog.yuanyuan.yuanlive.entity.live.dto.SearchQueryDTO;
 import blog.yuanyuan.yuanlive.entity.live.vo.SearchVO;
+import blog.yuanyuan.yuanlive.entity.user.dto.AnchorApplyDTO;
 import blog.yuanyuan.yuanlive.entity.user.entity.SysUser;
 import blog.yuanyuan.yuanlive.user.domain.vo.SearchHotVO;
 import blog.yuanyuan.yuanlive.user.domain.vo.SearchRecommendVO;
@@ -65,6 +66,12 @@ public class UserController {
     @GetMapping("/recommend")
     public Result<List<SearchRecommendVO>> getRecommend() {
         return Result.success(userService.getRecommend(8));
+    }
+
+    @Operation(summary = "用户申请成为主播")
+    @PostMapping("/applyAnchor")
+    public Result<String> applyAnchor(@RequestBody @Validated AnchorApplyDTO anchorApplyDTO) {
+        return Result.success(userService.applyAnchor(anchorApplyDTO));
     }
 
 }

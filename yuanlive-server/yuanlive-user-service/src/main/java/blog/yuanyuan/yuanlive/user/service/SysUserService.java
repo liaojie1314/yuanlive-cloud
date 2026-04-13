@@ -3,6 +3,7 @@ package blog.yuanyuan.yuanlive.user.service;
 import blog.yuanyuan.yuanlive.common.result.ResultPage;
 import blog.yuanyuan.yuanlive.entity.live.dto.SearchQueryDTO;
 import blog.yuanyuan.yuanlive.entity.live.vo.SearchVO;
+import blog.yuanyuan.yuanlive.entity.user.dto.AnchorApplyDTO;
 import blog.yuanyuan.yuanlive.entity.user.entity.SysUser;
 import blog.yuanyuan.yuanlive.user.domain.dto.PasswordDTO;
 import blog.yuanyuan.yuanlive.user.domain.dto.UserQueryDTO;
@@ -84,4 +85,5 @@ public interface SysUserService extends IService<SysUser> {
 
     List<SearchRecommendVO> getRecommend(int num);
 
+    String applyAnchor(AnchorApplyDTO anchorApplyDTO);
 }

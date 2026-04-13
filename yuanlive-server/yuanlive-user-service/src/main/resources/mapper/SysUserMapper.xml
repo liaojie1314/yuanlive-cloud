@@ -6,6 +6,7 @@
 
     <resultMap id="BaseResultMap" type="blog.yuanyuan.yuanlive.entity.user.entity.SysUser">
             <id property="uid" column="uid" />
+            <result property="defaultCategoryId" column="default_category_id" />
             <result property="username" column="username" />
             <result property="password" column="password" />
             <result property="avatar" column="avatar" />

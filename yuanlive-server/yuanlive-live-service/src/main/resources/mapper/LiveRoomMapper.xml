@@ -16,6 +16,7 @@
             <result property="lastStartTime" column="last_start_time" />
             <result property="createTime" column="create_time" />
             <result property="updateTime" column="update_time" />
+            <result property="notification" column="notification" />
     </resultMap>
 
     <!-- LiveRoomRankVO 的 ResultMap -->

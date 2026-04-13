@@ -2,6 +2,7 @@ package blog.yuanyuan.yuanlive.feign.live;
 
 import blog.yuanyuan.yuanlive.common.result.Result;
 import blog.yuanyuan.yuanlive.common.result.ResultPage;
+import blog.yuanyuan.yuanlive.entity.live.dto.LiveRoomDTO;
 import blog.yuanyuan.yuanlive.entity.live.dto.SearchQueryDTO;
 import blog.yuanyuan.yuanlive.entity.live.vo.LiveRoomRankVO;
 import blog.yuanyuan.yuanlive.entity.live.vo.LiveRoomVO;
@@ -29,4 +30,7 @@ public interface LiveFeignClient {
 
     @GetMapping("/category/getCategoryIdBySearch")
     public Result<Integer> getCategoryIdBySearch(@RequestParam("keyword") String keyword);
+
+    @PostMapping("/room/create")
+    public Result<String> createRoom(@RequestBody @Validated LiveRoomDTO roomDTO);
 }

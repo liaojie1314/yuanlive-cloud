@@ -3,10 +3,8 @@ package blog.yuanyuan.yuanlive.live.controller;
 import blog.yuanyuan.yuanlive.common.result.Result;
 import blog.yuanyuan.yuanlive.common.result.ResultPage;
 import blog.yuanyuan.yuanlive.entity.live.dto.SearchQueryDTO;
-import blog.yuanyuan.yuanlive.entity.live.entity.VideoResource;
 import blog.yuanyuan.yuanlive.entity.live.vo.SearchVO;
-import blog.yuanyuan.yuanlive.entity.live.vo.VideoVO;
-import blog.yuanyuan.yuanlive.live.domain.dto.LiveRoomDTO;
+import blog.yuanyuan.yuanlive.entity.live.dto.LiveRoomDTO;
 import blog.yuanyuan.yuanlive.live.domain.dto.LiveRoomQueryDTO;
 import blog.yuanyuan.yuanlive.live.domain.dto.SrsCallBackDTO;
 import blog.yuanyuan.yuanlive.live.domain.vo.LiveRoomDetailVO;
@@ -15,10 +13,10 @@ import blog.yuanyuan.yuanlive.entity.live.vo.LiveRoomRankVO;
 import blog.yuanyuan.yuanlive.live.service.LiveRoomService;
 import cn.dev33.satoken.annotation.SaCheckRole;
 import cn.dev33.satoken.stp.StpUtil;
+import cn.hutool.core.util.StrUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.annotations.Update;
 import org.springdoc.core.annotations.ParameterObject;
@@ -42,19 +40,17 @@ public class LiveRoomController {
     @SaCheckRole("ANCHOR")
     public Result<String> createRoom(@RequestBody @Validated LiveRoomDTO roomDTO) {
         Long anchorId = StpUtil.getLoginIdAsLong();
-        if (liveRoomService.createRoom(roomDTO, anchorId)) {
-            return Result.success(null, "创建直播间成功");
-        }
-        return Result.failed("创建直播间失败");
+        long roomId = liveRoomService.createRoom(roomDTO, anchorId);
+        return Result.success(String.valueOf(roomId));
     }
 
-    @PostMapping("/update")
-    @Operation(summary = "修改直播间信息")
+    @PostMapping("/apply")
+    @Operation(summary = "申请开播")
     @SaCheckRole("ANCHOR")
-    public Result<String> updateRoom(@RequestBody @Validated(Update.class) LiveRoomDTO roomDTO) {
-        Long anchorId = StpUtil.getLoginIdAsLong();
-        if (liveRoomService.updateRoom(roomDTO, anchorId)) {
-            return Result.success(null, "修改成功");
+    public Result<String> apply(@RequestBody @Validated(Update.class) LiveRoomDTO roomDTO) {
+        String url = liveRoomService.apply(roomDTO);
+        if (StrUtil.isNotBlank(url)) {
+            return Result.success(url);
         }
         return Result.failed("修改失败");
     }

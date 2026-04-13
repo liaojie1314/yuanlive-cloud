@@ -21,6 +21,8 @@ public class SysUser {
     @TableId(type = IdType.INPUT)
     @JsonSerialize(using = ToStringSerializer.class)
     private Long uid;
+    @Schema(description="默认直播分区id(主播专有字段)")
+    private Integer defaultCategoryId;
     @Schema(description="用户名")
     private String username;
     @Schema(description="密码(BCrypt加密)")
@@ -34,7 +36,7 @@ public class SysUser {
     private String email;
     @Schema(description="性别")
     private GenderEnum gender;
-    @Schema(description="用户类型")
+    @Schema(description="用户类型:0-用户, 1-主播, 2-管理员")
     private UserRoleEnum role;
     @Schema(description="状态:1-正常,0-停用")
     private Integer status;

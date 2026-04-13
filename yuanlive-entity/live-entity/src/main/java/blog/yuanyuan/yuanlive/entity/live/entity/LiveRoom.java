@@ -37,4 +37,6 @@ public class LiveRoom {
     private Date createTime;
     @Schema(description="更新时间")
     private Date updateTime;
+    @Schema(description = "直播间公告")
+    private String notification;
 }
