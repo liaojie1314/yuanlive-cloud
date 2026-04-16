@@ -18,6 +18,47 @@
     </properties>
 
     <dependencies>
-
+        <dependency>
+            <groupId>blog.yuanyuan</groupId>
+            <artifactId>user-entity</artifactId>
+            <version>${revision}</version>
+        </dependency>
+        <dependency>
+            <groupId>blog.yuanyuan</groupId>
+            <artifactId>live-entity</artifactId>
+            <version>${revision}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-mail</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>blog.yuanyuan</groupId>
+            <artifactId>yuanlive-live-client</artifactId>
+            <version>${revision}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>blog.yuanyuan</groupId>
+            <artifactId>common-security</artifactId>
+            <version>${revision}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-amqp</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-loadbalancer</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>cn.dev33</groupId>
+            <artifactId>sa-token-spring-boot3-starter</artifactId>
+        </dependency>
     </dependencies>
 </project>

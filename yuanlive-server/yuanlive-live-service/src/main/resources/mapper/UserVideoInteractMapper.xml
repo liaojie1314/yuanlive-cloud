@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="blog.yuanyuan.yuanlive.live.mapper.UserVideoInteractMapper">
+
+    <resultMap id="BaseResultMap" type="blog.yuanyuan.yuanlive.entity.live.entity.UserVideoInteract">
+            <id property="id" column="id" />
+            <result property="userId" column="user_id" />
+            <result property="videoId" column="video_id" />
+            <result property="hasLiked" column="has_liked" />
+            <result property="hasUnliked" column="has_unliked" />
+            <result property="hasShared" column="has_shared" />
+            <result property="hasRecommended" column="has_recommended" />
+    </resultMap>
+
+    <insert id="upsertAction">
+        insert into user_video_interact
+        (id, user_id, video_id, ${column})
+        values
+            (#{id}, #{uid}, #{vid}, 1)
+        on duplicate key update
+                         ${column} = 1
+    </insert>
+    <update id="undoAction">
+        update user_video_interact
+        set ${column} = 0
+        where user_id = #{uid}
+          and video_id = #{vid}
+    </update>
+</mapper>

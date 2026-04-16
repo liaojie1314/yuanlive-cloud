@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="blog.yuanyuan.yuanlive.user.mapper.SearchHistoryMapper">
+
+    <resultMap id="BaseResultMap" type="blog.yuanyuan.yuanlive.entity.user.entity.SearchHistory">
+            <id property="id" column="id" />
+            <result property="userId" column="user_id" />
+            <result property="keyword" column="keyword" />
+            <result property="categoryId" column="category_id" />
+            <result property="createTime" column="create_time" />
+    </resultMap>
+
+    <select id="selectTopCategoryForKeywords" resultType="blog.yuanyuan.yuanlive.user.domain.dto.KeywordCategoryDTO">
+        SELECT keyword, category_id
+        FROM (
+        SELECT keyword, category_id,
+        ROW_NUMBER() OVER(PARTITION BY keyword ORDER BY COUNT(*) DESC) as rn
+        FROM search_history
+        WHERE keyword IN
+        <foreach collection="hot" item="k" open="(" separator="," close=")">
+            #{k}
+        </foreach>
+        GROUP BY keyword, category_id
+        ) t
+        WHERE rn = 1
+    </select>
+</mapper>

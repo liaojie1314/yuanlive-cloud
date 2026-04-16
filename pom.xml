@@ -13,6 +13,8 @@
         <module>yuanlive-server</module>
         <module>yuanlive-server-client</module>
         <module>yuanlive-gateway</module>
+        <module>yuanlive-entity</module>
+        <module>common-security</module>
     </modules>
 
     <properties>
@@ -23,11 +25,23 @@
         <spring-boot.version>3.5.7</spring-boot.version>
         <spring-cloud.version>2025.0.0</spring-cloud.version>
         <spring-cloud-alibaba.version>2025.0.0.0</spring-cloud-alibaba.version>
-        <spring-ai.version>1.0.3</spring-ai.version>
-        <spring-ai-alibaba.version>1.0.0.4</spring-ai-alibaba.version>
-        <mybatis-plus.version>3.5.14</mybatis-plus.version>
+        <mybatis-plus.version>3.5.15</mybatis-plus.version>
         <knife4j-gateway.version>4.5.0</knife4j-gateway.version>
         <knife4j.version>4.5.0</knife4j.version>
+        <mysql.version>8.0.16</mysql.version>
+        <spring-boot-starter-validation.version>3.5.6</spring-boot-starter-validation.version>
+        <redis.version>3.5.3</redis.version>
+        <hutool.version>5.8.42</hutool.version>
+        <sa-token.version>1.44.0</sa-token.version>
+        <cosid.version>2.15.2</cosid.version>
+        <netty.version>4.2.9.Final</netty.version>
+        <minio.version>8.6.0</minio.version>
+        <JAVE2.version>3.5.0</JAVE2.version>
+        <spring-ai.version>1.1.2</spring-ai.version>
+        <spring-ai-alibaba.version>1.1.2.0</spring-ai-alibaba.version>
+        <redisson.version>4.1.0</redisson.version>
+        <xxl-job-core.version>3.3.2</xxl-job-core.version>
+
     </properties>
 
     <dependencyManagement>
@@ -63,32 +77,108 @@
                 <artifactId>knife4j-openapi3-jakarta-spring-boot-starter</artifactId>
                 <version>${knife4j.version}</version>
             </dependency>
+            <dependency>
+                <groupId>com.baomidou</groupId>
+                <artifactId>mybatis-plus-spring-boot3-starter</artifactId>
+                <version>${mybatis-plus.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.baomidou</groupId>
+                <artifactId>mybatis-plus-jsqlparser</artifactId>
+                <version>${mybatis-plus.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>mysql</groupId>
+                <artifactId>mysql-connector-java</artifactId>
+                <version>${mysql.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>cn.hutool</groupId>
+                <artifactId>hutool-all</artifactId>
+                <version>${hutool.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>cn.dev33</groupId>
+                <artifactId>sa-token-spring-boot3-starter</artifactId>
+                <version>${sa-token.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>cn.dev33</groupId>
+                <artifactId>sa-token-redis-template</artifactId>
+                <version>${sa-token.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>cn.dev33</groupId>
+                <artifactId>sa-token-reactor-spring-boot3-starter</artifactId>
+                <version>${sa-token.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>me.ahoo.cosid</groupId>
+                <artifactId>cosid-spring-redis</artifactId>
+                <version>${cosid.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>me.ahoo.cosid</groupId>
+                <artifactId>cosid-spring-boot-starter</artifactId>
+                <version>${cosid.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.netty</groupId>
+                <artifactId>netty-all</artifactId>
+                <version>4.2.9.Final</version>
+                <scope>compile</scope>
+            </dependency>
+            <dependency>
+                <groupId>io.minio</groupId>
+                <artifactId>minio</artifactId>
+                <version>${minio.version}</version>
+                <scope>compile</scope>
+            </dependency>
+            <dependency>
+                <groupId>ws.schild</groupId>
+                <artifactId>jave-all-deps</artifactId>
+                <version>${JAVE2.version}</version>
+                <scope>compile</scope>
+            </dependency>
+
+            <dependency>
+                <groupId>com.alibaba.cloud.ai</groupId>
+                <artifactId>spring-ai-alibaba-bom</artifactId>
+                <version>${spring-ai-alibaba.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework.ai</groupId>
+                <artifactId>spring-ai-bom</artifactId>
+                <version>${spring-ai.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>com.alibaba.cloud.ai</groupId>
+                <artifactId>spring-ai-alibaba-extensions-bom</artifactId>
+                <version>${spring-ai-alibaba.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.redisson</groupId>
+                <artifactId>redisson</artifactId>
+                <version>${redisson.version}</version>
+                <scope>compile</scope>
+            </dependency>
+            <dependency>
+                <groupId>com.xuxueli</groupId>
+                <artifactId>xxl-job-core</artifactId>
+                <version>${xxl-job-core.version}</version>
+                <scope>compile</scope>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
-    <repositories>
-        <repository>
-            <id>aliyunmaven</id>
-            <name>aliyun</name>
-            <url>https://maven.aliyun.com/repository/public</url>
-        </repository>
-        <repository>
-            <id>central2</id>
-            <name>central2</name>
-            <url>https://repo1.maven.org/maven2/</url>
-        </repository>
-    </repositories>
 
-    <pluginRepositories>
-        <pluginRepository>
-            <id>aliyunmaven</id>
-            <name>aliyun</name>
-            <url>https://maven.aliyun.com/repository/public</url>
-        </pluginRepository>
-        <pluginRepository>
-            <id>central2</id>
-            <name>central2</name>
-            <url>https://repo1.maven.org/maven2/</url>
-        </pluginRepository>
-    </pluginRepositories>
+
+
+
 </project>

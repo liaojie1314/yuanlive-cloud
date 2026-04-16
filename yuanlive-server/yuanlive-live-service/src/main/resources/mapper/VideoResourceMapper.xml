@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="blog.yuanyuan.yuanlive.live.mapper.VideoResourceMapper">
+
+    <resultMap id="BaseResultMap" type="blog.yuanyuan.yuanlive.entity.live.entity.VideoResource">
+            <id property="id" column="id" />
+            <result property="userId" column="user_id" />
+            <result property="categoryId" column="category_id" />
+            <result property="roomId" column="room_id" />
+            <result property="duration" column="duration" />
+            <result property="title" column="title" />
+            <result property="startTime" column="start_time" />
+            <result property="endTime" column="end_time" />
+            <result property="peakViewers" column="peak_viewers" />
+            <result property="watchCount" column="watch_count" />
+            <result property="videoUrl" column="video_url" />
+            <result property="coverUrl" column="cover_url" />
+            <result property="likeCount" column="like_count" />
+            <result property="commentCount" column="comment_count" />
+            <result property="viewCount" column="view_count" />
+            <result property="shareCount" column="share_count" />
+            <result property="collectCount" column="collect_count" />
+            <result property="type" column="type" />
+            <result property="createTime" column="create_time" />
+            <result property="description" column="description" />
+    </resultMap>
+
+    <select id="getUnseenCount" resultType="blog.yuanyuan.yuanlive.entity.live.vo.UnseenVO">
+        select user_id AS uid, count(*) AS count
+        from video_resource
+        where
+            <foreach collection="dtos" item="item" separator="OR">
+                (user_id = #{item.followingId} AND id > #{item.lastReadVideoId} AND video_url IS NOT NULL)
+            </foreach>
+    </select>
+    
+    <!-- 搜索视频 SQL -->
+    <select id="searchVideos" resultType="blog.yuanyuan.yuanlive.entity.live.entity.VideoResource">
+        SELECT DISTINCT
+            vr.*,
+            lr.category_id
+        FROM video_resource vr
+        LEFT JOIN live_room lr ON vr.room_id = lr.id
+        WHERE
+            (LOWER(vr.title) LIKE CONCAT('%', LOWER(#{keyword}), '%')
+            OR LOWER(lr.anchor_name) LIKE CONCAT('%', LOWER(#{keyword}), '%')
+            OR LOWER(lr.title) LIKE CONCAT('%', LOWER(#{keyword}), '%'))
+            AND vr.video_url IS NOT NULL
+        ORDER BY vr.id DESC
+    </select>
+    <select id="searchVideosByOffset" resultType="blog.yuanyuan.yuanlive.entity.live.entity.VideoResource">
+        SELECT DISTINCT
+            vr.*,
+            lr.category_id
+        FROM video_resource vr
+                 LEFT JOIN live_room lr ON vr.room_id = lr.id
+        WHERE
+            (LOWER(vr.title) LIKE CONCAT('%', LOWER(#{keyword}), '%')
+           OR LOWER(lr.anchor_name) LIKE CONCAT('%', LOWER(#{keyword}), '%')
+           OR LOWER(lr.title) LIKE CONCAT('%', LOWER(#{keyword}), '%'))
+            AND vr.video_url IS NOT NULL
+        ORDER BY vr.id DESC
+        LIMIT #{offset}, #{limit}
+    </select>
+</mapper>

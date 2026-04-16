@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="blog.yuanyuan.yuanlive.user.mapper.SysUserMapper">
+
+    <resultMap id="BaseResultMap" type="blog.yuanyuan.yuanlive.entity.user.entity.SysUser">
+            <id property="uid" column="uid" />
+            <result property="defaultCategoryId" column="default_category_id" />
+            <result property="username" column="username" />
+            <result property="password" column="password" />
+            <result property="avatar" column="avatar" />
+            <result property="phone" column="phone" />
+            <result property="email" column="email" />
+            <result property="status" column="status" />
+            <result property="delFlag" column="del_flag" />
+            <result property="createTime" column="create_time" />
+            <result property="updateTime" column="update_time" />
+            <result property="gender" column="gender" />
+            <result property="role" column="role" />
+    </resultMap>
+    <resultMap id="getUserVOByID" type="blog.yuanyuan.yuanlive.user.domain.vo.UserVO" extends="BaseResultMap">
+        <collection property="roles" columnPrefix="role_" resultMap="blog.yuanyuan.yuanlive.user.mapper.SysRoleMapper.BaseResultMap"/>
+    </resultMap>
+
+    <select id="getUserVOByID" resultMap="getUserVOByID" parameterType="java.lang.Long">
+        SELECT u.*,
+               r.role_id   AS role_role_id,
+               r.role_name AS role_role_name,
+               r.role_key AS role_role_key,
+               r.status AS role_status,
+               r.create_time AS role_create_time,
+               r.update_time AS role_update_time
+        FROM sys_user u
+                 LEFT JOIN
+             sys_user_role ur ON u.uid = ur.user_id
+                 LEFT JOIN
+             sys_role r ON ur.role_id = r.role_id
+        WHERE u.uid = #{uid}
+    </select>
+    <select id="getUserVOByIDs" resultMap="getUserVOByID" parameterType="long">
+        SELECT u.*,
+        r.role_id AS role_role_id,
+        r.role_name AS role_role_name,
+        r.role_key AS role_role_key
+        FROM sys_user u
+        LEFT JOIN
+        sys_user_role ur ON u.uid = ur.user_id
+        LEFT JOIN
+        sys_role r ON ur.role_id = r.role_id
+        WHERE u.uid IN
+
+        <foreach item="uid" collection="userIds" separator="," open="(" close=")">
+            #{uid}
+        </foreach>
+    </select>
+</mapper>

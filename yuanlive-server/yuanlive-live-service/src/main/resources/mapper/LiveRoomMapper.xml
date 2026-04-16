@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="blog.yuanyuan.yuanlive.live.mapper.LiveRoomMapper">
+
+    <resultMap id="BaseResultMap" type="blog.yuanyuan.yuanlive.entity.live.entity.LiveRoom">
+            <id property="id" column="id" />
+            <result property="anchorId" column="anchor_id" />
+            <result property="anchorName" column="anchor_name" />
+            <result property="title" column="title" />
+            <result property="coverImg" column="cover_img" />
+            <result property="roomStatus" column="room_status" />
+            <result property="viewCount" column="view_count" />
+            <result property="categoryId" column="category_id" />
+            <result property="lastStartTime" column="last_start_time" />
+            <result property="createTime" column="create_time" />
+            <result property="updateTime" column="update_time" />
+            <result property="notification" column="notification" />
+    </resultMap>
+
+    <!-- LiveRoomRankVO 的 ResultMap -->
+    <resultMap id="LiveRoomRankVOMap" type="blog.yuanyuan.yuanlive.entity.live.vo.LiveRoomRankVO">
+        <id property="id" column="id" />
+        <result property="title" column="title" />
+        <result property="anchorName" column="anchor_name" />
+        <result property="coverImg" column="cover_img" />
+        <result property="hotScore" column="hot_score" />
+    </resultMap>
+
+    <!-- 搜索直播间 SQL -->
+    <select id="searchLiveRooms" resultType="blog.yuanyuan.yuanlive.entity.live.vo.LiveRoomRankVO">
+        SELECT
+            lr.id,
+            lr.title,
+            lr.cover_img,
+            lr.anchor_name,
+            lr.category_id,
+            0.0 AS hot_score
+        FROM live_room lr
+        LEFT JOIN live_category lc ON lr.category_id = lc.id
+        WHERE
+              LOWER(lr.title) LIKE CONCAT('%', LOWER(#{keyword}), '%')
+              OR LOWER(lr.anchor_name) LIKE CONCAT('%', LOWER(#{keyword}), '%')
+              OR LOWER(lc.name) LIKE CONCAT('%', LOWER(#{keyword}), '%')
+    </select>
+</mapper>

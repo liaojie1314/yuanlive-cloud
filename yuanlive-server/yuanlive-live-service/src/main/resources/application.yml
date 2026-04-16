@@ -1,8 +1,148 @@
 server:
   port: 8082
 spring:
+  application:
+    name: live-service
+  ai:
+    mcp:
+      server:
+        name: live-service-mcp-server
+        version: 1.0.0
+        instructions: "提供直播间管理相关MCP"
+        type: sync
+        sse-message-endpoint: /mcp/message
+        sse-endpoint: /sse
+        capabilities:
+          tool: true
+          resource: true
+          prompt: true
+          completion: true
+        protocol: sse
+    alibaba:
+      mcp:
+        nacos:
+          server-addr: ${spring.cloud.nacos.server-addr}
+          username: nacos
+          password: nacos
+          namespace: public
+          register:
+            enabled: true
+
   cloud:
     nacos:
       server-addr: 127.0.0.1:8848
-  application:
-    name: live-service
+      discovery:
+        metadata:
+          netty-port: ${yuanlive.netty.port}
+          mcp.enabled: "true"
+          mcp.server.name: "live-service-mcp"
+          mcp.server.path: "/sse"
+        server-addr: ${spring.cloud.nacos.server-addr}
+      config:
+        namespace: public
+  config:
+    import:
+      - nacos:sa-token.yaml?group=SA_TOKEN_GROUP&refresh-enabled=true
+      - nacos:redis.yaml?group=REDIS_GROUP&refresh-enabled=true
+      - nacos:jackson.yaml?group=DEFAULT_GROUP&refresh-enabled=true
+      - nacos:rabbitmq.yaml?group=DEFAULT_GROUP&refresh-enabled=true
+      - nacos:minio.yaml?group=DEFAULT_GROUP&refresh-enabled=true
+
+  datasource:
+    url: jdbc:mysql://localhost:3307/yuanlive_live?useSSL=false&serverTimezone=Asia/Shanghai&useUnicode=true&characterEncoding=utf-8
+    username: root
+    password: yuanlive
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+
+mybatis-plus:
+  mapper-locations: classpath*:mapper/*.xml
+  type-aliases-package: blog.yuanyuan.yuanlive.entity.live.entity
+  global-config:
+    db-config:
+      id-type: auto
+
+yuanlive:
+  chat:
+    heartbeat: 30 # 心跳间隔 单位秒
+  netty:
+    port: 18081
+    path: /ws
+
+file-prefix:
+  host-prefix: "/home/frodepu/IdeaProjects/yuanlive-cloud/docker/SrsConfig"
+
+live:
+  weights:
+    view: 1.0 #基础观看(进入房间时)
+    like: 2.0 #点赞
+    chat: 5.0 #评论
+    gift: 10.0 #礼物
+  # 热度排名前20的房间启用AI评论风控检测
+  ai:
+    ai-detect-threshold: 20 # 排名前xx的房间启用AI评论风控检测
+    ttl: 30s
+    cache-threshold: 4 # 缓存消息阈值
+  hot:
+    hot-categories: 6 # 获取热度前xx的直播分类
+    hot-rooms: 5 # 获取热度前xx的直播间
+
+
+redis-key:
+  active-rooms:
+    key: "yuanlive:live:active_rooms"
+  anchor-map: # 存储在线主播与房间id的映射 anchor_id -> room_id
+    key: "yuanlive:live:anchor_map"
+  live-room: # 直播间相关信息
+    session-prefix: "yuanlive:live:session:" # 直播间会话信息(最高人数、房间clientId、recordId)
+    current-prefix: "yuanlive:live:current:" # 直播间当前观众id集合(set)
+    total-prefix: "yuanlive:live:total:" # 直播间累计人数，使用hyperloglog
+    main-rank: "yuanlive:live:room_ranking" # 直播间人气榜单(zset)
+    category-rank: "yuanlive:live:category_ranking" # 直播间类别人气榜单(zset)
+    category-rooms-prefix: "yuanlive:live:category_rooms:" # 每个类别的房间id集合
+    chat-buffer-prefix: "yuanlive:live:chat_buffer:" # 直播间聊天缓冲区
+  video-interact:
+    prefix: "yuanlive:live:video:interact:"
+    ttl: 7d
+  search:
+    # 个人搜索历史
+    history:
+      prefix: "yuanlive:search:user:history:"
+      ttl: 30d
+      max-count: 10
+      interest-prefix: "yuanlive:search:user:interest:"
+    # 全站热搜
+    hot:
+      rank-key: "yuanlive:search:hot:total:rank" # 总热搜榜单
+      hour-rank-prefix: "yuanlive:search:hot:hour:rank:" # 小时热搜榜单
+      agg-Key: "yuanlive:search:hot:aggregate" # 48小时热搜榜单聚合
+      ttl: 48h # 小时级热搜榜单过期时间
+      category-hot-prefix: "yuanlive:search:hot:category:" # 分类热搜榜单
+
+cosid:
+  namespace: ${spring.application.name}
+  machine:
+    enabled: true
+    distributor:
+      type: redis
+  snowflake:
+    enabled: true
+    share:
+      clock-sync: true
+    zone-id: Asia/Shanghai
+    provider:
+      safe-js:
+        machine-bit: 4
+        sequence-bit: 8
+      interact:
+        machine-bit: 4
+        sequence-bit: 8
+    epoch: 1577203200000
+  segment:
+    enabled: true
+    distributor:
+      type: redis
+    provider:
+      video:
+        step: 5000
+        offset: 1000

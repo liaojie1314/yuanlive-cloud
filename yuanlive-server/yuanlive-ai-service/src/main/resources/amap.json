@@ -1,0 +1,15 @@
+{
+  "mcpServers": {
+    "amap-maps": {
+      "command": "/home/frodepu/.nvm/versions/node/v22.13.1/bin/npx",
+      "args": [
+        "--no-install",
+        "-y",
+        "@amap/amap-maps-mcp-server"
+      ],
+      "env": {
+        "AMAP_MAPS_API_KEY": "api-key"
+      }
+    }
+  }
+}

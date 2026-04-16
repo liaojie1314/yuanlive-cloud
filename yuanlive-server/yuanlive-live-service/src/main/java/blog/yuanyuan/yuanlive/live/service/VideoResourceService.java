@@ -1,0 +1,31 @@
+package blog.yuanyuan.yuanlive.live.service;
+
+import blog.yuanyuan.yuanlive.common.enums.BehaviorType;
+import blog.yuanyuan.yuanlive.common.result.Result;
+import blog.yuanyuan.yuanlive.common.result.ResultPage;
+import blog.yuanyuan.yuanlive.entity.live.entity.VideoResource;
+import blog.yuanyuan.yuanlive.entity.live.vo.UnseenVO;
+import blog.yuanyuan.yuanlive.live.domain.dto.VideoPageQueryDTO;
+import blog.yuanyuan.yuanlive.entity.live.vo.VideoVO;
+import blog.yuanyuan.yuanlive.live.domain.vo.LikeVO;
+import com.baomidou.mybatisplus.extension.service.IService;
+
+import java.util.List;
+
+/**
+* @author frodepu
+* @description 针对表【video_resource(直播或视频记录表)】的数据库操作Service
+* @createDate 2026-02-07 15:48:37
+*/
+public interface VideoResourceService extends IService<VideoResource> {
+
+    List<UnseenVO> getUnseenCount(List<Long> followingIds, List<Long> lastReadVideoIds);
+
+    ResultPage<VideoVO> getVideoByUidWithPaging(VideoPageQueryDTO queryDTO);
+
+    Result<String> operateVideo(Long id, Long uid, BehaviorType type);
+
+    Result<LikeVO> cancelLike(Long id, Long uid, BehaviorType type);
+
+    Result<LikeVO> likeVideo(Long id, long uid, BehaviorType behaviorType);
+}
