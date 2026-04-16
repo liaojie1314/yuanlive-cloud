@@ -13,4 +13,6 @@ public class RefreshVO {
     private String refreshToken;
     @Schema(description = "accessToken过期时间戳")
     private Long expire;
+    @Schema(description = "用户ID")
+    private String uid;
 }

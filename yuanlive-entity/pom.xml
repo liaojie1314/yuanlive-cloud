@@ -11,6 +11,7 @@
     <modules>
         <module>user-entity</module>
         <module>live-entity</module>
+        <module>wallet-entity</module>
     </modules>
     <packaging>pom</packaging>
 

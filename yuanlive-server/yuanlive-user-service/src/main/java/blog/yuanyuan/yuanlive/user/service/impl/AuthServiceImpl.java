@@ -240,7 +240,7 @@ public class AuthServiceImpl implements AuthService {
         setRoleAndPerms(userService.getById(userId));
         // 5. 返回新的 Access Token
         // Refresh Token 可以保持不变传回去，也可以生成新的（通常保持不变即可）
-        return new RefreshVO(newTokenInfo, refreshToken, expireTimeStamp);
+        return new RefreshVO(newTokenInfo, refreshToken, expireTimeStamp, userId.toString());
     }
 
     @Override
@@ -432,7 +432,11 @@ public class AuthServiceImpl implements AuthService {
         if (tokenSession == null) {
             return false;
         }
-        return tokenSession.getString("deviceID").equals(deviceID);
+        String str = tokenSession.getString("deviceID");
+        if (StrUtil.isEmpty(str)) {
+            return false;
+        }
+        return deviceID.equals(str);
     }
 
     private Long getExpireTimeStamp(long timeout) {

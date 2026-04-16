@@ -15,9 +15,4 @@
             <result property="status" column="status" />
             <result property="auditRemark" column="audit_remark" />
     </resultMap>
-
-    <sql id="Base_Column_List">
-        id,uid,real_name,id_card,phone,category_id,
-        reason,status,audit_remark,create_time,update_time
-    </sql>
 </mapper>

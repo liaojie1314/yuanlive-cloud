@@ -741,6 +741,10 @@ public class LiveRoomServiceImpl extends ServiceImpl<LiveRoomMapper, LiveRoom>
         return String.format("rtmp://localhost:1935/live/%d", roomId);
     }
 
+    private String generateWebRTCPushUrl(Long roomId) {
+        return String.format("http://localhost:1985/rtc/v1/whip/?app=live&stream=%d", roomId);
+    }
+
     /**
      * 生成拉流地址
      */
