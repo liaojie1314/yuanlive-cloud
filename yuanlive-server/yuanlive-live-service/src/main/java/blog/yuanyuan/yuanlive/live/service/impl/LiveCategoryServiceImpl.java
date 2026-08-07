@@ -399,27 +399,15 @@ public class LiveCategoryServiceImpl extends ServiceImpl<LiveCategoryMapper, Liv
         // 查询所有关联关系
         List<LiveCategoryRelation> allRelations = liveCategoryRelationService.list();
         
-        // 转换为TreeVO（只包含parentId，不包含parentIds）
+        // 转换为TreeVO
         List<LiveCategoryTreeVO> allTreeVOs = allCategories.stream()
                 .map(category -> {
                     LiveCategoryTreeVO vo = BeanUtil.copyProperties(category, LiveCategoryTreeVO.class);
-                    // 只设置parentId（从关联表中获取第一个父分类ID）
-                    List<Integer> parentIds = allRelations.stream()
-                        .filter(relation -> relation.getCategoryId().equals(category.getId()))
-                        .map(LiveCategoryRelation::getParentId)
-                        .collect(Collectors.toList());
-                    // 为了向后兼容，设置第一个parentId
-                    if (!parentIds.isEmpty()) {
-                        vo.setParentId(parentIds.get(0));
-                    } else {
-                        vo.setParentId(0); // 顶级分类
-                    }
                     return vo;
                 })
                 .collect(Collectors.toList());
         
-        // 使用关联关系构建树形结构
-        return buildTreeFromRelationsForTree(allTreeVOs, allRelations, 0);
+        return LiveCategoryTreeBuilder.build(allTreeVOs, allRelations);
     }
 
     @Override
@@ -579,62 +567,7 @@ public class LiveCategoryServiceImpl extends ServiceImpl<LiveCategoryMapper, Liv
         return categoryIds;
     }
 
-    
-    /**
-     * 基于关联关系构建树形结构（用于LiveCategoryTreeVO）
-     * @param allCategories 所有分类
-     * @param allRelations 所有关联关系
-     * @param parentId 父ID
-     * @return 树形结构
-     */
-    private List<LiveCategoryTreeVO> buildTreeFromRelationsForTree(List<LiveCategoryTreeVO> allCategories, List<LiveCategoryRelation> allRelations, Integer parentId) {
-        List<LiveCategoryTreeVO> tree = new ArrayList<>();
-
-        for (LiveCategoryTreeVO category : allCategories) {
-            boolean isChild = false;
-            // 1. 检查是否是当前 parentId 的子节点
-            for (LiveCategoryRelation relation : allRelations) {
-                if (relation.getCategoryId().equals(category.getId()) && relation.getParentId().equals(parentId)) {
-                    isChild = true;
-                    break;
-                }
-            }
-
-            // 2. 顶级节点逻辑（无父关系的即为顶级）
-            if (parentId == 0) {
-                boolean hasParent = false;
-                for (LiveCategoryRelation relation : allRelations) {
-                    if (relation.getCategoryId().equals(category.getId())) {
-                        hasParent = true;
-                        break;
-                    }
-                }
-                if (!hasParent) isChild = true;
-            }
-
-            if (isChild) {
-                // --- 核心修正：创建一个新的 VO 实例，防止引用污染 ---
-                LiveCategoryTreeVO newNode = new LiveCategoryTreeVO();
-                newNode.setId(category.getId());
-                newNode.setName(category.getName());
-                newNode.setIconUrl(category.getIconUrl());
-                newNode.setValue(category.getValue());
-                newNode.setParentId(parentId); // 设置该分支特有的 parentId
-
-                // 递归查找子分类
-                List<LiveCategoryTreeVO> children = buildTreeFromRelationsForTree(allCategories, allRelations, category.getId());
-                if (!children.isEmpty()) {
-                    newNode.setChildren(children);
-                }
-
-                tree.add(newNode);
-            }
-        }
-
-        return tree;
-    }
 }
-
 
 
 
